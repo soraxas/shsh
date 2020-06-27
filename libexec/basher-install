@@ -2,18 +2,51 @@
 #
 # Summary: Installs a package from github (or a custom site)
 #
-# Usage: basher install [--ssh] [site]/<package>[@ref] [folder]
+# Usage: basher install [--ssh] [site]/<package>[@ref] [folder] [--hooks='([...]=...)']
 
 set -e
 
 use_ssh="false"
 
-case $1 in
-  --ssh)
-    use_ssh="true"
-    shift
-  ;;
-esac
+PARAMS=""
+while (( "$#" )); do
+  case "$1" in
+    --ssh)
+      use_ssh="true"
+      shift
+      ;;
+    --hooks)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        declare -A "hooks=$2"
+        shift 2
+      else
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      ;;
+    -*|--*=) # unsupported flags
+      echo "Error: Unsupported flag $1" >&2
+      exit 1
+      ;;
+    *) # postserve positional arguments
+      PARAMS="$PARAMS $1"
+      shift
+      ;;
+  esac
+done
+# set positional arguments in their proper place
+eval set -- "$PARAMS"
+
+for hook in "${!hooks[@]}"; do
+  case "$hook" in
+    pre|post|a+x|+x)
+      ;;
+    *)
+      echo "Error: Unknown hook type '$hook' with value '${hooks[$hook]}'"
+      exit 1
+  esac
+done
+
 
 if [ "$#" -lt 1 -o "$#" -gt 2 ]; then
   basher-help install
@@ -63,8 +96,23 @@ else
   ref=""
 fi
 
+if [ -z "$folder" ]; then
+  folder="$package"
+fi
+target_folder="${BASHER_PACKAGES_PATH}/$folder"
+
+execute_hooks() {
+  echo "> Executing $1"
+  bash -c "cd $target_folder && $2"
+}
+
 basher-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"
 basher-_deps "$folder"
+[ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
+[ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
+[ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
+
 basher-_link-bins "$folder"
 basher-_link-man "$folder"
 basher-_link-completions "$folder"
+[ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"

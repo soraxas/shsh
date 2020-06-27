@@ -50,10 +50,6 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-if [ -z "$folder" ]; then
-  folder="$package"
-fi
-
 if [ -e "$BASHER_PACKAGES_PATH/$folder" ]; then
   echo "Package '$package' is already present"
   exit 1
