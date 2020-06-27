@@ -2,9 +2,9 @@
 #
 # Summary: Installs a package from github (or a custom site)
 #
-# Usage: basher install [--ssh] [site]/<package>[@ref] [folder] [--hooks='([..]=.. [..]=..)']
+# Usage: basher install [--ssh] [site]/<package>[@ref] [folder] [-h|--hooks '([..]=.. [..]=..)']
 #
-# --hooks type: 
+# --hook type: 
 #     [pre],[post]: Any arbitrary script that runs before and after linking, respectively.
 #     [+x]: Before linking, adds executable bit to the file given in the argunment.
 #     [a+x]: Before linking, when set, it will add executable bit to all files.
@@ -21,7 +21,7 @@ while (( "$#" )); do
       use_ssh="true"
       shift
       ;;
-    --hooks)
+    -h|--hooks)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         declare -A "hooks=$2"
         shift 2
