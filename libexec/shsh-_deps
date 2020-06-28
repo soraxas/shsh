@@ -27,17 +27,14 @@ package="$1"
 if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   exit
 fi
+# shellcheck source=/dev/null
+. "$SHSH_PACKAGES_PATH/$package/package.sh"
 
-shopt -s nullglob
-
-source "$SHSH_PACKAGES_PATH/$package/package.sh"
-IFS=: read -a deps <<EOF
-$DEPS
-EOF
-
-for dep in "${deps[@]}"
-do
-  if [ -z "$get_deps" ]
+IFS=:
+for dep in $DEPS; do
+  # avoid globbing
+  [ -e "$dep" ] || [ -L "$dep" ] || continue
+  if [ -z "$get_deps" ]; then
     shsh-install "$dep"
   else
     echo "$dep"
