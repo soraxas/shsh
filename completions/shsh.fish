@@ -16,6 +16,13 @@ function __fish_shsh_using_command
   return 1
 end
 
+function __fish_shsh_get_package_with_desc
+  # get package with the verbose flag, where url will be display as package's description
+  # remove the useless ".git" endings
+  shsh list -v | awk 'match($0, /(^\S+).*\s+[(]https?:[/]{2}(.*)[)]/, m) {print m[1]"\t"m[2];}' \
+  | string replace -r --all ".git\$" ""
+end
+
 # only have commands completions
 #complete -f -c shsh -n '__fish_shsh_needs_command' -a '(shsh commands)'
 
@@ -28,5 +35,9 @@ set -l shsh_cmds_with_desc (shsh help | awk -F '[[:space:]][[:space:]]+' '/^Some
 complete -f -c shsh -n '__fish_shsh_needs_command' -a "$shsh_cmds_with_desc"
 
 for cmd in (shsh commands)
-  complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
+  if string match -q $cmd 'uninstall' 'upgrade' 'package-path'
+    complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a '(__fish_shsh_get_package_with_desc)'
+  else
+    complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
+  end
 end
