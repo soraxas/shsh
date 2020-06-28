@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Usage: shsh completions <command>
 # Summary: List completions for a command.
 #

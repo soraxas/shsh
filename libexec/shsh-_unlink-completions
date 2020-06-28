@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 resolve_link() {
   if type -p realpath >/dev/null; then
@@ -23,8 +23,12 @@ fi
 shopt -s nullglob
 
 source "$SHSH_PACKAGES_PATH/$package/package.sh" # TODO: make this secure?
-IFS=: read -a bash_completions <<< "$BASH_COMPLETIONS"
-IFS=: read -a zsh_completions <<< "$ZSH_COMPLETIONS"
+IFS=: read -a bash_completions <<EOF
+$BASH_COMPLETIONS
+EOF
+IFS=: read -a zsh_completions <<EOF
+$ZSH_COMPLETIONS
+EOF
 
 for completion in "${bash_completions[@]}"
 do

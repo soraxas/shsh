@@ -2,7 +2,7 @@ mock_command() {
   local command="$1"
   mkdir -p "${SHSH_TEST_DIR}/path/$command"
   cat > "${SHSH_TEST_DIR}/path/$command/$command" <<SH
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 echo "$command \$@"
 SH

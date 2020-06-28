@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Summary: Configure the shell environment for shsh
 # Usage: eval "$(shsh init -)"
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Summary: Outputs the path for a package
 # Usage: source "$(shsh package-path <package>)/file.sh"
@@ -6,7 +6,7 @@
 set -e
 
 # TAG completions
-if [ "$1" == "--complete" ]; then
+if [ "$1" = "--complete" ]; then
   exec shsh-list
 fi
 

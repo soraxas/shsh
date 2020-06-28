@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Summary: List installed packages
 # Usage: shsh list [-v]

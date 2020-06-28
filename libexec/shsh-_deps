@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Usage: shsh _deps <package> [--get]
 # Summary: Globally installs package runtime dependencies
@@ -31,7 +31,9 @@ fi
 shopt -s nullglob
 
 source "$SHSH_PACKAGES_PATH/$package/package.sh"
-IFS=: read -a deps <<< "$DEPS"
+IFS=: read -a deps <<EOF
+$DEPS
+EOF
 
 for dep in "${deps[@]}"
 do

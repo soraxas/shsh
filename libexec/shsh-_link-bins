@@ -6,7 +6,9 @@ shopt -s nullglob
 
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   source "$SHSH_PACKAGES_PATH/$package/package.sh"
-  IFS=: read -a bins <<< "$BINS"
+  IFS=: read -a bins <<EOF
+$BINS
+EOF
 fi
 
 if [ -z "$bins" ]; then

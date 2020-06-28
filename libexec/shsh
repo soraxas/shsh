@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Summary: A package manager for shell scripts
 #
 # Usage: shsh <command> [<args>]
 
 resolve_link() {
-  $(type -p greadlink readlink | head -1) "$1"
+  $(which greadlink readlink 2>/dev/null | head -1) "$1"
 }
 
 abs_dirname() {
@@ -13,13 +13,13 @@ abs_dirname() {
   local path="$1"
 
   while [ -n "$path" ]; do
-    cd "${path%/*}"
+    cd "${path%/*}" || exit 1
     local name="${path##*/}"
     path="$(resolve_link "$name" || true)"
   done
 
   pwd
-  cd "$cwd"
+  cd "$cwd" || exit 1
 }
 
 if [ -z "$SHSH_ROOT" ]; then

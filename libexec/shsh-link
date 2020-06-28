@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Summary: Installs a local directory as a shsh package
 # Usage: shsh link [--no-deps] <directory> <package>
 
@@ -39,7 +39,9 @@ if [ -z "$package" ]; then
   exit 1
 fi
 
-IFS=/ read -r namespace name <<< "$package"
+IFS=/ read -r namespace name <<EOF
+$package
+EOF
 
 if [ -z "$namespace" ]; then
   shsh-help link

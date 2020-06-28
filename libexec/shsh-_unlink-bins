@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 resolve_link() {
   if type -p realpath >/dev/null; then
@@ -18,7 +18,9 @@ package="$1"
 
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   source "$SHSH_PACKAGES_PATH/$package/package.sh"
-  IFS=: read -a bins <<< "$BINS"
+  IFS=: read -a bins <<EOF
+$BINS
+EOF
 fi
 
 if [ -z "$bins" ]; then

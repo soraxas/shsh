@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Summary: Display help for a command
 #
@@ -136,11 +136,11 @@ if [ "$1" = "--usage" ]; then
 fi
 
 # TAG completions
-if [ "$1" == "--complete" ]; then
+if [ "$1" = "--complete" ]; then
   exec shsh-commands
 fi
 
-if [ -z "$1" ] || [ "$1" == "shsh" ]; then
+if [ -z "$1" ] || [ "$1" = "shsh" ]; then
   echo "Usage: shsh <command> [<args>]"
   [ -z "$usage" ] || exit
   echo

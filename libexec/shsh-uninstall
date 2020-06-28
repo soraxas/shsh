@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Summary: Uninstalls a package
 # Usage: shsh uninstall <package>
 
@@ -10,7 +10,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # TAG completions
-if [ "$1" == "--complete" ]; then
+if [ "$1" = "--complete" ]; then
   exec shsh-list
 fi
 
@@ -21,7 +21,9 @@ if [ -z "$package" ]; then
   exit 1
 fi
 
-IFS=/ read -r user name <<< "$package"
+IFS=/ read -r user name <<EOF
+$package
+EOF
 
 if [ -z "$user" ]; then
   shsh-help uninstall

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 #
 # Summary: Displays a list of outdated packages
 # Usage: shsh outdated
