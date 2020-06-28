@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+#
+# Summary: Utilities that are used throughout the project
+
+set -e
+
+resolve_link() {
+  $(which greadlink readlink 2>/dev/null | head -1) "$1"
+}
+
+remove_linked() {
+  # Given a folder as first arg, if anything that follows it
+  # is a link resides within the folder, delete it
+  package="$1"
+  shift
+  for link in "$@"; do
+    # do nothing if the arugnment is not an actual file
+    [ -e "$link" ] || [ -L "$link" ] || continue
+    case $(resolve_link "$link") in
+      "$package/"*)
+        rm -f "$link"
+        ;;
+    esac
+  done
+}

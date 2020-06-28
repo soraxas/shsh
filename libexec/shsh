@@ -53,6 +53,7 @@ export SHSH_INSTALL_MAN
 
 bin_path="$(abs_dirname "$0")"
 export PATH="${bin_path}:${PATH}"
+export UTILS_FUNC="$(abs_dirname "$0")/shsh-_utils"
 
 command="$1"
 case "$command" in

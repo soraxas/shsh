@@ -1,25 +1,9 @@
 #!/usr/bin/env sh
 
-# resolve_link() {
-#   if type -p realpath >/dev/null; then
-#     realpath "$1"
-#   else
-#     readlink -f "$1"
-#   fi
-# }
-
-# remove_linked() {
-#   if [[ "$(resolve_link $1)" = "$2/"* ]]; then
-#     rm -f "$1"
-#   fi
-# }
-
 set -e
+
+. "${UTILS_FUNC:?}"
 
 package="$1"
 
-for file in "$SHSH_INSTALL_BIN/"*/*; do
-  [ -e "$file" ] || [ -L "$file" ] || continue
-
-  remove_linked "$file" "$SHSH_PACKAGES_PATH/$package"
-done
+remove_linked "$SHSH_PACKAGES_PATH/$package" "$SHSH_INSTALL_BIN/"*

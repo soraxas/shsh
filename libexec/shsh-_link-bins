@@ -9,10 +9,14 @@ if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
 fi
 
 if [ -z "$bins" ]; then
+  list_all_executable() {
+    cd "$1" && find "$2" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l
+  }
   if [ -e "$SHSH_PACKAGES_PATH/$package/bin" ]; then
-    bins=$(ls -1 "$SHSH_PACKAGES_PATH/$package/bin/")
+    bins=$(list_all_executable "$SHSH_PACKAGES_PATH/$package" bin)
   else
-    bins=$(find "$SHSH_PACKAGES_PATH/$package" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l)
+    # remove the "./" prefix with cut
+    bins=$(list_all_executable "$SHSH_PACKAGES_PATH/$package" "." | cut -sd / -f 2-)
   fi
 fi
 
@@ -24,6 +28,6 @@ for bin in $bins; do
     name="${name%%.*}"
   fi
   mkdir -p "$SHSH_INSTALL_BIN"
-  ln -s "$SHSH_PACKAGES_PATH/$package/$bin" "$SHSH_INSTALL_BIN/${name}"
-  chmod +x "$SHSH_INSTALL_BIN/${name}"
+  ln -s "$SHSH_PACKAGES_PATH/$package/$bin" "$SHSH_INSTALL_BIN/$name"
+  # chmod +x "$SHSH_INSTALL_BIN/$name"
 done
