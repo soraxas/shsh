@@ -6,25 +6,30 @@
 
 set -e
 
-shell="$1"
-if [ -z "$shell" ]; then
+if [ "$#" -ne 1 ]; then
   shsh-help init
   exit 1
 fi
 
+# TAG completions
+if [ "$1" = "--complete" ]; then
+  printf '%s\n' sh bash zsh fish
+  exit
+fi
+
+shell="$1"
+
 print_fish_commands() {
-  echo "set -gx SHSH_SHELL $shell"
   echo "set -gx SHSH_ROOT $SHSH_ROOT"
   echo "set -gx SHSH_PREFIX $SHSH_PREFIX"
   echo "set -gx SHSH_PACKAGES_PATH $SHSH_PACKAGES_PATH"
 
-  echo 'if not contains $SHSH_ROOT/cellar/bin $PATH'
-  echo 'set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
-  echo 'end'
+  echo "set -a fish_complete_path $SHSH_PREFIX/completions/fish"
+  echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
+  echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
 }
 
 print_sh_commands(){
-  echo "export SHSH_SHELL=$shell"
   echo "export SHSH_ROOT=$SHSH_ROOT"
   echo "export SHSH_PREFIX=$SHSH_PREFIX"
   echo "export SHSH_PACKAGES_PATH=$SHSH_PACKAGES_PATH"
@@ -50,12 +55,14 @@ case "$shell" in
     ;;
 esac
 
-if [ -e "$SHSH_ROOT/lib/include.$shell" ]; then
-  echo ". \"\$SHSH_ROOT/lib/include.$shell\""
-fi
+if [ "$shell" != fish ]; then
+  if [ -e "$SHSH_ROOT/lib/include.$shell" ]; then
+    echo ". \"\$SHSH_ROOT/lib/include.$shell\""
+  fi
 
-if [ -e "$SHSH_ROOT/completions/shsh.$shell" ]; then
-  echo ". \"\$SHSH_ROOT/completions/shsh.$shell\""
+  if [ -e "$SHSH_ROOT/completions/shsh.$shell" ]; then
+    echo ". \"\$SHSH_ROOT/completions/shsh.$shell\""
+  fi
 fi
 
 case "$shell" in

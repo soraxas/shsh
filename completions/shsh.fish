@@ -16,7 +16,17 @@ function __fish_shsh_using_command
   return 1
 end
 
-complete -f -c shsh -n '__fish_shsh_needs_command' -a '(shsh commands)'
+# only have commands completions
+#complete -f -c shsh -n '__fish_shsh_needs_command' -a '(shsh commands)'
+
+# commands completions plus description
+set -l shsh_cmds_with_desc (shsh help | awk -F '[[:space:]][[:space:]]+' '/^Some useful/,/^See/ {
+  if ($2 != "") {
+    print $2"\t"$3
+  }
+}' | string collect | string escape)
+complete -f -c shsh -n '__fish_shsh_needs_command' -a "$shsh_cmds_with_desc"
+
 for cmd in (shsh commands)
   complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
 end

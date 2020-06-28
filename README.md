@@ -9,7 +9,7 @@ all packages and manage their binaries for you.
 
 Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [Dash](https://wiki.archlinux.org/index.php/Dash).
 
-[![Build Status](https://travis-ci.org/shshpm/shsh.svg?branch=master)](https://travis-ci.org/shshpm/shsh)
+[![Build Status](https://travis-ci.org/shshpm/shsh.svg?branch=master)](https://travis-ci.org/soraxas/shsh)
 
 ## Manual Installation
 
