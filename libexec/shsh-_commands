@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 #
 # Summary: List all available commands for a package
 # Usage: shsh _commands <package>
@@ -15,15 +15,14 @@ fi
 
 package="$1"
 
-IFS=: paths=($PATH)
-
 shopt -s nullglob
 
-{ for path in "${paths[@]}"; do
+IFS=:
+{ for path in $PATH; do
     for command in "${path}/$package-"*; do
       command="${command##*$package-}"
       if [[ ! "$command" == _* ]]; then
-        echo ${command}
+        echo "${command}"
       fi
     done
   done
