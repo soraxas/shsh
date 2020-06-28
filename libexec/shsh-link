@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Summary: Installs a local directory as a shsh package
+# Usage: shsh link [--no-deps] <directory> <package>
+
+set -e
+
+resolve_link() {
+  if type -p realpath >/dev/null; then
+    realpath "$1"
+  else
+    readlink -f "$1"
+  fi
+}
+
+no_deps="false"
+
+case $1 in
+  --no-deps)
+    no_deps="true"
+    shift
+  ;;
+esac
+
+if [ "$#" -ne 2 ]; then
+  shsh-help link
+  exit 1
+fi
+
+directory="$1"
+package="$2"
+
+if [ ! -d "$directory" ]; then
+  echo "Directory '$directory' not found."
+  exit 1
+fi
+
+if [ -z "$package" ]; then
+  shsh-help link
+  exit 1
+fi
+
+IFS=/ read -r namespace name <<< "$package"
+
+if [ -z "$namespace" ]; then
+  shsh-help link
+  exit 1
+fi
+
+if [ -z "$name" ]; then
+  shsh-help link
+  exit 1
+fi
+
+if [ -d "${SHSH_PACKAGES_PATH}/$package" ]; then
+  echo "Package '$package' is already present"
+  exit 1
+fi
+
+# Make sure the namespace directory exists before linking
+if [ ! -d "${SHSH_PACKAGES_PATH}/$namespace" ]; then
+  mkdir -p "${SHSH_PACKAGES_PATH}/$namespace"
+fi
+
+# Resolve local package path
+directory="$(resolve_link "$directory")"
+
+ln -s "$directory" "${SHSH_PACKAGES_PATH}/$package"
+
+shsh-_link-bins "$package"
+shsh-_link-completions "$package"
+shsh-_link-man "$package"
+
+if [ "$no_deps" = "false" ]; then
+  shsh-_deps "$package"
+fi

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -e
+
+resolve_link() {
+  if type -p realpath >/dev/null; then
+    realpath "$1"
+  else
+    readlink -f "$1"
+  fi
+}
+
+remove_linked() {
+  if [[ "$(resolve_link $1)" = "$2/"* ]]; then
+    rm -f "$1"
+  fi
+}
+
+package="$1"
+
+shopt -s nullglob
+
+files=($SHSH_PACKAGES_PATH/$package/man/*)
+files=("${files[@]##*/}")
+
+pattern="\.([1-9])\$"
+
+for file in "${files[@]}"
+do
+  if [[ "$file" =~ $pattern ]]; then
+    n="${BASH_REMATCH[1]}"
+    remove_linked "$SHSH_INSTALL_MAN/man${n}/${file}" "$SHSH_PACKAGES_PATH/$package"
+  fi
+done

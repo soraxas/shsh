@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#
+# Summary: A package manager for shell scripts
+#
+# Usage: shsh <command> [<args>]
+
+resolve_link() {
+  $(type -p greadlink readlink | head -1) "$1"
+}
+
+abs_dirname() {
+  local cwd="$(pwd)"
+  local path="$1"
+
+  while [ -n "$path" ]; do
+    cd "${path%/*}"
+    local name="${path##*/}"
+    path="$(resolve_link "$name" || true)"
+  done
+
+  pwd
+  cd "$cwd"
+}
+
+if [ -z "$SHSH_ROOT" ]; then
+  if [ -z "$XDG_DATA_HOME" ]; then
+    SHSH_ROOT="$HOME/.shsh"
+  else
+    SHSH_ROOT="$XDG_DATA_HOME/shsh"
+  fi
+fi
+export SHSH_ROOT
+
+if [ -z "$SHSH_PREFIX" ]; then
+  SHSH_PREFIX="$SHSH_ROOT/cellar"
+fi
+export SHSH_PREFIX
+
+if [ -z "$SHSH_PACKAGES_PATH" ]; then
+  SHSH_PACKAGES_PATH="$SHSH_PREFIX/packages"
+fi
+export SHSH_PACKAGES_PATH
+
+if [ -z "$SHSH_INSTALL_BIN" ]; then
+  SHSH_INSTALL_BIN="$SHSH_PREFIX/bin"
+fi
+export SHSH_INSTALL_BIN
+
+if [ -z "$SHSH_INSTALL_MAN" ]; then
+  SHSH_INSTALL_MAN="$SHSH_PREFIX/man"
+fi
+export SHSH_INSTALL_MAN
+
+bin_path="$(abs_dirname "$0")"
+export PATH="${bin_path}:${PATH}"
+
+command="$1"
+case "$command" in
+"")
+  shsh-help
+  ;;
+* )
+  command_path="$(command -v "shsh-$command" || true)"
+  if [ -z "$command_path" ]; then
+    echo "shsh: no such command '$command'" >&2
+    exit 1
+  fi
+
+  shift 1
+  exec "$command_path" "$@"
+  ;;
+esac

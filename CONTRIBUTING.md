@@ -9,7 +9,7 @@ Write a [good commit message][commit].
 To run the tests, install bats:
 
 ~~~ sh
-$ basher install sstephenson/bats
+$ shsh install sstephenson/bats
 ~~~
 
 update submodules:

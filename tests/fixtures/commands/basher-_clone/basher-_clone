@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-use_ssh="$1"
-site="$2"
-package="$3"
-
-git clone "${BASHER_ORIGIN_DIR}/$package" "${BASHER_PACKAGES_PATH}/$package"

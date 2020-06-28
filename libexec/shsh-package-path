@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Summary: Outputs the path for a package
+# Usage: source "$(shsh package-path <package>)/file.sh"
+
+set -e
+
+# TAG completions
+if [ "$1" == "--complete" ]; then
+  exec shsh-list
+fi
+
+if [ "$#" -ne 1 ]; then
+  shsh-help package-path
+  exit 1
+fi
+
+package="$1"
+
+echo "$SHSH_PACKAGES_PATH/$package"

@@ -1,36 +1,36 @@
 load vendor/bats-core/load
 load vendor/bats-assert/load
 
-export BASHER_TEST_DIR="${BATS_TMPDIR}/basher"
-export BASHER_ORIGIN_DIR="${BASHER_TEST_DIR}/origin"
-export BASHER_CWD="${BASHER_TEST_DIR}/cwd"
-export BASHER_TMP_BIN="${BASHER_TEST_DIR}/bin"
+export SHSH_TEST_DIR="${BATS_TMPDIR}/shsh"
+export SHSH_ORIGIN_DIR="${SHSH_TEST_DIR}/origin"
+export SHSH_CWD="${SHSH_TEST_DIR}/cwd"
+export SHSH_TMP_BIN="${SHSH_TEST_DIR}/bin"
 
-export BASHER_ROOT="${BATS_TEST_DIRNAME}/.."
-export BASHER_PREFIX="${BASHER_TEST_DIR}/prefix"
-export BASHER_INSTALL_BIN="${BASHER_PREFIX}/bin"
-export BASHER_INSTALL_MAN="${BASHER_PREFIX}/man"
-export BASHER_PACKAGES_PATH="$BASHER_PREFIX/packages"
+export SHSH_ROOT="${BATS_TEST_DIRNAME}/.."
+export SHSH_PREFIX="${SHSH_TEST_DIR}/prefix"
+export SHSH_INSTALL_BIN="${SHSH_PREFIX}/bin"
+export SHSH_INSTALL_MAN="${SHSH_PREFIX}/man"
+export SHSH_PACKAGES_PATH="$SHSH_PREFIX/packages"
 
 export FIXTURES_DIR="${BATS_TEST_DIRNAME}/fixtures"
 
 export PATH="${BATS_TEST_DIRNAME}/libexec:$PATH"
 export PATH="${BATS_TEST_DIRNAME}/../libexec:$PATH"
-export PATH="${BASHER_TMP_BIN}:$PATH"
+export PATH="${SHSH_TMP_BIN}:$PATH"
 
-mkdir -p "${BASHER_TMP_BIN}"
-mkdir -p "${BASHER_TEST_DIR}/path"
+mkdir -p "${SHSH_TMP_BIN}"
+mkdir -p "${SHSH_TEST_DIR}/path"
 
-mkdir -p "${BASHER_ORIGIN_DIR}"
+mkdir -p "${SHSH_ORIGIN_DIR}"
 
-mkdir -p "${BASHER_CWD}"
+mkdir -p "${SHSH_CWD}"
 
 setup() {
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 teardown() {
-  rm -rf "$BASHER_TEST_DIR"
+  rm -rf "$SHSH_TEST_DIR"
 }
 
 load lib/mocks

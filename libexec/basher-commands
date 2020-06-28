@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-#
-# Summary: List all available basher commands
-# Usage: basher commands
-
-set -e
-
-basher-_commands basher

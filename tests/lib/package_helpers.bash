@@ -1,13 +1,13 @@
 create_package() {
   local package="$1"
-  mkdir -p "${BASHER_ORIGIN_DIR}/$package"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  mkdir -p "${SHSH_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   git init .
   touch README
   touch package.sh
   git add .
   git commit -m "Initial commit"
-  cd "${BASHER_CWD}"
+  cd "${SHSH_CWD}"
 }
 
 create_file() {
@@ -15,30 +15,30 @@ create_file() {
   local filename="$2"
   local content="$3"
 
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   echo "$content" > "$filename"
 
   git add .
   git commit -m "Add $filename"
-  cd "${BASHER_CWD}"
+  cd "${SHSH_CWD}"
 }
 
 create_man() {
   local package="$1"
   local man="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p man
   touch "man/$man"
 
   git add .
   git commit -m "Add $man"
-  cd "${BASHER_CWD}"
+  cd "${SHSH_CWD}"
 }
 
 create_package_exec() {
   local package="$1"
   local exec="package_bin/$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p package_bin
   touch $exec
 
@@ -53,37 +53,37 @@ create_package_exec() {
 
   git add .
   git commit -m "Add package exec: $exec"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_exec() {
   local package="$1"
   local exec="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p bin
   touch bin/$exec
 
   git add .
   git commit -m "Add $exec"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_root_exec() {
   local package="$1"
   local exec="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   touch $exec
   chmod +x "$exec"
 
   git add .
   git commit -m "Add root exec: $exec"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 set_remove_extension() {
   local package="$1"
   local remove_extension="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
 
   touch "package.sh"
 
@@ -96,13 +96,13 @@ set_remove_extension() {
 
   git add .
   git commit -m "Set REMOVE_EXTENSION to $remove_extension."
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_dep() {
   local package="$1"
   local dep="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
 
   touch "package.sh"
 
@@ -115,13 +115,13 @@ create_dep() {
 
   git add .
   git commit -m "Add dependency on $dep"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_bash_completions() {
   local package="$1"
   local comp="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p completions
   touch completions/$comp
 
@@ -136,13 +136,13 @@ create_bash_completions() {
 
   git add .
   git commit -m "Add bash completions"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_zsh_compsys_completions() {
   local package="$1"
   local comp="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p completions
   echo "#compdef $2" > completions/$comp
 
@@ -157,13 +157,13 @@ create_zsh_compsys_completions() {
 
   git add .
   git commit -m "Add bash completions"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }
 
 create_zsh_compctl_completions() {
   local package="$1"
   local comp="$2"
-  cd "${BASHER_ORIGIN_DIR}/$package"
+  cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p completions
   touch completions/$comp
 
@@ -178,5 +178,5 @@ create_zsh_compctl_completions() {
 
   git add .
   git commit -m "Add bash completions"
-  cd ${BASHER_CWD}
+  cd ${SHSH_CWD}
 }

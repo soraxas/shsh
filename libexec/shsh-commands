@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Summary: List all available shsh commands
+# Usage: shsh commands
+
+set -e
+
+shsh-_commands shsh

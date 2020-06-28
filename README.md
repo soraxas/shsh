@@ -1,47 +1,47 @@
-# basher
+# shsh
 
 A package manager for shell scripts and functions.
 
 Basher allows you to quickly install shell packages directly from github (or
 other sites). Instead of looking for specific install instructions for each
-package and messing with your path, basher will create a central location for
+package and messing with your path, shsh will create a central location for
 all packages and manage their binaries for you.
 
-Even though it is called basher, it also works with zsh and fish.
+Even though it is called shsh, it also works with zsh and fish.
 
-[![Build Status](https://travis-ci.org/basherpm/basher.svg?branch=master)](https://travis-ci.org/basherpm/basher)
+[![Build Status](https://travis-ci.org/shshpm/shsh.svg?branch=master)](https://travis-ci.org/shshpm/shsh)
 
 ## Installation
 
-1. Checkout basher on `~/.basher`
+1. Checkout shsh on `~/.shsh`
 
     ~~~ sh
-    $ git clone https://github.com/basherpm/basher.git ~/.basher
+    $ git clone https://github.com/shshpm/shsh.git ~/.shsh
     ~~~
 
-2. Initialize basher in your shell initialization
+2. Initialize shsh in your shell initialization
 
     ~~~ sh
-    export PATH="$HOME/.basher/bin:$PATH"'
-    eval "$(basher init -)"
+    export PATH="$HOME/.shsh/bin:$PATH"'
+    eval "$(shsh init -)"
     ~~~
 
     **Fish**: Use the following commands instead:
 
     ~~~ sh
-    if test -d ~/.basher
-      set basher ~/.basher/bin
+    if test -d ~/.shsh
+      set shsh ~/.shsh/bin
     end
-    set -gx PATH $basher $PATH
-    status --is-interactive; and . (basher init -|psub)
+    set -gx PATH $shsh $PATH
+    status --is-interactive; and . (shsh init -|psub)
     ~~~
 
 ## Updating
 
-Go to the directory where you cloned basher and pull the latest changes:
+Go to the directory where you cloned shsh and pull the latest changes:
 
 ~~~ sh
-$ cd ~/.basher
+$ cd ~/.shsh
 $ git pull
 ~~~
 
@@ -50,7 +50,7 @@ $ git pull
 ### Installing packages from Github
 
 ~~~ sh
-$ basher install sstephenson/bats
+$ shsh install sstephenson/bats
 ~~~
 
 This will install bats from https://github.com/sstephenson/bats and add `bin/bats` to the PATH.
@@ -58,7 +58,7 @@ This will install bats from https://github.com/sstephenson/bats and add `bin/bat
 ### Installing packages from other sites
 
 ~~~ sh
-$ basher install bitbucket.org/user/repo_name
+$ shsh install bitbucket.org/user/repo_name
 ~~~
 
 This will install `repo_name` from https://bitbucket.org/user/repo_name
@@ -69,23 +69,23 @@ If you want to do local development on installed packages and you have ssh
 access to the site, use `--ssh` to override the protocol:
 
 ~~~ sh
-$ basher install --ssh juanibiapina/gg
+$ shsh install --ssh juanibiapina/gg
 ~~~
 
 ### Installing a local package
 
-If you develop a package locally and want to try it through basher,
+If you develop a package locally and want to try it through shsh,
 use the `link` command:
 
 ~~~ sh
-$ basher link directory my_namespace/my_package
+$ shsh link directory my_namespace/my_package
 ~~~
 
 The `link` command will install the dependencies of the local package.
 You can prevent that with the `--no-deps` option:
 
 ~~~ sh
-$ basher link --no-deps directory my_namespace/my_package
+$ shsh link --no-deps directory my_namespace/my_package
 ~~~
 
 ### Sourcing files from a package into current shell
@@ -101,21 +101,21 @@ This will source a file `lib/file.sh` under the package `username/repo`.
 
 ### Command summary
 
-- `basher commands` - List commands
-- `basher help <command>` - Display help for a command
-- `basher uninstall <package>` - Uninstall a package
-- `basher list` - List installed packages
-- `basher outdated` - List packages which are not in the latest version
-- `basher upgrade <package>` - Upgrade a package to the latest version
+- `shsh commands` - List commands
+- `shsh help <command>` - Display help for a command
+- `shsh uninstall <package>` - Uninstall a package
+- `shsh list` - List installed packages
+- `shsh outdated` - List packages which are not in the latest version
+- `shsh upgrade <package>` - Upgrade a package to the latest version
 
 ### Configuration options
 
-To change the behavior of basher, you can set the following variables either
+To change the behavior of shsh, you can set the following variables either
 globally or before each command:
 
-- If `$XDG_DATA_HOME` is set, `$BASHER_ROOT` will be set as `$XDG_DATA_HOME/basher` (commonly that will be at `~/.local/share/basher`). It is used to store cellar for the cloned packages. If `$XDG_DATA_HOME` is not set, `$BASHER_ROOT` will be default as `$HOME/.basher`.
-- `BASHER_FULL_CLONE=true` - Clones the full repo history instead of only the last commit (useful for package development)
-- `BASHER_PREFIX` - set the installation and package checkout prefix (default is `$BASHER_ROOT/cellar`).  Setting this to `/usr/local`, for example, will install binaries to `/usr/local/bin`, manpages to `/usr/local/man`, completions to `/usr/local/completions`, and clone packages to `/usr/local/packages`.  This allows you to manage "global packages", distinct from individual user packages.
+- If `$XDG_DATA_HOME` is set, `$SHSH_ROOT` will be set as `$XDG_DATA_HOME/shsh` (commonly that will be at `~/.local/share/shsh`). It is used to store cellar for the cloned packages. If `$XDG_DATA_HOME` is not set, `$SHSH_ROOT` will be default as `$HOME/.shsh`.
+- `SHSH_FULL_CLONE=true` - Clones the full repo history instead of only the last commit (useful for package development)
+- `SHSH_PREFIX` - set the installation and package checkout prefix (default is `$SHSH_ROOT/cellar`).  Setting this to `/usr/local`, for example, will install binaries to `/usr/local/bin`, manpages to `/usr/local/man`, completions to `/usr/local/completions`, and clone packages to `/usr/local/packages`.  This allows you to manage "global packages", distinct from individual user packages.
 
 ## Packages
 

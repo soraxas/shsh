@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+resolve_link() {
+  if type -p realpath >/dev/null; then
+    realpath "$1"
+  else
+    readlink -f "$1"
+  fi
+}
+
+remove_linked() {
+  if [[ "$(resolve_link $1)" = "$2/"* ]]; then
+    rm -f "$1"
+  fi
+}
+
+package="$1"
+
+if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+  source "$SHSH_PACKAGES_PATH/$package/package.sh"
+  IFS=: read -a bins <<< "$BINS"
+fi
+
+if [ -z "$bins" ]; then
+  if [ -e "$SHSH_PACKAGES_PATH/$package/bin" ]; then
+    bins=($SHSH_PACKAGES_PATH/$package/bin/*)
+    bins=("${bins[@]##*/}")
+    bins=("${bins[@]/#/bin/}")
+  else
+    bins=($(find "$SHSH_PACKAGES_PATH/$package" -maxdepth 1 -perm -u+x -type f -or -type l))
+    bins=("${bins[@]##*/}")
+  fi
+fi
+
+for bin in "${bins[@]}"
+do
+  name="${bin##*/}"
+  if ${REMOVE_EXTENSION:-false}; then
+    name="${name%%.*}"
+  fi
+  # only deletes if it actually owned (linked) by this package
+  remove_linked "$SHSH_INSTALL_BIN/${name}" "$SHSH_PACKAGES_PATH/$package"
+done

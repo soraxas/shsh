@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+resolve_link() {
+  if type -p realpath >/dev/null; then
+    realpath "$1"
+  else
+    readlink -f "$1"
+  fi
+}
+
+remove_linked() {
+  if [[ "$(resolve_link $1)" = "$2/"* ]]; then
+    rm -f "$1"
+  fi
+}
+
+package="$1"
+
+if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+  exit
+fi
+
+shopt -s nullglob
+
+source "$SHSH_PACKAGES_PATH/$package/package.sh" # TODO: make this secure?
+IFS=: read -a bash_completions <<< "$BASH_COMPLETIONS"
+IFS=: read -a zsh_completions <<< "$ZSH_COMPLETIONS"
+
+for completion in "${bash_completions[@]}"
+do
+  rm -f "$SHSH_PREFIX/completions/bash/${completion##*/}"
+done
+
+for completion in "${zsh_completions[@]}"
+do
+  target="$SHSH_PACKAGES_PATH/$package/$completion"
+  if grep -q "#compdef" "$target"; then
+    remove_linked "$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}" "$SHSH_PACKAGES_PATH/$package"
+  else
+    remove_linked "$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}" "$SHSH_PACKAGES_PATH/$package"
+  fi
+done

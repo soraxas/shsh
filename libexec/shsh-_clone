@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# Summary: Clones a package from a site, but doesn't install it
+#
+# Usage: shsh _clone <use_ssh> <site> <package> [<ref>] [folder]
+
+set -e
+
+if [ "$#" -lt 3 -a "$#" -gt 5 ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+use_ssh="$1"
+site="$2"
+package="$3"
+ref="$4"
+folder="$5"
+
+if [ -z "$use_ssh" ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+if [ -z "$site" ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+if [ -z "$package" ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+if [ -z "$ref" ]; then
+  BRANCH_OPTION=""
+else
+  BRANCH_OPTION="-b $ref"
+fi
+
+IFS=/ read -r user name <<< "$package"
+
+if [ -z "$user" ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+if [ -z "$name" ]; then
+  shsh-help _clone
+  exit 1
+fi
+
+if [ -e "$SHSH_PACKAGES_PATH/$folder" ]; then
+  echo "Package '$package' is already present"
+  exit 1
+fi
+
+if [ "$SHSH_FULL_CLONE" = "true" ]; then
+  DEPTH_OPTION=""
+else
+  DEPTH_OPTION="--depth=1"
+fi
+
+if [ "$use_ssh" = "true" ]; then
+  URI="git@$site:$package.git"
+else
+  URI="https://${site}/$package.git"
+fi
+
+git clone ${DEPTH_OPTION} ${BRANCH_OPTION} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"

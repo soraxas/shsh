@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+package="$1"
+
+shopt -s nullglob
+
+if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+  source "$SHSH_PACKAGES_PATH/$package/package.sh"
+  IFS=: read -a bins <<< "$BINS"
+fi
+
+if [ -z "$bins" ]; then
+  if [ -e "$SHSH_PACKAGES_PATH/$package/bin" ]; then
+    bins=($SHSH_PACKAGES_PATH/$package/bin/*)
+    bins=("${bins[@]##*/}")
+    bins=("${bins[@]/#/bin/}")
+  else
+    bins=($(find "$SHSH_PACKAGES_PATH/$package" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l))
+    bins=("${bins[@]##*/}")
+  fi
+fi
+
+for bin in "${bins[@]}"
+do
+  name="${bin##*/}"
+  if ${REMOVE_EXTENSION:-false}; then
+    name="${name%%.*}"
+  fi
+  mkdir -p "$SHSH_INSTALL_BIN"
+  ln -s "$SHSH_PACKAGES_PATH/$package/$bin" "$SHSH_INSTALL_BIN/${name}"
+  chmod +x "$SHSH_INSTALL_BIN/${name}"
+done

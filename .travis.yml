@@ -25,9 +25,9 @@ script:
   mkdir bats
   tar --strip-components=1 -xvzf bats.tar.gz -C bats
   if [[ "$TRAVIS_OS_NAME" == 'linux' && -n "$BASHVER" ]]; then
-    docker build --build-arg bashver=${BASHVER} --tag basher/basher:bash-${BASHVER} .
+    docker build --build-arg bashver=${BASHVER} --tag shsh/shsh:bash-${BASHVER} .
     docker run -it bash:${BASHVER} --version
-    time docker run -it basher/basher:bash-${BASHVER} --tap /opt/basher/tests
+    time docker run -it shsh/shsh:bash-${BASHVER} --tap /opt/shsh/tests
   else
     git config --global user.email "user@example.com"
     git config --global user.name "User Name"

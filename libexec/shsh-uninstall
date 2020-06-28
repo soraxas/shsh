@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Summary: Uninstalls a package
+# Usage: shsh uninstall <package>
+
+set -e
+
+if [ "$#" -ne 1 ]; then
+  shsh-help uninstall
+  exit 1
+fi
+
+# TAG completions
+if [ "$1" == "--complete" ]; then
+  exec shsh-list
+fi
+
+package="$1"
+
+if [ -z "$package" ]; then
+  shsh-help uninstall
+  exit 1
+fi
+
+IFS=/ read -r user name <<< "$package"
+
+if [ -z "$user" ]; then
+  shsh-help uninstall
+  exit 1
+fi
+
+if [ -z "$name" ]; then
+  shsh-help uninstall
+  exit 1
+fi
+
+shopt -s nullglob
+
+if [ ! -d "$SHSH_PACKAGES_PATH/$package" ]; then
+  echo "Package '$package' is not installed"
+  exit 1
+fi
+
+shsh-_unlink-man "$package"
+shsh-_unlink-bins "$package"
+shsh-_unlink-completions "$package"
+
+rm -rf "${SHSH_PACKAGES_PATH}/$package"

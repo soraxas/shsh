@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# Usage: shsh _deps <package> [--get]
+# Summary: Globally installs package runtime dependencies
+#
+# Installs the package dependencies, specified with the
+# DEPS= variable on package.sh.
+#
+# Example: DEPS=username/repo1:otheruser/repo2
+
+set -e
+
+case $1 in
+  --get)
+    get_deps="true"
+    shift
+  ;;
+esac
+
+if [ "$#" -ne 1 ]; then
+  shsh-help _deps
+  exit 1
+fi
+
+package="$1"
+
+if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+  exit
+fi
+
+shopt -s nullglob
+
+source "$SHSH_PACKAGES_PATH/$package/package.sh"
+IFS=: read -a deps <<< "$DEPS"
+
+for dep in "${deps[@]}"
+do
+  if [ -z "$get_deps" ]
+    shsh-install "$dep"
+  else
+    echo "$dep"
+  fi
+done

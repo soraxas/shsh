@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Summary: Configure the shell environment for shsh
+# Usage: eval "$(shsh init -)"
+
+set -e
+
+shell="$2"
+if [ -z "$shell" ]; then
+  echo "echo 'shsh init usage has changed, please specify the name of your shell as an argument:
+
+eval \"\$(shsh init - bash)\" # or zsh, fish, sh etc
+
+For more information, check this PR: https://github.com/shshpm/shsh/pull/77
+'"
+  exit 1
+fi
+
+print_fish_commands() {
+  echo "set -gx SHSH_SHELL $shell"
+  echo "set -gx SHSH_ROOT $SHSH_ROOT"
+  echo "set -gx SHSH_PREFIX $SHSH_PREFIX"
+  echo "set -gx SHSH_PACKAGES_PATH $SHSH_PACKAGES_PATH"
+
+  echo 'if not contains $SHSH_ROOT/cellar/bin $PATH'
+  echo 'set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
+  echo 'end'
+}
+
+print_sh_commands(){
+  echo "export SHSH_SHELL=$shell"
+  echo "export SHSH_ROOT=$SHSH_ROOT"
+  echo "export SHSH_PREFIX=$SHSH_PREFIX"
+  echo "export SHSH_PACKAGES_PATH=$SHSH_PACKAGES_PATH"
+
+  echo 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
+}
+
+load_bash_package_completions() {
+  echo 'for f in $(command ls "$SHSH_ROOT/cellar/completions/bash"); do source "$SHSH_ROOT/cellar/completions/bash/$f"; done'
+}
+
+load_zsh_package_completions() {
+  echo 'fpath=("$SHSH_ROOT/cellar/completions/zsh/compsys" $fpath)'
+  echo 'for f in $(command ls "$SHSH_ROOT/cellar/completions/zsh/compctl"); do source "$SHSH_ROOT/cellar/completions/zsh/compctl/$f"; done'
+}
+
+case "$shell" in
+  fish )
+    print_fish_commands
+    ;;
+  * )
+    print_sh_commands
+    ;;
+esac
+
+if [ -e "$SHSH_ROOT/lib/include.$shell" ]; then
+  echo ". \"\$SHSH_ROOT/lib/include.$shell\""
+fi
+
+if [ -e "$SHSH_ROOT/completions/shsh.$shell" ]; then
+  echo ". \"\$SHSH_ROOT/completions/shsh.$shell\""
+fi
+
+case "$shell" in
+  bash )
+    load_bash_package_completions
+    ;;
+  zsh )
+    load_zsh_package_completions
+    ;;
+esac
