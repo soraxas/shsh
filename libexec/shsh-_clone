@@ -24,7 +24,7 @@ fi
 
 if [ -e "$SHSH_PACKAGES_PATH/$folder" ]; then
   echo "Package '$folder' is already present"
-  exit 0
+  exit 1
 fi
 
 if [ "$use_ssh" = "true" ]; then

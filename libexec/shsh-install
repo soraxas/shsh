@@ -131,13 +131,15 @@ execute_hooks() {
   (cd "$target_folder" && eval "$2")
 }
 
-shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"
-shsh-_deps "$folder"
-# [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
-# [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
-# [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
+# only perform link if clone is successful (and package not exists before)
+if shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
+  shsh-_deps "$folder"
+  # [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
+  # [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
+  # [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
 
-shsh-_link-bins "$folder"
-shsh-_link-man "$folder"
-shsh-_link-completions "$folder"
-# [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+  shsh-_link-bins "$folder"
+  shsh-_link-man "$folder"
+  shsh-_link-completions "$folder"
+  # [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+fi
