@@ -35,8 +35,6 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-shopt -s nullglob
-
 if [ ! -d "$SHSH_PACKAGES_PATH/$package" ]; then
   echo "Package '$package' is not installed"
   exit 1
@@ -46,4 +44,4 @@ shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"
 shsh-_unlink-completions "$package"
 
-rm -rf "${SHSH_PACKAGES_PATH}/$package"
+rm -rf "${SHSH_PACKAGES_PATH:?}/$package"

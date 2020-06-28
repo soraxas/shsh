@@ -14,72 +14,82 @@ set -e
 
 use_ssh="false"
 
-PARAMS=""
-while (( "$#" )); do
-  case "$1" in
-    --ssh)
-      use_ssh="true"
-      shift
-      ;;
-    -h|--hooks)
-      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-        declare -A "hooks=$2"
-        shift 2
-      else
-        echo "Error: Argument for $1 is missing" >&2
-        exit 1
-      fi
-      ;;
-    -*|--*=) # unsupported flags
-      echo "Error: Unsupported flag $1" >&2
-      exit 1
-      ;;
-    *) # postserve positional arguments
-      PARAMS="$PARAMS $1"
-      shift
-      ;;
-  esac
-done
-# set positional arguments in their proper place
-eval set -- "$PARAMS"
+# PARAMS=""
+# while (( "$#" )); do
+#   case "$1" in
+#     --ssh)
+#       use_ssh="true"
+#       shift
+#       ;;
+#     -h|--hooks)
+#       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+#         declare -A "hooks=$2"
+#         shift 2
+#       else
+#         echo "Error: Argument for $1 is missing" >&2
+#         exit 1
+#       fi
+#       ;;
+#     -*|--*=) # unsupported flags
+#       echo "Error: Unsupported flag $1" >&2
+#       exit 1
+#       ;;
+#     *) # postserve positional arguments
+#       PARAMS="$PARAMS $1"
+#       shift
+#       ;;
+#   esac
+# done
+# # set positional arguments in their proper place
+# eval set -- "$PARAMS"
 
-for hook in "${!hooks[@]}"; do
-  case "$hook" in
-    pre|post|a+x|+x)
-      ;;
-    *)
-      echo "Error: Unknown hook type '$hook' with value '${hooks[$hook]}'"
-      exit 1
-  esac
-done
+# for hook in "${!hooks[@]}"; do
+#   case "$hook" in
+#     pre|post|a+x|+x)
+#       ;;
+#     *)
+#       echo "Error: Unknown hook type '$hook' with value '${hooks[$hook]}'"
+#       exit 1
+#   esac
+# done
 
 
-if [ "$#" -lt 1 -o "$#" -gt 2 ]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   shsh-help install
   exit 1
 fi
 
-if [[ "$1" = */*/* ]]; then
-  IFS=/ read -r site user name <<EOF
+case "$1" in
+  */*/*)
+    IFS=/ read -r site user name <<EOF
 $1
 EOF
-  package="${user}/${name}"
-else
-  IFS=/ read -r user name <<EOF
+    ;;
+  */*)
+    IFS=/ read -r user name <<EOF
 $1
 EOF
-  package="${user}/${name}"
-  site="github.com"
-fi
+    site="github.com"
+    ;;
+  *)
+    shsh-help install
+    exit 1
+    ;;
+esac
+package="${user}/${name}"
 
 # defaults to package's name, but allows custom folder name
 folder="$package"
 if [ -n "$2" ]; then
-  if [[ "$2" != *([^/])/*([^/]) ]]; then
-    shsh-help install
-    echo "Optional argunment [folder] must be in the format <...>/<...>"
-    exit 1
-  fi
+  case "$2" in
+    */*)
+      ;;
+    *)
+      shsh-help install
+      echo "Optional argunment [folder] must be in the format <...>/<...>"
+      exit 1
+      ;;
+  esac
   folder="$2"
 fi
 
@@ -102,13 +112,14 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-if [[ "$package" = */*@* ]]; then
-  IFS=@ read -r package ref <<EOF
+ref=""
+case "$package" in
+  */*@*)
+    IFS=@ read -r package ref <<EOF
 $package
 EOF
-else
-  ref=""
-fi
+    ;;
+esac
 
 if [ -z "$folder" ]; then
   folder="$package"
@@ -117,16 +128,16 @@ target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
 execute_hooks() {
   echo "> Executing $1"
-  bash -c "cd $target_folder && $2"
+  (cd "$target_folder" && eval "$2")
 }
 
 shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"
 shsh-_deps "$folder"
-[ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
-[ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
-[ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
+# [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
+# [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
+# [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
 
 shsh-_link-bins "$folder"
 shsh-_link-man "$folder"
 shsh-_link-completions "$folder"
-[ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+# [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
