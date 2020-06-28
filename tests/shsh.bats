@@ -4,7 +4,7 @@ load test_helper
 
 @test "default SHSH_ROOT" {
   SHSH_ROOT= run shsh echo SHSH_ROOT
-  assert_output "$HOME/.shsh"
+  assert_output "$HOME/.local/share/shsh"
 }
 
 @test "inherited SHSH_ROOT" {
@@ -19,7 +19,7 @@ load test_helper
 
 @test "default SHSH_PREFIX" {
   SHSH_ROOT= SHSH_PREFIX= run shsh echo SHSH_PREFIX
-  assert_output "$HOME/.shsh/cellar"
+  assert_output "$HOME/.local/share/shsh/cellar"
 }
 
 @test "inherited SHSH_PREFIX" {
@@ -44,7 +44,7 @@ load test_helper
 
 @test "default SHSH_INSTALL_BIN" {
   SHSH_ROOT= SHSH_PREFIX= SHSH_INSTALL_BIN= run shsh echo SHSH_INSTALL_BIN
-  assert_output "$HOME/.shsh/cellar/bin"
+  assert_output "$HOME/.local/share/shsh/cellar/bin"
 }
 
 @test "inherited SHSH_INSTALL_BIN" {
@@ -59,7 +59,7 @@ load test_helper
 
 @test "default SHSH_INSTALL_MAN" {
   SHSH_ROOT= SHSH_PREFIX= SHSH_INSTALL_MAN= run shsh echo SHSH_INSTALL_MAN
-  assert_output "$HOME/.shsh/cellar/man"
+  assert_output "$HOME/.local/share/shsh/cellar/man"
 }
 
 @test "inherited SHSH_INSTALL_MAN" {

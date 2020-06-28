@@ -22,7 +22,7 @@ Even though it is called shsh, it also works with zsh and fish.
 2. Initialize shsh in your shell initialization
 
     ~~~ sh
-    export PATH="$HOME/.shsh/bin:$PATH"'
+    export PATH="$HOME/.local/share/shsh/bin:$PATH"'
     eval "$(shsh init -)"
     ~~~
 
@@ -113,7 +113,7 @@ This will source a file `lib/file.sh` under the package `username/repo`.
 To change the behavior of shsh, you can set the following variables either
 globally or before each command:
 
-- If `$XDG_DATA_HOME` is set, `$SHSH_ROOT` will be set as `$XDG_DATA_HOME/shsh` (commonly that will be at `~/.local/share/shsh`). It is used to store cellar for the cloned packages. If `$XDG_DATA_HOME` is not set, `$SHSH_ROOT` will be default as `$HOME/.shsh`.
+- If `$XDG_DATA_HOME` is set, `$SHSH_ROOT` will be set as `$XDG_DATA_HOME/shsh` (commonly that will be at `~/.local/share/shsh`). It is used to store cellar for the cloned packages. If `$XDG_DATA_HOME` is not set, `$SHSH_ROOT` will be default as `$HOME/.local/share/shsh`.
 - `SHSH_FULL_CLONE=true` - Clones the full repo history instead of only the last commit (useful for package development)
 - `SHSH_PREFIX` - set the installation and package checkout prefix (default is `$SHSH_ROOT/cellar`).  Setting this to `/usr/local`, for example, will install binaries to `/usr/local/bin`, manpages to `/usr/local/man`, completions to `/usr/local/completions`, and clone packages to `/usr/local/packages`.  This allows you to manage "global packages", distinct from individual user packages.
 
