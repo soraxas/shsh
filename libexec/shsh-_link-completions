@@ -6,30 +6,28 @@ if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   exit
 fi
 
-shopt -s nullglob
+if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+  # shellcheck source=/dev/null
+  . "$SHSH_PACKAGES_PATH/$package/package.sh"
+fi
 
-source "$SHSH_PACKAGES_PATH/$package/package.sh" # TODO: make this secure?
-IFS=: read -a bash_completions <<EOF
-$BASH_COMPLETIONS
-EOF
-IFS=: read -a zsh_completions <<EOF
-$ZSH_COMPLETIONS
-EOF
+IFS=:
+if [ -n "${bash_completions:=}" ]; then
+  for completion in $bash_completions; do
+    mkdir -p "$SHSH_PREFIX/completions/bash"
+    ln -s "$SHSH_PACKAGES_PATH/$package/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
+  done
+fi
 
-for completion in "${bash_completions[@]}"
-do
-  mkdir -p "$SHSH_PREFIX/completions/bash"
-  ln -s "$SHSH_PACKAGES_PATH/$package/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
-done
-
-for completion in "${zsh_completions[@]}"
-do
-  target="$SHSH_PACKAGES_PATH/$package/$completion"
-  if grep -q "#compdef" "$target"; then
-    mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
-    ln -s "$target" "$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
-  else
-    mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
-    ln -s "$target" "$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}"
-  fi
-done
+if [ -n "${zsh_completions:=}" ]; then
+  for completion in $zsh_completions; do
+    target="$SHSH_PACKAGES_PATH/$package/$completion"
+    if grep -q "#compdef" "$target"; then
+      mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
+      ln -s "$target" "$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
+    else
+      mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
+      ln -s "$target" "$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}"
+    fi
+  done
+fi
