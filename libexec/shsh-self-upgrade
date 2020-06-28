@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+# Summary: Upgrades to latest version of shsh
+# Usage: shsh self-upgrade
+
+set -e
+
+(cd "$(dirname $0)/.." && pwd && git pull)
