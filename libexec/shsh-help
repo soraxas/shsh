@@ -89,7 +89,7 @@ print_summary() {
   eval "$(documentation_for "$command")"
 
   if [ -n "$summary" ]; then
-    printf "   %-9s   %s\n" "$command" "$summary"
+    printf "   %-12s   %s\n" "$command" "$summary"
   fi
 }
 
@@ -105,7 +105,7 @@ print_help() {
   eval "$(documentation_for "$command")"
   [ -n "$help" ] || help="$summary"
 
-  if [ -n "$usage" -o -n "$summary" ]; then
+  if [ -n "$usage" ] || [ -n "$summary" ]; then
     if [ -n "$usage" ]; then
       echo "$usage"
     else
@@ -145,7 +145,7 @@ if [ -z "$1" ] || [ "$1" = "shsh" ]; then
   [ -z "$usage" ] || exit
   echo
   echo "Some useful shsh commands are:"
-  print_summaries help commands init new-command
+  print_summaries $(shsh-commands)
   echo
   echo "See 'shsh help <command>' for information on a specific command."
 else
