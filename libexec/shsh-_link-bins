@@ -1,29 +1,24 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 package="$1"
 
-shopt -s nullglob
-
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
-  source "$SHSH_PACKAGES_PATH/$package/package.sh"
-  IFS=: read -a bins <<EOF
-$BINS
-EOF
+  # shellcheck source=/dev/null
+  . "$SHSH_PACKAGES_PATH/$package/package.sh"
+  bins=$(echo "${BINS:-}" | tr ':' '\n')
 fi
 
 if [ -z "$bins" ]; then
   if [ -e "$SHSH_PACKAGES_PATH/$package/bin" ]; then
-    bins=($SHSH_PACKAGES_PATH/$package/bin/*)
-    bins=("${bins[@]##*/}")
-    bins=("${bins[@]/#/bin/}")
+    bins=$(ls -1 "$SHSH_PACKAGES_PATH/$package/bin/")
   else
-    bins=($(find "$SHSH_PACKAGES_PATH/$package" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l))
-    bins=("${bins[@]##*/}")
+    bins=$(find "$SHSH_PACKAGES_PATH/$package" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l)
   fi
 fi
 
-for bin in "${bins[@]}"
-do
+IFS='
+'
+for bin in $bins; do
   name="${bin##*/}"
   if ${REMOVE_EXTENSION:-false}; then
     name="${name%%.*}"
