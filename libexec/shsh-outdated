@@ -5,12 +5,7 @@
 
 set -e
 
-shopt -s nullglob
-
-IFS=$'\r\n' packages=($(shsh list))
-
-for package in "${packages[@]}"
-do
+for package in $(shsh list); do
   package_path="$SHSH_PACKAGES_PATH/$package"
   if [ ! -L "$package_path" ]; then
     cd $package_path

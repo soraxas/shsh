@@ -4,4 +4,4 @@
 
 set -e
 
-(cd "$(dirname $0)/.." && pwd && git pull)
+(cd "$(dirname "$0")/.." && pwd && git pull)
