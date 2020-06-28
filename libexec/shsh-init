@@ -1,17 +1,14 @@
 #!/usr/bin/env sh
 # Summary: Configure the shell environment for shsh
-# Usage: eval "$(shsh init -)"
+# Usage: eval "$(shsh init SHELL)"
+#
+# SHELL: sh, bash, zsh, fish, etc.
 
 set -e
 
-shell="$2"
+shell="$1"
 if [ -z "$shell" ]; then
-  echo "echo 'shsh init usage has changed, please specify the name of your shell as an argument:
-
-eval \"\$(shsh init - bash)\" # or zsh, fish, sh etc
-
-For more information, check this PR: https://github.com/shshpm/shsh/pull/77
-'"
+  shsh-help init
   exit 1
 fi
 

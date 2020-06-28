@@ -1,65 +1,63 @@
 # shsh
 
-A package manager for shell scripts and functions.
+A **sh**ell **s**cript **h**andler (**shsh**) for handling and managing shell scripts, functions, standalone binaries, and more.
 
-Basher allows you to quickly install shell packages directly from github (or
-other sites). Instead of looking for specific install instructions for each
+Shsh allows you to quickly install shell packages directly from github or
+other sites. Instead of looking for specific install instructions for each
 package and messing with your path, shsh will create a central location for
 all packages and manage their binaries for you.
 
-Even though it is called shsh, it also works with zsh and fish.
+Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [Dash](https://wiki.archlinux.org/index.php/Dash).
 
 [![Build Status](https://travis-ci.org/shshpm/shsh.svg?branch=master)](https://travis-ci.org/shshpm/shsh)
 
-## Installation
+## Manual Installation
 
-1. Checkout shsh on `~/.shsh`
-
-    ~~~ sh
-    $ git clone https://github.com/shshpm/shsh.git ~/.shsh
-    ~~~
+1. Checkout shsh inside `$XDG_DATA_HOME`, e.g., at `~/.local/share/shsh`
+   
+   ```sh
+    $ git clone https://github.com/soraxas/shsh ~/.local/share/shsh
+   ```
 
 2. Initialize shsh in your shell initialization
-
-    ~~~ sh
+   
+   ```sh
     export PATH="$HOME/.local/share/shsh/bin:$PATH"'
-    eval "$(shsh init -)"
-    ~~~
-
+    eval "$(shsh init SHELL)"
+    # SHELL: sh, bash, zsh, etc.
+   ```
+   
     **Fish**: Use the following commands instead:
-
-    ~~~ sh
-    if test -d ~/.shsh
-      set shsh ~/.shsh/bin
-    end
-    set -gx PATH $shsh $PATH
-    status --is-interactive; and . (shsh init -|psub)
-    ~~~
+   
+   ```sh
+    set -gx PATH ~/.local/share/shsh $PATH
+    status --is-interactive; and shsh init fish | source
+   ```
 
 ## Updating
 
 Go to the directory where you cloned shsh and pull the latest changes:
 
-~~~ sh
+```sh
 $ cd ~/.shsh
 $ git pull
-~~~
+```
 
 ## Usage
 
 ### Installing packages from Github
 
-~~~ sh
+```sh
 $ shsh install sstephenson/bats
-~~~
+```
 
 This will install bats from https://github.com/sstephenson/bats and add `bin/bats` to the PATH.
 
 ### Installing packages from other sites
 
-~~~ sh
+```sh
 $ shsh install bitbucket.org/user/repo_name
-~~~
+```
 
 This will install `repo_name` from https://bitbucket.org/user/repo_name
 
@@ -68,25 +66,25 @@ This will install `repo_name` from https://bitbucket.org/user/repo_name
 If you want to do local development on installed packages and you have ssh
 access to the site, use `--ssh` to override the protocol:
 
-~~~ sh
+```sh
 $ shsh install --ssh juanibiapina/gg
-~~~
+```
 
 ### Installing a local package
 
 If you develop a package locally and want to try it through shsh,
 use the `link` command:
 
-~~~ sh
+```sh
 $ shsh link directory my_namespace/my_package
-~~~
+```
 
 The `link` command will install the dependencies of the local package.
 You can prevent that with the `--no-deps` option:
 
-~~~ sh
+```sh
 $ shsh link --no-deps directory my_namespace/my_package
-~~~
+```
 
 ### Sourcing files from a package into current shell
 
@@ -131,12 +129,18 @@ to the manpath.
 Optionally, a repo might contain a `package.sh` file which specifies binaries,
 dependencies and completions in the following format:
 
-~~~ sh
+```sh
 BINS=folder/file1:folder/file2.sh
 DEPS=user1/repo1:user2/repo2
 BASH_COMPLETIONS=completions/package
 ZSH_COMPLETIONS=completions/_package
-~~~
+```
 
 BINS specified in this fashion have higher precedence then the inference rules
 above.
+
+
+
+## Credits
+
+The wonderful [Basher](https://github.com/basherpm/basher).

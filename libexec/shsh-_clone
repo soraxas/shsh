@@ -6,7 +6,7 @@
 
 set -e
 
-if [ [ "$#" -lt 3 ] && [ "$#" -gt 5 ] ]; then
+if [ "$#" -lt 3 ] && [ "$#" -gt 5 ]; then
   shsh-help _clone
   exit 1
 fi
@@ -69,4 +69,4 @@ else
   URI="https://${site}/$package.git"
 fi
 
-git clone ${DEPTH_OPTION} ${BRANCH_OPTION} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
+git clone "${DEPTH_OPTION}" "${BRANCH_OPTION}" --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
