@@ -36,11 +36,10 @@ Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://
 
 ## Updating
 
-Go to the directory where you cloned shsh and pull the latest changes:
+Run the following command to and pull the latest changes in shsh:
 
 ```sh
-$ cd ~/.shsh
-$ git pull
+$ shsh self-upgrade
 ```
 
 ## Usage
