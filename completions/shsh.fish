@@ -42,5 +42,6 @@ for cmd in (shsh commands)
   end
 end
 
+complete -x -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
 # add help flag to all commands
 complete -x -c shsh -l help -d "show help message of a subcommand"
