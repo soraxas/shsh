@@ -18,12 +18,21 @@ if [ -n "$upgrade_all" ]; then
   outputfile="$(mktemp)"
 
   clear_screen() {
-    for i in $(seq 1 $line_nums); do
-      # go to previous line
-      printf "\033[1A"
-      # clear line
-      printf "\033[2K"
-    done
+    if [ -n "$SHSH_USE_TPUT" ]; then
+      for i in $(seq 1 $line_nums); do
+        # go to previous line
+        tput cuu 1
+        # clear line
+        tput el
+      done
+    else
+      for i in $(seq 1 $line_nums); do
+        # go to previous line
+        printf "\033[1A"
+        # clear line
+        printf "\033[2K"
+      done
+    fi
   }
 
   update_line() {
