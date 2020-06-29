@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 package="$1"
 
 . "${UTILS_FUNC:?}"

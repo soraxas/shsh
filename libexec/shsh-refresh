@@ -1,12 +1,54 @@
 #!/usr/bin/env sh
 # Summary: Refresh a package by unlinking and relinking everything
-# Usage: shsh refresh <package> [--verbose]
+# Usage: shsh refresh <package> [--verbose] [-a|--all]
+#
+# Note: verbose has no effect if --all is specified, as they run in subshells
 
 set -e
+
+. "${UTILS_FUNC:?}"
 
 if [ "$#" -ne 1 ]; then
   shsh-help refresh
   exit 1
+fi
+
+# verbose flag wont reach here as it's handled in man entry point
+case $1 in
+  -a|--all)
+    upgrade_all="true"
+    shift
+  ;;
+esac
+
+if [ -n "$upgrade_all" ]; then
+  lockfile="$(mktemp)"
+
+  update_and_refresh_screen() {
+    flock -w 20 5 || :
+    update_line "$1" "$2" "$lockfile"
+    clear_prev_lines "$line_nums"
+    cat "$lockfile"
+    flock -u 5 || :
+  }
+
+  for package in $(shsh list); do
+    echo "Re-linking $package..." >> "$lockfile"
+  done
+  line_nums=$(wc -l < "$lockfile")
+  cat "$lockfile"
+  for package in $(shsh list); do
+    (
+      if shsh-refresh "$package"; then
+        update_and_refresh_screen "$package" "Finished re-linking $package"
+      else
+        update_and_refresh_screen "$package" "Aborted for $package (run separately with verbose to diagnose)"
+      fi
+    ) 5>>"$lockfile" &
+  done
+  wait
+  rm -f "$lockfile"
+  exit
 fi
 
 package="$1"
