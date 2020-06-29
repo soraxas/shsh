@@ -4,12 +4,14 @@
 #
 # Usage: shsh <command> [<args>]
 
+set -e
+
 resolve_link() {
   $(which greadlink readlink 2>/dev/null | head -1) "$1"
 }
 
-abs_dirname() {
-  local cwd="$(pwd)"
+abs_dirname() (
+  # use subshell to prevent changing directory
   local path="$1"
 
   while [ -n "$path" ]; do
@@ -19,41 +21,19 @@ abs_dirname() {
   done
 
   pwd
-  cd "$cwd" || exit 1
-}
+)
 
-if [ -z "$SHSH_ROOT" ]; then
-  if [ -z "$XDG_DATA_HOME" ]; then
-    SHSH_ROOT="$HOME/.local/share/shsh"
-  else
-    SHSH_ROOT="$XDG_DATA_HOME/shsh"
-  fi
-fi
-export SHSH_ROOT
+shsh_root_prefix="${XDG_DATA_HOME:-$HOME/.local/share}"
+export SHSH_ROOT="$shsh_root_prefix/shsh"
 
-if [ -z "$SHSH_PREFIX" ]; then
-  SHSH_PREFIX="$SHSH_ROOT/cellar"
-fi
-export SHSH_PREFIX
-
-if [ -z "$SHSH_PACKAGES_PATH" ]; then
-  SHSH_PACKAGES_PATH="$SHSH_PREFIX/packages"
-fi
-export SHSH_PACKAGES_PATH
-
-if [ -z "$SHSH_INSTALL_BIN" ]; then
-  SHSH_INSTALL_BIN="$SHSH_PREFIX/bin"
-fi
-export SHSH_INSTALL_BIN
-
-if [ -z "$SHSH_INSTALL_MAN" ]; then
-  SHSH_INSTALL_MAN="$SHSH_PREFIX/man"
-fi
-export SHSH_INSTALL_MAN
+export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
+export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
+export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"
+export SHSH_INSTALL_MAN="${SHSH_INSTALL_MAN:=$SHSH_PREFIX/man}"
 
 bin_path="$(abs_dirname "$0")"
 export PATH="${bin_path}:${PATH}"
-export UTILS_FUNC="$(abs_dirname "$0")/shsh-_utils"
+export UTILS_FUNC="$bin_path/shsh-_utils"
 
 for arg; do
   shift
@@ -62,8 +42,7 @@ for arg; do
       show_help="true"
       ;;
     --verbose)
-      SHSH_VERBOSE="true"
-      export SHSH_VERBOSE
+      export SHSH_VERBOSE="true"
       ;;
     *)
       # set back any unused args
@@ -79,7 +58,7 @@ case "$command" in
 * )
   command_path="$(command -v "shsh-$command" || true)"
   if [ -z "$command_path" ]; then
-    echo "shsh: no such command '$command'" >&2
+    shsh-help
     exit 1
   fi
   if [ -n "$show_help" ]; then
