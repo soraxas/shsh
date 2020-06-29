@@ -6,6 +6,7 @@ set -e
 
 package="$1"
 
+echo_if_verbose "> Starting to unlink completions..."
 remove_linked "$SHSH_PACKAGES_PATH/$package" "$SHSH_PREFIX/completions/bash/"*
 remove_linked "$SHSH_PACKAGES_PATH/$package" "$SHSH_PREFIX/completions/zsh/compsys/"*
 remove_linked "$SHSH_PACKAGES_PATH/$package" "$SHSH_PREFIX/completions/zsh/compctl/"*

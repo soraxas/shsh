@@ -6,4 +6,5 @@ set -e
 
 package="$1"
 
+echo_if_verbose "> Starting to unlink bins..."
 remove_linked "$SHSH_PACKAGES_PATH/$package" "$SHSH_INSTALL_BIN/"*

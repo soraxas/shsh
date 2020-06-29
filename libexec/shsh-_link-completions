@@ -8,6 +8,7 @@ if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   exit
 fi
 
+echo_if_verbose "> Starting to link completions..."
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   # shellcheck source=/dev/null
   . "$SHSH_PACKAGES_PATH/$package/package.sh"

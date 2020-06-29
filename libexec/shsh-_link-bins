@@ -4,6 +4,7 @@ package="$1"
 
 . "${UTILS_FUNC:?}"
 
+echo_if_verbose "> Starting to link bins..."
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   # shellcheck source=/dev/null
   . "$SHSH_PACKAGES_PATH/$package/package.sh"
