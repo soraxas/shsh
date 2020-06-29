@@ -1,13 +1,15 @@
 #!/usr/bin/env sh
 #
 # Summary: List installed packages
-# Usage: shsh list [-v]
+# Usage: shsh list [-d|--details]
+#
+# --details: when give, the URL of the repository will be displayed
 
 set -e
 
 case $1 in
-  -v)
-    verbose="true"
+  -d|--details)
+    show_details="true"
     shift
   ;;
 esac
@@ -23,7 +25,7 @@ for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
   username="$(dirname "$package_path")"
   username="${username##*/}"
   package="${package_path##*/}"
-  if [ -z "$verbose" ]; then
+  if [ -z "$show_details" ]; then
     echo "$username/$package"
   else
     printf "%-30s %-30s\n" "$username/$package" "($(git --git-dir="${SHSH_PACKAGES_PATH}/$username/$package/".git config --get remote.origin.url))"

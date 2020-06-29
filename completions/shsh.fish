@@ -19,7 +19,7 @@ end
 function __fish_shsh_get_package_with_desc
   # get package with the verbose flag, where url will be display as package's description
   # remove the useless ".git" endings
-  shsh list -v | awk 'match($0, /(^\S+).*\s+[(]https?:[/]{2}(.*)[)]/, m) {print m[1]"\t"m[2];}' \
+  shsh list --details | awk 'match($0, /(^\S+).*\s+[(]https?:[/]{2}(.*)[)]/, m) {print m[1]"\t"m[2];}' \
   | string replace -r --all ".git\$" ""
 end
 
@@ -42,6 +42,6 @@ for cmd in (shsh commands)
   end
 end
 
-complete -x -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
-# add help flag to all commands
+# add flag to all commands
 complete -x -c shsh -l help -d "show help message of a subcommand"
+complete -x -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
