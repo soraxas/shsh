@@ -3,7 +3,9 @@
 # Summary: Displays a list of outdated packages
 # Usage: shsh outdated [-q|--quiet]
 
-set -e
+# set -e
+
+. "${UTILS_FUNC:?}"
 
 case "$1" in
   -q|--quiet)
@@ -14,14 +16,9 @@ esac
 check_up_to_date() {
   # check updates with git, where directory is $1
   dir="$SHSH_PACKAGES_PATH/$1"
-  # quiet="$2"
   if [ ! -L "$dir" ]; then
-    cd "$dir"
-    git remote update > /dev/null 2>&1
-    if git symbolic-ref --short -q HEAD > /dev/null; then
-      if [ "$(git rev-list --count HEAD...HEAD@{upstream})" -gt 0 ]; then
-        echo "$1"
-      fi
+    if ! git_check_up_to_date "$dir"; then
+      echo "$dir"
     fi
   fi
 }
@@ -83,9 +80,6 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
 else
   # doesn't contain the necessary utilities, we will perform in sequential order
   for package in $(shsh list); do
-    output=$(check_up_to_date "$package")
-    if [ -n "$output" ]; then
-      echo "$output"
-    fi
+    check_up_to_date "$package"
   done
 fi

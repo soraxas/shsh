@@ -2,8 +2,6 @@
 #
 # Summary: Utilities that are used throughout the project
 
-set -e
-
 resolve_link() {
   $(which greadlink readlink 2>/dev/null | head -1) "$1"
 }
@@ -27,4 +25,14 @@ remove_linked() {
         ;;
     esac
   done
+}
+
+git_check_up_to_date() {
+  cd "$1"
+  git remote update > /dev/null 2>&1
+  if git symbolic-ref --short -q HEAD > /dev/null; then
+    if [ "$(git rev-list --count "HEAD...HEAD@{upstream}")" -gt 0 ]; then
+      return 1
+    fi
+  fi
 }
