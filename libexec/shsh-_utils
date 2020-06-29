@@ -7,7 +7,9 @@ resolve_link() {
 }
 
 echo_if_verbose() {
-  [ -n "$SHSH_VERBOSE" ] && echo "$1" || :
+  if [ -n "$SHSH_VERBOSE" ]; then
+    echo "$1"
+  fi
 }
 
 remove_linked() {
@@ -28,11 +30,36 @@ remove_linked() {
 }
 
 git_check_up_to_date() {
-  cd "$1"
+  cd "$1" || exit 1
   git remote update > /dev/null 2>&1
   if git symbolic-ref --short -q HEAD > /dev/null; then
     if [ "$(git rev-list --count "HEAD...HEAD@{upstream}")" -gt 0 ]; then
       return 1
     fi
   fi
+}
+
+clear_prev_lines() {
+  if [ -n "$SHSH_USE_TPUT" ]; then
+    for _ in $(seq 1 "$1"); do
+      # go to previous line
+      tput cuu 1
+      # clear line
+      tput el
+    done
+  else
+    for _ in $(seq 1 "$1"); do
+      # go to previous line
+      printf "\033[1A"
+      # clear line
+      printf "\033[2K"
+    done
+  fi
+}
+
+update_line() {
+  lockfile="$3"
+  # given a token of a line, update the line with new content
+  awk '$0~v {$0="'"$2"'"} 1' v="$1" \
+    "$lockfile" > "${lockfile}.tmp" && mv "${lockfile}.tmp" "${lockfile}"
 }

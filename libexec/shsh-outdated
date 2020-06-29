@@ -27,43 +27,28 @@ check_up_to_date() {
 if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
-  outputfile="$(mktemp)"
 
-  clear_screen() {
-    for i in $(seq 1 $line_nums); do
-      # clear line
-      printf "\033[2K"
-      # go to previous line
-      printf "\033[1A"
-    done
-  }
-
-  update_line() {
-    # given a token of a line, update the line with new content
-    awk '$0~v {$0="'"$2"'"} 1' v="$1" \
-      "$outputfile" > "${outputfile}.tmp" && mv "${outputfile}.tmp" "${outputfile}"
-  }
-
-  # echo $outputfile
+  # echo $lockfile
   if [ -z "$quiet" ]; then  # verbose
     for package in $(shsh list); do
-      echo "Checking $package..." >> $outputfile
+      echo "Checking $package..." >> "$lockfile"
     done
-    line_nums=$(wc -l < "$outputfile")
-    cat "$outputfile"
+    line_nums=$(wc -l < "$lockfile")
+    cat "$lockfile"
   fi
   for package in $(shsh list); do
     (
       output=$(check_up_to_date "$package")
       if [ -z "$quiet" ]; then  # verbose
-        flock -w 20 5 || :
         if [ -z "$output" ]; then
-          update_line "$package" "OK $package"
+          msg="OK $package"
         else
-          update_line "$package" "Outdated with $package"
+          msg="Outdated with $package"
         fi
-        clear_screen
-        cat "$outputfile"
+        flock -w 20 5 || :
+        update_line "$package" "$msg" "$lockfile"
+        clear_prev_lines "$line_nums"
+        cat "$lockfile"
       else
         # try to obtains lock to output to stdout, with max timeout 20 sec
         if [ -n "$output" ]; then
@@ -76,7 +61,6 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   wait
   # cleanup
   rm -f "$lockfile"
-  rm -f "$outputfile"
 else
   # doesn't contain the necessary utilities, we will perform in sequential order
   for package in $(shsh list); do
