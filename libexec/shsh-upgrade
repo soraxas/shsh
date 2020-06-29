@@ -4,6 +4,8 @@
 
 set -e
 
+. "${UTILS_FUNC:?}"
+
 case $1 in
   -a|--all)
     upgrade_all="true"
@@ -12,13 +14,55 @@ case $1 in
 esac
 
 if [ -n "$upgrade_all" ]; then
-  echo "> Checking packages status..."
-  for package in $(shsh-outdated --quiet)
-  do
-    echo "> Upgrading $package"
-    shsh-upgrade "$package"
+  lockfile="$(mktemp)"
+  outputfile="$(mktemp)"
+
+  clear_screen() {
+    for i in $(seq 1 $line_nums); do
+      # go to previous line
+      printf "\033[1A"
+      # clear line
+      printf "\033[2K"
+    done
+  }
+
+  update_line() {
+    # given a token of a line, update the line with new content
+    awk '$0~v {$0="'"$2"'"} 1' v="$1" \
+      "$outputfile" > "${outputfile}.tmp" && mv "${outputfile}.tmp" "${outputfile}"
+  }
+
+  update_and_refresh_screen() {
+    flock -w 20 5 || :
+    update_line "$1" "$2"
+    clear_screen
+    cat "$outputfile"
+    flock -u 5 || :
+  }
+
+  # echo $outputfile
+  for package in $(shsh list); do
+    echo "Checking status of $package..." >> $outputfile
   done
-  echo "> All up-to-date."
+  line_nums=$(wc -l < "$outputfile")
+  cat "$outputfile"
+  for package in $(shsh list); do
+    (
+      if git_check_up_to_date "$SHSH_PACKAGES_PATH/$package"; then
+        update_and_refresh_screen "$package" "Already up-to-date with $package"
+      else
+        update_and_refresh_screen "$package" "Updating $package..."
+        if shsh-upgrade "$package" >/dev/null 2>&1; then
+          update_and_refresh_screen "$package" "Updated $package"
+        else
+          update_and_refresh_screen "$package" "Failed to update $package with exit code $?"
+        fi
+      fi
+    ) 5>>"$lockfile" &
+  done
+  wait
+  rm -f "$lockfile"
+  rm -f "$outputfile"
   exit
 fi
 
@@ -53,14 +97,8 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-cd "${SHSH_PACKAGES_PATH}/$package"
-git remote update > /dev/null 2>&1
-if git symbolic-ref --short -q HEAD > /dev/null; then
-    if [ "$(git rev-list --count HEAD...HEAD@{upstream})" -eq 0 ]; then
-      # Exit when no need to upgrades. This also helps to avoid inf recursion even if
-      # some package happened to set itself to be its own dependencies.
-      exit
-    fi
+if git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
+  exit
 fi
 
 # unlink everything first
