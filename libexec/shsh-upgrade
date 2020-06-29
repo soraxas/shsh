@@ -12,12 +12,13 @@ case $1 in
 esac
 
 if [ -n "$upgrade_all" ]; then
-  echo "Checking packages status..."
-  for package in $(shsh-outdated)
+  echo "> Checking packages status..."
+  for package in $(shsh-outdated --quiet)
   do
-    echo "Upgrading $package"
+    echo "> Upgrading $package"
     shsh-upgrade "$package"
   done
+  echo "> All up-to-date."
   exit
 fi
 
