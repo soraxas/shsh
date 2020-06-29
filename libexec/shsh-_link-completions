@@ -2,6 +2,8 @@
 
 package="$1"
 
+. "${UTILS_FUNC:?}"
+
 if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   exit
 fi
@@ -13,21 +15,24 @@ fi
 
 IFS=:
 if [ -n "${bash_completions:=}" ]; then
+  mkdir -p "$SHSH_PREFIX/completions/bash"
   for completion in $bash_completions; do
-    mkdir -p "$SHSH_PREFIX/completions/bash"
     ln -s "$SHSH_PACKAGES_PATH/$package/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
   done
 fi
 
 if [ -n "${zsh_completions:=}" ]; then
+  mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
+  mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
   for completion in $zsh_completions; do
-    target="$SHSH_PACKAGES_PATH/$package/$completion"
-    if grep -q "#compdef" "$target"; then
-      mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
-      ln -s "$target" "$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
+    src="$SHSH_PACKAGES_PATH/$package/$completion"
+    if grep -q "#compdef" "$src"; then
+      target="$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
     else
-      mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
-      ln -s "$target" "$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}"
+      target="$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}"
     fi
+    echo_if_verbose "Linking '$src' to '$target'"
+    ln -s "$src" "$target"
   done
 fi
+  

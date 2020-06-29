@@ -8,6 +8,10 @@ resolve_link() {
   $(which greadlink readlink 2>/dev/null | head -1) "$1"
 }
 
+echo_if_verbose() {
+  [ -n "$SHSH_VERBOSE" ] && echo "$1" || :
+}
+
 remove_linked() {
   # Given a folder as first arg, if anything that follows it
   # is a link resides within the folder, delete it
@@ -18,6 +22,7 @@ remove_linked() {
     [ -e "$link" ] || [ -L "$link" ] || continue
     case $(resolve_link "$link") in
       "$package/"*)
+        echo_if_verbose "Unlinking $link"
         rm -f "$link"
         ;;
     esac

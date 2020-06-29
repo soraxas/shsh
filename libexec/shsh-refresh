@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Summary: Refresh a package by unlinking and relinking everything
-# Usage: shsh refresh <package>
+# Usage: shsh refresh <package> [--verbose]
 
 set -e
 
@@ -11,12 +11,20 @@ fi
 
 package="$1"
 
+. "${UTILS_FUNC:?}"
+
 # unlink everything
+echo_if_verbose "> Starting to unlink man..."
 shsh-_unlink-man "$package"
+echo_if_verbose "> Starting to unlink bins..."
 shsh-_unlink-bins "$package"
+echo_if_verbose "> Starting to unlink completions..."
 shsh-_unlink-completions "$package"
 
 # relink the package components
-shsh-_link-bins "$package"
+echo_if_verbose "> Starting to link man..."
 shsh-_link-man "$package"
+echo_if_verbose "> Starting to link bins..."
+shsh-_link-bins "$package"
+echo_if_verbose "> Starting to link completions..."
 shsh-_link-completions "$package"

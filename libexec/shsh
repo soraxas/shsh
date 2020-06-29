@@ -56,10 +56,18 @@ export PATH="${bin_path}:${PATH}"
 export UTILS_FUNC="$(abs_dirname "$0")/shsh-_utils"
 
 for arg; do
+  shift
   case "$arg" in
     --help)
       show_help="true"
       ;;
+    --verbose)
+      SHSH_VERBOSE="true"
+      export SHSH_VERBOSE
+      ;;
+    *)
+      # set back any unused args
+      set -- "$@" "$arg"
   esac
 done
 

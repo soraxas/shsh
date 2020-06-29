@@ -2,6 +2,8 @@
 
 package="$1"
 
+. "${UTILS_FUNC:?}"
+
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   # shellcheck source=/dev/null
   . "$SHSH_PACKAGES_PATH/$package/package.sh"
@@ -20,6 +22,7 @@ if [ -z "$bins" ]; then
   fi
 fi
 
+mkdir -p "$SHSH_INSTALL_BIN"
 IFS='
 '
 for bin in $bins; do
@@ -27,7 +30,10 @@ for bin in $bins; do
   if ${REMOVE_EXTENSION:-false}; then
     name="${name%%.*}"
   fi
-  mkdir -p "$SHSH_INSTALL_BIN"
-  ln -s "$SHSH_PACKAGES_PATH/$package/$bin" "$SHSH_INSTALL_BIN/$name"
+  src="$SHSH_PACKAGES_PATH/$package/$bin"
+  target="$SHSH_INSTALL_BIN/$name"
+  
+  echo_if_verbose "Linking '$src' to '$target'"
+  ln -s "$src" "$target"
   # chmod +x "$SHSH_INSTALL_BIN/$name"
 done
