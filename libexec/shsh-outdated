@@ -21,8 +21,6 @@ check_up_to_date() {
     if git symbolic-ref --short -q HEAD > /dev/null; then
       if [ "$(git rev-list --count HEAD...HEAD@{upstream})" -gt 0 ]; then
         echo "$1"
-      else
-        [ -z "$quiet" ] && echo "Up-to-date with $1" || :
       fi
     fi
   fi
@@ -32,19 +30,56 @@ check_up_to_date() {
 if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
+  outputfile="$(mktemp)"
+
+  clear_screen() {
+    for i in $(seq 1 $line_nums); do
+      # clear line
+      printf "\033[2K"
+      # go to previous line
+      printf "\033[1A"
+    done
+  }
+
+  update_line() {
+    # given a token of a line, update the line with new content
+    awk '$0~v {$0="'"$2"'"} 1' v="$1" \
+      "$outputfile" > "${outputfile}.tmp" && mv "${outputfile}.tmp" "${outputfile}"
+  }
+
+  # echo $outputfile
+  if [ -z "$quiet" ]; then  # verbose
+    for package in $(shsh list); do
+      echo "Checking $package..." >> $outputfile
+    done
+    line_nums=$(wc -l < "$outputfile")
+    cat "$outputfile"
+  fi
   for package in $(shsh list); do
     (
       output=$(check_up_to_date "$package")
-      # try to obtains lock to output to stdout, with max timeout 20 sec
-      if [ -n "$output" ]; then
+      if [ -z "$quiet" ]; then  # verbose
         flock -w 20 5 || :
-        echo "$output"
+        if [ -z "$output" ]; then
+          update_line "$package" "OK $package"
+        else
+          update_line "$package" "Outdated with $package"
+        fi
+        clear_screen
+        cat "$outputfile"
+      else
+        # try to obtains lock to output to stdout, with max timeout 20 sec
+        if [ -n "$output" ]; then
+          flock -w 20 5 || :
+          echo "$output"
+        fi
       fi
-    ) 5>"$lockfile" &
+    ) 5>>"$lockfile" &
   done
   wait
   # cleanup
   rm -f "$lockfile"
+  rm -f "$outputfile"
 else
   # doesn't contain the necessary utilities, we will perform in sequential order
   for package in $(shsh list); do
