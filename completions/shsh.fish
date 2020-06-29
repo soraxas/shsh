@@ -41,3 +41,6 @@ for cmd in (shsh commands)
     complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
   end
 end
+
+# add help flag to all commands
+complete -x -c shsh -l help -d "show help message of a subcommand"

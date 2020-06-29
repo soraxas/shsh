@@ -55,9 +55,17 @@ bin_path="$(abs_dirname "$0")"
 export PATH="${bin_path}:${PATH}"
 export UTILS_FUNC="$(abs_dirname "$0")/shsh-_utils"
 
+for arg; do
+  case "$arg" in
+    --help)
+      show_help="true"
+      ;;
+  esac
+done
+
 command="$1"
 case "$command" in
-"")
+--help|"")
   shsh-help
   ;;
 * )
@@ -65,6 +73,10 @@ case "$command" in
   if [ -z "$command_path" ]; then
     echo "shsh: no such command '$command'" >&2
     exit 1
+  fi
+  if [ -n "$show_help" ]; then
+    shsh-help "$command"
+    exit
   fi
 
   shift 1
