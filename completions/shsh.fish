@@ -47,6 +47,7 @@ complete -f -c shsh -l help -d "show help message of a subcommand"
 complete -f -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
 
 # specific flags for different commands
+complete -f -c shsh -n '__fish_shsh_needs_command' -l version -d "Show version number"
 complete -f -c shsh -n "__fish_shsh_using_command list" -s d -l details -d "display more details of packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s a -l all -d "performs on all packages"
 complete -f -c shsh -n "__fish_shsh_using_command refresh" -s a -l all -d "performs on all packages"

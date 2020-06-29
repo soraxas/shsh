@@ -44,6 +44,10 @@ for arg; do
     --verbose)
       export SHSH_VERBOSE="true"
       ;;
+    --version)
+      echo "shsh (shell script handler) v2.2"
+      exit
+      ;;
     *)
       # set back any unused args
       set -- "$@" "$arg"
