@@ -35,7 +35,7 @@ set -l shsh_cmds_with_desc (shsh help | awk -F '[[:space:]][[:space:]]+' '/^Some
 complete -f -c shsh -n '__fish_shsh_needs_command' -a "$shsh_cmds_with_desc"
 
 for cmd in (shsh commands)
-  if string match -q $cmd 'uninstall' 'upgrade' 'package-path'
+  if string match -q $cmd 'uninstall' 'upgrade' 'package-path' 'refresh'
     complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a '(__fish_shsh_get_package_with_desc)'
   else
     complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"

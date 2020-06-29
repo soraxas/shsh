@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# Summary: Refresh a package by unlinking and relinking everything
+# Usage: shsh refresh <package>
+
+set -e
+
+if [ "$#" -ne 1 ]; then
+  shsh-help refresh
+  exit 1
+fi
+
+package="$1"
+
+# unlink everything
+shsh-_unlink-man "$package"
+shsh-_unlink-bins "$package"
+shsh-_unlink-completions "$package"
+
+# relink the package components
+shsh-_link-bins "$package"
+shsh-_link-man "$package"
+shsh-_link-completions "$package"
