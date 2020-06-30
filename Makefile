@@ -3,7 +3,9 @@
 HELP2MAN := help2man
 
 # FILES without underscore (which are private)
-PUBLIC_CMD_SRC := $(shell find libexec/shsh* | sed -e '/_/d' -e 's:^libexec/::')
+PUBLIC_SUBCMD_SRC := $(shell find libexec/shsh-* | sed -e '/_/d' -e 's:^libexec/::')
+PUBLIC_CMD_SRC := $(PUBLIC_SUBCMD_SRC)
+PUBLIC_CMD_SRC += shsh
 
 MAN_TARGET := $(addsuffix .1, $(addprefix man/man1/,$(PUBLIC_CMD_SRC)))
 
@@ -15,6 +17,8 @@ SHSH_SELF_LINKS += $(addprefix cellar/, $(MAN_TARGET))
 SHSH_SELF_LINKS_COMPLETIONS := cellar/completions/bash/shsh.bash cellar/completions/fish/shsh.fish cellar/completions/zsh/compctl/shsh.zsh
 SHSH_SELF_LINKS += $(SHSH_SELF_LINKS_COMPLETIONS)
 
+# a: $(addprefix libexec/,$(PUBLIC_SUBCMD_SRC))
+# 	@echo $(subst shsh-, ,$(notdir $^)) | xargs -n1 | xargs -I {} sh -c 'echo "[subcommand: shsh {}]" && shsh {} --help' > include
 
 all: man
 

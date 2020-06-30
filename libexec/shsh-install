@@ -2,12 +2,35 @@
 #
 # Summary: Installs a package from github (or a custom site)
 #
-# Usage: shsh install [--ssh] [site]/<package>[@ref] [folder] [-h|--hooks '([..]=.. [..]=..)']
+# Usage: shsh install [--ssh] [site]/<package>[@ref] [folder] [-h|--hooks <hook>]
 #
-# --hook type: 
+# Hook types:
 #     [pre],[post]: Any arbitrary script that runs before and after linking, respectively.
 #     [+x]: Before linking, adds executable bit to the file given in the argunment.
 #     [a+x]: Before linking, when set, it will add executable bit to all files.
+#
+# Options:
+#       -h, --hook HOOK  add HOOK to this package, which is triggered while installing
+#                        or upgrading a package
+#
+#       --verbose        display more info for some commands
+# 
+# Examples:
+#   shsh install soraxas/dot-reminder  
+#                              install 'soraxas/dot-reminder' as a package
+#   shsh install --ssh <package>
+#                              install with ssh protocal (rather than https)
+#   shsh install <package> --hook pre="mv bin/foo bin/bar"
+#                              Execute the script "mv bin/foo bin/bar" before `shsh`
+#                              performs linking (e.g. this script renames the binary)
+#   shsh install <package> --hook +x=foobar
+#                              add a hook that add executable bits to the file 'foobar',
+#                              before linking is performed
+#   shsh install <package> -h pre='make all' -h post='rm -r build/*'
+#                              add a hook that runs 'make all' to build binaries, right after
+#                              cloning and before linking is performed. Then, linking is
+#                              performed with its usual rules (i.e. all executable files in root
+#                              and in bin/). Finally, 'rm -r build/*' is ran to remove leftovers.
 
 
 set -e
