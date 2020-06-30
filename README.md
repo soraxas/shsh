@@ -1,11 +1,13 @@
-# shsh
+# Shsh [![Releases](https://img.shields.io/github/release/soraxas/shsh.svg?label=&color=0366d6)](https://github.com/soraxas/shsh/releases/latest)
 
-A **sh**ell **s**cript **h**andler (**shsh**) for handling and managing shell scripts, functions, standalone binaries, and more.
+<img src="docs/images/shsh-logo.png" title="" alt="" data-align="center">
+
+A **sh**ell **s**cripts **h**andler (**shsh**) for managing shell scripts, functions, standalone binaries, and more.
 
 Shsh allows you to quickly install shell packages directly from github or
 other sites. Instead of looking for specific install instructions for each
 package and messing with your path, shsh will create a central location for
-all packages and manage their binaries for you.
+all packages and manage their executable, completions files, and man files for you.
 
 Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [Dash](https://wiki.archlinux.org/index.php/Dash).
 
@@ -138,8 +140,10 @@ ZSH_COMPLETIONS=completions/_package
 BINS specified in this fashion have higher precedence then the inference rules
 above.
 
-
-
 ## Credits
 
-The wonderful [Basher](https://github.com/basherpm/basher).
+- [basher](https://github.com/basherpm/basher) for the wonderful framework
+
+- [fisher](https://github.com/jorgebucaran/fisher) for the idea of multi-threaded approach
+
+- [vim-plug](https://github.com/junegunn/vim-plug) for the inspiration of hooks
