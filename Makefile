@@ -1,7 +1,8 @@
-.PHONY: man test clean
+.PHONY: man test clean self-linking
 
 HELP2MAN := help2man
 
+MAIN_SHSH_SRC := libexec/shsh
 # FILES without underscore (which are private)
 PUBLIC_SUBCMD_SRC := $(shell find libexec/shsh-* | sed -e '/_/d' -e 's:^libexec/::')
 PUBLIC_CMD_SRC := $(PUBLIC_SUBCMD_SRC)
@@ -15,13 +16,9 @@ MAN_MAIN_SUBCMD_SECTION := build/man/sub_cmds.h2m
 
 MAN_H2M_FLAGS := --no-info --include=$(MAN_SEE_ALSO) 
 
-# linking bins
-SHSH_SELF_LINKS := cellar/bin/shsh
-# linking mans
-SHSH_SELF_LINKS += $(addprefix cellar/, $(MAN_SUBCMD_TARGET))
-# linking completions
-SHSH_SELF_LINKS_COMPLETIONS := cellar/completions/bash/shsh.bash cellar/completions/fish/shsh.fish cellar/completions/zsh/compctl/shsh.zsh
-SHSH_SELF_LINKS += $(SHSH_SELF_LINKS_COMPLETIONS)
+SHSH_SELF_BINS_LINKS := cellar/bin/shsh
+SHSH_SELF_MANS_LINKS := $(addprefix cellar/, $(MAN_SUBCMD_TARGET) $(MAN_MAIN_TARGET))
+SHSH_SELF_COMPLETIONS_LINKS := cellar/completions/bash/shsh.bash cellar/completions/fish/shsh.fish cellar/completions/zsh/compctl/shsh.zsh
 
 
 all: man
@@ -33,13 +30,13 @@ man: $(MAN_SUBCMD_TARGET) $(MAN_MAIN_TARGET)
 # This is useful to not add shsh's own bin folder into PATH, and
 # instead only maintain one bin path (cellar) in PATH.
 # TODO: make it respect env var regardless of install location of shsh
-self-linking: $(SHSH_SELF_LINKS)
+self-linking: $(SHSH_SELF_BINS_LINKS) $(SHSH_SELF_MANS_LINKS) $(SHSH_SELF_COMPLETIONS_LINKS)
 
 cellar/%: % | man
 	ln -srf "$<" "$@"
 
 # pairs of src, target for linking completion files
-$(SHSH_SELF_LINKS_COMPLETIONS): $(wildcard completions/*)
+$(SHSH_SELF_COMPLETIONS_LINKS): $(wildcard completions/*)
 	ln -srf completions/shsh.bash cellar/completions/bash/shsh.bash
 	ln -srf completions/shsh.fish cellar/completions/fish/shsh.fish
 	ln -srf completions/shsh.zsh cellar/completions/zsh/compctl/shsh.zsh
@@ -53,7 +50,7 @@ $(MAN_MAIN_TARGET): $(MAN_SUBCMD_TARGET) $(MAN_MAIN_SUBCMD_SECTION) $(MAN_SEE_AL
 	# -$(HELP2MAN) --no-info "$(subst -, ,$<)" --include=$(MAN_SEE_ALSO) --output=$@
 	-$(HELP2MAN) $(MAN_H2M_FLAGS) --include=$(MAN_MAIN_SUBCMD_SECTION) "shsh" --output="$@"
 
-man/man1/%.1: libexec/% | $(MAN_SEE_ALSO)
+man/man1/%.1: libexec/% $(MAIN_SHSH_SRC) $(MAN_SEE_ALSO) 
 	@ mkdir -p "$(dir $@)"
 	-$(HELP2MAN) $(MAN_H2M_FLAGS) "shsh $(subst shsh-,,$(notdir $<))" --output="$@"
 
@@ -65,9 +62,10 @@ $(MAN_MAIN_SUBCMD_SECTION): $(MAN_SUBCMD_TARGET)
 		| sed -e 's/^.SH/.SS/g' \
 			-e '1s/^/[subcmd: $(subst -, ,$(basename $(notdir $(shsh_man))))]\n/' >> "$@";)
 
+# the sed link all public commands within the main libexec folder to the 'see also' section
 $(MAN_SEE_ALSO): $(PUBLIC_CMD_SRC_WITH_DIR)
 	@ mkdir -p "$(dir $@)"
-	echo "[see also]" > "$@"
+	@ echo "[see also]" > "$@"
 	echo $(PUBLIC_CMD_SRC) | sed -e 's/ / \n/g' -e 's/ / (1),/g' -e 's/$$/ (1)/' | sed 's/^/.B /g' >> "$@"
 
 
@@ -77,5 +75,7 @@ test:
 clean:
 	rm -rf build/
 	rm -rf man/
-	rm -rf $(SHSH_SELF_LINKS)
+	rm -rf $(SHSH_SELF_BINS_LINKS)
+	rm -rf $(SHSH_SELF_MANS_LINKS)
+	rm -rf $(SHSH_SELF_COMPLETIONS_LINKS)
 	rm -rf $(MAN_SEE_ALSO)
