@@ -8,6 +8,8 @@ PUBLIC_CMD_SRC := $(PUBLIC_SUBCMD_SRC)
 PUBLIC_CMD_SRC += shsh
 
 MAN_TARGET := $(addsuffix .1, $(addprefix man/man1/,$(PUBLIC_CMD_SRC)))
+MAN_SEE_ALSO := build/man/see_also.h2m
+
 
 # linking bins
 SHSH_SELF_LINKS := cellar/bin/shsh
@@ -44,9 +46,15 @@ $(SHSH_SELF_LINKS_COMPLETIONS): $(wildcard completions/*)
 # cellar/bin/shsh: bin/shsh
 # 	ln -srf "$<" "$@"
 
-man/man1/%.1: libexec/%
+man/man1/%.1: libexec/% | $(MAN_SEE_ALSO)
 	@ mkdir -p "$(dir $@)"
-	-$(HELP2MAN) --no-info "$(subst -, ,$<)" --output=$@
+	-$(HELP2MAN) --no-info "$(subst -, ,$<)" --include=$(MAN_SEE_ALSO) --output=$@
+
+$(MAN_SEE_ALSO): $(addprefix libexec/, $(PUBLIC_CMD_SRC))
+	@ mkdir -p "$(dir $@)"
+	echo "[see also]" > "$@"
+	echo $(PUBLIC_CMD_SRC) | sed -e 's/ / \n/g' -e 's/ / (1),/g' -e 's/$$/ (1)/' | sed 's/^/.B /g' >> "$@"
+
 
 test:
 	bats tests
@@ -54,3 +62,4 @@ test:
 clean:
 	rm -rf man/
 	rm -rf $(SHSH_SELF_LINKS)
+	rm -rf $(MAN_SEE_ALSO)
