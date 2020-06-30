@@ -5,18 +5,16 @@
 # Usage: shsh <command> [<args>] [--verbose]
 #
 # Options:
-#   -a, --option      an option
-#   -b, --another-option[=VALUE]
-#                     another option
-# 
 #       --help        display help message for any commands
 #       --version     output version information and exit
 #       --verbose     display more info for some commands
 # 
 # Examples:
-#   foo               do nothing
-#   foo --option      the same thing, giving `--option'
-#
+#   shsh install user/repo    install 'user/repo' as a package
+#   shsh list                 list all installed packages
+#   shsh outdated             check against upstream on repos' status
+#   shsh upgrade --all        upgrade all installed packages
+#   shsh uninstall user/repo  uninstall the package 'user/repo'
 
 set -e
 
