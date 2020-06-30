@@ -5,8 +5,7 @@ HELP2MAN := help2man
 MAIN_SHSH_SRC := libexec/shsh
 # FILES without underscore (which are private)
 PUBLIC_SUBCMD_SRC := $(shell find libexec/shsh-* | sed -e '/_/d' -e 's:^libexec/::')
-PUBLIC_CMD_SRC := $(PUBLIC_SUBCMD_SRC)
-PUBLIC_CMD_SRC += shsh
+PUBLIC_CMD_SRC := shsh $(PUBLIC_SUBCMD_SRC)
 PUBLIC_CMD_SRC_WITH_DIR := $(addprefix libexec/, $(PUBLIC_CMD_SRC))
 
 MAN_MAIN_TARGET := man/man1/shsh.1
