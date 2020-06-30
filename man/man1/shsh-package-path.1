@@ -3,82 +3,14 @@
 .SH NAME
 shsh \- manual page for shsh v2.2
 .SH SYNOPSIS
-.B shsh
-\fI\,<command> \/\fR[\fI\,<args>\/\fR] [\fI\,--verbose\/\fR]
+.B source
+\fI\,"$(shsh package-path <package>)/file.sh"\/\fR
 .SH DESCRIPTION
-A versatile shell scripts handler
-.SS "Some useful shsh commands are:"
-.TP
-commands
-List all available shsh commands
-.TP
-completions
-List completions for a command.
-.TP
-help
-Display help for a command
-.TP
-init
-Configure the shell environment for shsh
-.TP
-install
-Installs a package from github (or a custom site)
-.TP
-link
-Installs a local directory as a shsh package
-.TP
-list
-List installed packages
-.TP
-outdated
-Displays a list of outdated packages
-.TP
-package\-path
 Outputs the path for a package
-.TP
-refresh
-Refresh a package by unlinking and relinking everything
-.TP
-self\-upgrade
-Upgrades to latest version of shsh
-.TP
-uninstall
-Uninstalls a package
-.TP
-upgrade
-Upgrades a package
 .PP
-See `shsh <command> \fB\-\-help\fR` or `man shsh\-<command>` for specific help.
-.SH OPTIONS
-.TP
-\fB\-\-help\fR
-display help message for any commands
-.TP
-\fB\-\-version\fR
-output version information and exit
-.TP
-\fB\-\-verbose\fR
-display more info for some commands
-.SH EXAMPLES
-.TP
-shsh install user/repo
-install 'user/repo' as a package
-.TP
-shsh list
-list all installed packages
-.TP
-shsh outdated
-check against upstream on repos' status
-.TP
-shsh upgrade \-\-all
-upgrade all installed packages
-.TP
-shsh uninstall user/repo
-uninstall the package 'user/repo'
+Outputs the path for a package
 .SH AUTHOR
-Written by Tin Lai (soraxas)
-.SH "REPORTING BUGS"
-Report bugs to <oscar@tinyiu.com>, or https://github.com/soraxas/shsh
+Written by Tin Lai (@soraxas)
 .SH COPYRIGHT
 Copyright \(co 2020 Tin Lai
 .br

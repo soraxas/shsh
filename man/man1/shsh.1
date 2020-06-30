@@ -59,6 +59,140 @@ output version information and exit
 .TP
 \fB\-\-verbose\fR
 display more info for some commands
+.SH "SUBCMD: SHSH COMMANDS"
+.B shsh
+\fI\,commands\/\fR
+.SS DESCRIPTION
+List all available shsh commands
+.PP
+List out all the available commands that are intended to
+be public. This does not contains any underscored (private)
+commands.
+.SH "SUBCMD: SHSH COMPLETIONS"
+.B shsh
+\fI\,completions <command>\/\fR
+.SS DESCRIPTION
+List completions for a command.
+.PP
+In order to support completions, a command must have a comment
+with the 'completions' TAG and provide a '\-\-completions' argument.
+.SH "SUBCMD: SHSH HELP"
+.B shsh
+\fI\,help \/\fR[\fI\,--usage\/\fR] \fI\,COMMAND\/\fR
+.SS DESCRIPTION
+Display help for a command
+.PP
+Parses and displays help contents from a command's source file.
+.PP
+A command is considered documented if it starts with a comment block
+that has a `Summary:' or `Usage:' section. Usage instructions can
+span multiple lines as long as subsequent lines are indented.
+The remainder of the comment block is displayed as extended
+documentation.
+.SH "SUBCMD: SHSH INIT"
+.B eval
+\fI\,"$(shsh init SHELL)"\/\fR
+.SS DESCRIPTION
+Configure the shell environment for shsh
+.PP
+SHELL: sh, bash, zsh, fish, etc.
+.SH "SUBCMD: SHSH INSTALL"
+.B shsh
+\fI\,install \/\fR[\fI\,--ssh\/\fR] [\fI\,site\/\fR]\fI\,/<package>\/\fR[\fI\,@ref\/\fR] [\fI\,folder\/\fR] [\fI\,-h|--hooks <hook>\/\fR]
+.SS DESCRIPTION
+Installs a package from github (or a custom site)
+.SS "Hook types:"
+.IP
+[pre],[post]: Any arbitrary script that runs before and after linking, respectively.
+[+x]: Before linking, adds executable bit to the file given in the argunment.
+[a+x]: Before linking, when set, it will add executable bit to all files.
+.SS OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-hook\fR HOOK
+add HOOK to this package, which is triggered while installing
+or upgrading a package
+.TP
+\fB\-\-verbose\fR
+display more info for some commands
+.SS EXAMPLES
+.TP
+shsh install soraxas/dot\-reminder
+install 'soraxas/dot\-reminder' as a package
+.TP
+shsh install \-\-ssh <package>
+install with ssh protocal (rather than https)
+.TP
+shsh install <package> \-\-hook pre="mv bin/foo bin/bar"
+Execute the script "mv bin/foo bin/bar" before `shsh`
+performs linking (e.g. this script renames the binary)
+.TP
+shsh install <package> \-\-hook +x=foobar
+add a hook that add executable bits to the file 'foobar',
+before linking is performed
+.TP
+shsh install <package> \-h pre='make all' \-h post='rm \-r build/*'
+add a hook that runs 'make all' to build binaries, right after
+cloning and before linking is performed. Then, linking is
+performed with its usual rules (i.e. all executable files in root
+and in bin/). Finally, 'rm \-r build/*' is ran to remove leftovers.
+.SH "SUBCMD: SHSH LINK"
+.B shsh
+\fI\,link \/\fR[\fI\,--no-deps\/\fR] \fI\,<directory> <package>\/\fR
+.SS DESCRIPTION
+Installs a local directory as a shsh package
+.PP
+Installs a local directory as a shsh package
+.SH "SUBCMD: SHSH LIST"
+.B shsh
+\fI\,list \/\fR[\fI\,-d|--details\/\fR]
+.SS DESCRIPTION
+List installed packages
+.SS OPTIONS
+.TP
+\fB\-d\fR, \fB\-\-details\fR
+display the URL of the repository
+.SH "SUBCMD: SHSH OUTDATED"
+.B shsh
+\fI\,outdated \/\fR[\fI\,-q|--quiet\/\fR]
+.SS DESCRIPTION
+Displays a list of outdated packages
+.PP
+Displays a list of outdated packages
+.SH "SUBCMD: SHSH PACKAGE PATH"
+.B source
+\fI\,"$(shsh package-path <package>)/file.sh"\/\fR
+.SS DESCRIPTION
+Outputs the path for a package
+.PP
+Outputs the path for a package
+.SH "SUBCMD: SHSH REFRESH"
+.B shsh
+\fI\,refresh <package> \/\fR[\fI\,--verbose\/\fR] [\fI\,-a|--all\/\fR]
+.SS DESCRIPTION
+Refresh a package by unlinking and relinking everything
+.PP
+Note: verbose has no effect if \fB\-\-all\fR is specified, as they run in subshells
+.SH "SUBCMD: SHSH SELF UPGRADE"
+.B shsh
+\fI\,self-upgrade\/\fR
+.SS DESCRIPTION
+Upgrades to latest version of shsh
+.PP
+Upgrades to latest version of shsh
+.SH "SUBCMD: SHSH UNINSTALL"
+.B shsh
+\fI\,uninstall <package>\/\fR
+.SS DESCRIPTION
+Uninstalls a package
+.PP
+Uninstalls a package
+.SH "SUBCMD: SHSH UPGRADE"
+.B shsh
+\fI\,upgrade <package|\/\fR[\fI\,-a|--all\/\fR]\fI\,>\/\fR
+.SS DESCRIPTION
+Upgrades a package
+.PP
+Upgrades a package
 .SH EXAMPLES
 .TP
 shsh install user/repo
@@ -76,7 +210,7 @@ upgrade all installed packages
 shsh uninstall user/repo
 uninstall the package 'user/repo'
 .SH AUTHOR
-Written by Tin Lai (soraxas)
+Written by Tin Lai (@soraxas)
 .SH "REPORTING BUGS"
 Report bugs to <oscar@tinyiu.com>, or https://github.com/soraxas/shsh
 .SH COPYRIGHT
