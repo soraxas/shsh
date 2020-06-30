@@ -1,8 +1,22 @@
 #!/usr/bin/env sh
 #
-# Summary: A package manager for shell scripts
+# Summary: A versatile shell scripts handler
 #
-# Usage: shsh <command> [<args>]
+# Usage: shsh <command> [<args>] [--verbose]
+#
+# Options:
+#   -a, --option      an option
+#   -b, --another-option[=VALUE]
+#                     another option
+# 
+#       --help        display help message for any commands
+#       --version     output version information and exit
+#       --verbose     display more info for some commands
+# 
+# Examples:
+#   foo               do nothing
+#   foo --option      the same thing, giving `--option'
+#
 
 set -e
 
@@ -45,7 +59,15 @@ for arg; do
       export SHSH_VERBOSE="true"
       ;;
     --version)
-      echo "shsh (shell script handler) v2.2"
+      cat << EOF
+shsh (shell script handler) v2.2
+
+Copyright (C) 2020 Tin Lai
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Written by Tin Lai (soraxas)
+EOF
       exit
       ;;
     *)

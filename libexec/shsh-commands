@@ -2,6 +2,10 @@
 #
 # Summary: List all available shsh commands
 # Usage: shsh commands
+#
+# List out all the available commands that are intended to
+# be public. This does not contains any underscored (private)
+# commands.
 
 set -e
 

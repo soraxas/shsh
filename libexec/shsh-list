@@ -3,7 +3,8 @@
 # Summary: List installed packages
 # Usage: shsh list [-d|--details]
 #
-# --details: when give, the URL of the repository will be displayed
+# Options:
+#   -d, --details    display the URL of the repository
 
 set -e
 
