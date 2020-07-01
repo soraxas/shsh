@@ -60,7 +60,7 @@ for arg; do
       ;;
     --version)
       cat << EOF
-shsh (shell script handler) v2.2
+shsh (shell script handler) v2.2.1
 
 Copyright (C) 2020 Tin Lai
 This is free software; see the source for copying conditions.  There is NO
