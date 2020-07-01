@@ -6,10 +6,6 @@ package="$1"
 
 . "${UTILS_FUNC:?}"
 
-if [ ! -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
-  exit
-fi
-
 echo_if_verbose "> Starting to link completions..."
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   # shellcheck source=/dev/null
@@ -39,3 +35,12 @@ if [ -n "${zsh_completions:=}" ]; then
   done
 fi
   
+for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
+  [ -e "$file" ] || [ -L "$file" ] || continue
+  
+  src="$file"
+  target="$SHSH_PREFIX/completions/fish/"
+
+  echo_if_verbose "Linking '$src' to '$target'"
+  ln -s "$src" "$target"
+done
