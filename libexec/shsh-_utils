@@ -17,21 +17,20 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
   # This is poor man's GNU `readlink -f`
   # useful for mac without GNU readlink
   # based on https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-  TARGET_FILE=$1
-  cd `dirname $TARGET_FILE`
-  TARGET_FILE=`basename $TARGET_FILE`
+  _target="$(basename "$1")"
+  cd "$(dirname "$1")"
   i=0
   # Iterate down a (possible) chain of symlinks
-  while [ -L "$TARGET_FILE" ]; do
-      TARGET_FILE=`readlink $TARGET_FILE`
-      cd `dirname $TARGET_FILE`
-      TARGET_FILE=`basename $TARGET_FILE`
+  while [ -L "$_target" ]; do
+      _target=`readlink $_target`
+      cd `dirname $_target`
+      _target=`basename $_target`
       i=$((i+1))
       if [ "$i" -gt 1000 ]; then  # check for symlink loop
         echo "Probably encountered symlink loops while resolving path" 1>&2 && exit 1
       fi
   done
-  echo "$(pwd -P)"/"$TARGET_FILE"
+  echo "$(pwd -P)"/"$_target"
 )
 
 echo_if_verbose() {
@@ -43,15 +42,15 @@ echo_if_verbose() {
 remove_linked() {
   # Given a folder as first arg, if anything that follows it
   # is a link resides within the folder, delete it
-  package="$1"
+  _package="$1"
   shift
-  for link in "$@"; do
+  for _link; do
     # do nothing if the arugnment is not an actual file
-    [ -e "$link" ] || [ -L "$link" ] || continue
-    case $(resolve_link "$link") in
-      "$package/"*)
-        echo_if_verbose "Unlinking $link"
-        rm -f "$link"
+    [ -e "$_link" ] || [ -L "$_link" ] || continue
+    case $(resolve_link "$_link") in
+      "$_package/"*)
+        echo_if_verbose "Unlinking $_link"
+        rm -f "$_link"
         ;;
     esac
   done
@@ -86,8 +85,8 @@ clear_prev_lines() {
 }
 
 update_line() {
-  lockfile="$3"
+  _lockfile="$3"
   # given a token of a line, update the line with new content
   awk '$0~v {$0="'"$2"'"} 1' v="$1" \
-    "$lockfile" > "${lockfile}.tmp" && mv "${lockfile}.tmp" "${lockfile}"
+    "$_lockfile" > "${_lockfile}.tmp" && mv "${_lockfile}.tmp" "${_lockfile}"
 }

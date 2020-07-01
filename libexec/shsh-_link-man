@@ -8,7 +8,7 @@ package="$1"
 
 echo_if_verbose "> Starting to link man..."
 # man can be in package root or in a subdir named 'man'
-for file in "$SHSH_PACKAGES_PATH/$package"/man/*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
+for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
   [ -e "$file" ] || [ -L "$file" ] || continue
   
   case "$file" in
