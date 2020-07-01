@@ -2,7 +2,7 @@
 #
 # Summary: Installs a package from github (or a custom site)
 #
-# Usage: shsh install [--ssh] [site]/<package>[@ref] [folder] [-h|--hooks <hook>]
+# Usage: shsh install [--ssh] [site]/<package>[@ref] [folder] [-h|--hook <hook>]
 #
 # Hook types:
 #     [pre],[post]: Any arbitrary script that runs before and after linking, respectively.
