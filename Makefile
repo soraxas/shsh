@@ -64,8 +64,14 @@ $(MAN_MAIN_SUBCMD_SECTION): $(MAN_SUBCMD_TARGET)
 # the sed link all public commands within the main libexec folder to the 'see also' section
 $(MAN_SEE_ALSO): $(PUBLIC_CMD_SRC_WITH_DIR)
 	@ mkdir -p "$(dir $@)"
-	@ echo "[see also]" > "$@"
+	@ echo "[see also]" > "$@" && \
 	echo $(PUBLIC_CMD_SRC) | sed -e 's/ / \n/g' -e 's/ / (1),/g' -e 's/$$/ (1)/' | sed 's/^/.B /g' >> "$@"
+
+# update license notice
+$(MAIN_SHSH_SRC): LICENSE
+	copyright_authors="$(shell awk '/^Copyright \(c\)/' "$<")" && \
+	sed -i "s/^Copyright (c).*$$/$$copyright_authors/" "$@"
+	# echo "$$copyright_authors"
 
 
 test:
