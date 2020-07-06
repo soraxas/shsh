@@ -10,8 +10,9 @@ echo_if_verbose "> Starting to link bins..."
 if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   # shellcheck source=/dev/null
   . "$SHSH_PACKAGES_PATH/$package/package.sh"
-  bins=$(echo "${BINS:-}" | tr ':' '\n')
 fi
+
+[ -n "$BINS" ] && bins=$(echo "${BINS:-}" | tr ':' '\n')
 
 if [ -z "$bins" ]; then
   list_all_executable() {

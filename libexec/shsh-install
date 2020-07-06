@@ -99,6 +99,7 @@ if [ "$#" != 0 ]; then
         _val="${1#*=}"
         [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
         eval "$_var='$_val'"
+        export "$_var"
         shift ;;
       --*=*)  # convert '--name=arg' to '--name' 'arg'
         set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
@@ -111,10 +112,12 @@ if [ "$#" != 0 ]; then
         exit 1
         ;;
       *)
+      echo '---------------'
         # set back any unused args
         set -- "$@" "$opt"
     esac
   done
+  shift # remove the EOL token
 fi
 
 # echo "\$hook_pre=$hook_pre"

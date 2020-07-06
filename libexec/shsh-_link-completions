@@ -13,17 +13,17 @@ if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
 fi
 
 IFS=:
-if [ -n "${bash_completions:=}" ]; then
+if [ -n "${BASH_COMPLETIONS:=}" ]; then
   mkdir -p "$SHSH_PREFIX/completions/bash"
-  for completion in $bash_completions; do
+  for completion in $BASH_COMPLETIONS; do
     ln -s "$SHSH_PACKAGES_PATH/$package/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
   done
 fi
 
-if [ -n "${zsh_completions:=}" ]; then
+if [ -n "${ZSH_COMPLETIONS:=}" ]; then
   mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
   mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
-  for completion in $zsh_completions; do
+  for completion in $ZSH_COMPLETIONS; do
     src="$SHSH_PACKAGES_PATH/$package/$completion"
     if grep -q "#compdef" "$src"; then
       target="$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
@@ -34,13 +34,24 @@ if [ -n "${zsh_completions:=}" ]; then
     ln -s "$src" "$target"
   done
 fi
+
+link_fish_completion_file() {
+  [ -e "$1" ] || [ -L "$1" ] || continue
   
-for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
-  [ -e "$file" ] || [ -L "$file" ] || continue
-  
-  src="$file"
+  src="$1"
   target="$SHSH_PREFIX/completions/fish/"
+  mkdir -p "$target"
 
   echo_if_verbose "Linking '$src' to '$target'"
   ln -s "$src" "$target"
-done
+}
+
+if [ -n "${FISH_COMPLETIONS:=}" ]; then
+  for file in $FISH_COMPLETIONS; do
+    link_fish_completion_file "$file"
+  done
+else
+  for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
+    link_fish_completion_file "$file"
+  done
+fi

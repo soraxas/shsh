@@ -220,6 +220,58 @@ Uninstalls a package
 Upgrades a package
 .PP
 Upgrades a package
+.SH ENVIRONMENT
+The following environment variables has effects in `shsh` of
+changing the default directories of stored files.
+.TP
+XDG_DATA_HOME
+directory of shsh's root, i.e.
+SHSH_ROOT=$XDG_DATA_HOME/shsh
+[default: ~/.config]
+.TP
+SHSH_PREFIX
+directory to store everything
+[default: $SHSH_ROOT/cellar]
+.TP
+SHSH_PACKAGES_PATH
+directory to store packages
+[default: $SHSH_PREFIX/packages]
+.TP
+SHSH_INSTALL_BIN
+directory to store bins
+[default: $SHSH_PREFIX/bin]
+.TP
+SHSH_INSTALL_MAN
+directory to store mans
+[default: $SHSH_PREFIX/man]
+.PP
+The following environment variables changes `shsh`'s linking
+behaviour by overriding/customising the list of files to be
+linked into cellar. They can be specified by 'package.sh' (see
+repository), or by the \fB\-\-variable\fR flag in `shsh install`, or
+by running `shsh` with the following environmental variables.
+Note that all of the following variables can be a colon separated
+list that follows the PATH variable convention, e.g. FOO:BAR
+.TP
+BINS
+list of binary/script files to link
+[default: all executable files in root and bin/*]
+.TP
+MANS
+list of man pages to link
+[default: all files in man/*.[0\-9] and
+man/man.[0\-9]/*.[0\-9]]
+.TP
+BASH_COMPLETIONS
+list of bash shell completion files to link
+.TP
+ZSH_COMPLETIONS
+list of zsh shell completion files to link
+.TP
+FISH_COMPLETIONS
+list of fish shell completion files to link
+[default: all files in completions/*.fish and
+completions/fish/*.fish]
 .SH EXAMPLES
 .TP
 shsh install user/repo

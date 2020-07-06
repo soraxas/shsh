@@ -7,8 +7,9 @@ package="$1"
 . "${UTILS_FUNC:?}"
 
 echo_if_verbose "> Starting to link man..."
-# man can be in package root or in a subdir named 'man'
-for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
+
+link_mans() {
+  file="$1"
   [ -e "$file" ] || [ -L "$file" ] || continue
   
   case "$file" in
@@ -25,4 +26,16 @@ for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$pack
       ln -s "$src" "$target"
       ;;
   esac
-done
+}
+
+if [ -n "${MANS:=}" ]; then
+  IFS=:
+  for file in $MANS; do
+    link_mans "$file"
+  done
+else
+  # man can be in package root or in a subdir named 'man'
+  for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
+    link_mans "$file"
+  done
+fi
