@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+# Summary: Cleanup all broken links
+# Usage: shsh cleanup
+#
+# Check all links within the cellar directories and remove all broken
+# links, i.e., delete all broken links in cellar/{bin,completions,man}
+#
+# Options:
+#       -d, --dry    perform a dry run of echoing what will be done
+#                    but do not perform any actual removal
+
+set -e
+
+for arg; do
+  shift
+  case "$arg" in
+    -d|--dry)
+      dryrun="true"
+      ;;
+    *)
+      shsh-help cleanup
+      exit 1
+  esac
+done
+
+. "${UTILS_FUNC:?}"
+
+for file in "$SHSH_INSTALL_BIN/"* "$SHSH_INSTALL_MAN/man"*"/"* \
+  "$SHSH_PREFIX/completions/bash/"* "$SHSH_PREFIX/completions/zsh/compsys/"* \
+  "$SHSH_PREFIX/completions/zsh/compctl/"* "$SHSH_PREFIX/completions/fish/"*
+do
+  if [ -h "$file" ] && [ ! -e "$file" ] ; then
+    echo "Removing broken link '$file' -> '$(readlink "$file")'"
+    [ -z "$dryrun" ] && rm "$file"
+  fi
+done

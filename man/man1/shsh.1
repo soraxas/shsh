@@ -9,6 +9,9 @@ shsh \- manual page for shsh v2.2.1
 A versatile shell scripts handler
 .SS "Some useful shsh commands are:"
 .TP
+cleanup
+Cleanup all broken links
+.TP
 commands
 List all available shsh commands
 .TP
@@ -59,6 +62,19 @@ output version information and exit
 .TP
 \fB\-\-verbose\fR
 display more info for some commands
+.SH "SUBCMD: SHSH CLEANUP"
+.B shsh
+\fI\,cleanup\/\fR
+.SS DESCRIPTION
+Cleanup all broken links
+.PP
+Check all links within the cellar directories and remove all broken
+links, i.e., delete all broken links in cellar/{bin,completions,man}
+.SS OPTIONS
+.TP
+\fB\-d\fR, \fB\-\-dry\fR
+perform a dry run of echoing what will be done
+but do not perform any actual removal
 .SH "SUBCMD: SHSH COMMANDS"
 .B shsh
 \fI\,commands\/\fR
@@ -299,6 +315,7 @@ This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .SH "SEE ALSO"
 .B shsh (1),
+.B shsh-cleanup (1),
 .B shsh-commands (1),
 .B shsh-completions (1),
 .B shsh-help (1),
