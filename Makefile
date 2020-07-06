@@ -19,6 +19,11 @@ SHSH_SELF_BINS_LINKS := cellar/bin/shsh
 SHSH_SELF_MANS_LINKS := $(addprefix cellar/, $(MAN_SUBCMD_TARGET) $(MAN_MAIN_TARGET))
 SHSH_SELF_COMPLETIONS_LINKS := cellar/completions/bash/shsh.bash cellar/completions/fish/shsh.fish cellar/completions/zsh/compctl/shsh.zsh
 
+# a:
+# 	@$(eval CHANGE_MAN_TAG := $(shell if [ "a" = "a" ]; then \
+# 		echo "perl -0777 -pe 's/.IP\\\n(shsh install .*?)\\\n.IP/.TP\\\n"'$$$$1'"/g'"; else \
+# 		echo cat; fi))
+# 	@ echo $(CHANGE_MAN_TAG)
 
 all: man
 
@@ -49,9 +54,23 @@ $(MAN_MAIN_TARGET): $(MAN_SUBCMD_TARGET) $(MAN_MAIN_SUBCMD_SECTION) $(MAN_SEE_AL
 	# -$(HELP2MAN) --no-info "$(subst -, ,$<)" --include=$(MAN_SEE_ALSO) --output=$@
 	-$(HELP2MAN) $(MAN_H2M_FLAGS) --include=$(MAN_MAIN_SUBCMD_SECTION) "shsh" --output="$@"
 
+# The conditional perl command is to change the man format for any lines that begins
+# with `shsh install` from
+# """
+# .IP                to    .TP
+# shsh install...    ->    shsh install...
+# .IP                      BlahBlah Blah
+# BlahBlah Blah         
+# """
+# The end effect is workaround to making the command statement be left indented
+# in th man page.
+# The cat is just to passthrough from the pipe line, and '\n' & '$' needs extra escape
 man/man1/%.1: libexec/% $(MAIN_SHSH_SRC) $(MAN_SEE_ALSO) 
 	@ mkdir -p "$(dir $@)"
-	-$(HELP2MAN) $(MAN_H2M_FLAGS) "shsh $(subst shsh-,,$(notdir $<))" --output="$@"
+	@ $(eval CHANGE_MAN_TAG := $(shell case "$<" in \
+		(*/"shsh-"*)  echo "perl -0777 -pe 's/.IP\\\n(shsh $(subst shsh-,,$(notdir $<)) .*?)\\\n.IP/.TP\\\n"'$$$$1'"/g'" ;; \
+		(*) 		  echo cat ;;esac ))
+	-$(HELP2MAN) $(MAN_H2M_FLAGS) "shsh $(subst shsh-,,$(notdir $<))" | $(CHANGE_MAN_TAG) > "$@"
 
 $(MAN_MAIN_SUBCMD_SECTION): $(MAN_SUBCMD_TARGET)
 	@ mkdir -p "$(dir $@)"
@@ -71,7 +90,6 @@ $(MAN_SEE_ALSO): $(PUBLIC_CMD_SRC_WITH_DIR)
 $(MAIN_SHSH_SRC): LICENSE
 	copyright_authors="$(shell awk '/^Copyright \(c\)/' "$<")" && \
 	sed -i "s/^Copyright (c).*$$/$$copyright_authors/" "$@"
-	# echo "$$copyright_authors"
 
 
 test:
