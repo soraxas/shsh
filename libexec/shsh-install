@@ -49,73 +49,80 @@
 
 set -e
 
+check_key_val_pair() {
+  case "$1" in (*=*) return 0 ;;esac
+  echo "Invalid argunment for flag '$2' with argunment '$1'"
+  echo "Must be in the format of $2 <KEY>=<VALUE>"
+  exit 1
+}
+
 use_ssh="false"
 
-for arg; do
-  shift
-  case "$arg" in
-    --ssh)
-      use_ssh="true"
-      ;;
-    -h|--hook)
-      echo Not implemented yet
-      exit 1
-      ;;
-    -v|--variable)
-      echo Not implemented yet
-      exit 1
-      ;;
-    --)  # stop parsing
-      break
-      ;;
-    -*|--*=)
-      echo "Error: Unsupported flag '$arg'" >&2
-      exit 1
-      ;;
-    *)
-      # set back any unused args
-      set -- "$@" "$arg"
-  esac
-done
+EOL=$(echo '\00\07\01\00')
+if [ "$#" != 0 ]; then
+  set -- "$@" "$EOL"
+  while [ "$1" != "$EOL" ]; do
+    opt="$1"; shift
+    case "$opt" in
+      --ssh)
+        use_ssh="true"
+        ;;
+      -h|--hook)
+        case "$1" in
+          pre|post|uninstall|+x)
+            check_key_val_pair "$1" "$opt"
+            ;;
+          pre=*|post=*|uninstall=*)
+            _hook_type="${1%%=*}"
+            _hook_value="${1#*=}"
+            eval "hook_$_hook_type='$_hook_value'"
+            shift ;;
+          +x=*)
+            if [ -z "$hook_plus_x" ]; then
+              hook_plus_x="${1#*=}"
+            else
+              hook_plus_x="$hook_plus_x:${1#*=}"
+            fi
+            shift ;;
+          a+x)
+            hook_all_plus_x=true
+            ;;
+          *)
+            echo "Unrecognized hook type '$1'"
+            exit 1
+            ;;
+        esac
+        ;;
+      -v|--variable)
+        check_key_val_pair "$1" "$opt"
+        _var="${1%%=*}"
+        _val="${1#*=}"
+        [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
+        eval "$_var='$_val'"
+        shift ;;
+      --*=*)  # convert '--name=arg' to '--name' 'arg'
+        set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
+      -[^-]?*)  # convert '-abc' to '-a' '-b' '-c'
+        set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;       
+      --)  # process remaining arguments as positional
+        while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;  
+      -*)
+        echo "Error: Unsupported flag '$opt'" >&2
+        exit 1
+        ;;
+      *)
+        # set back any unused args
+        set -- "$@" "$opt"
+    esac
+  done
+fi
 
-# PARAMS=""
-# while (( "$#" )); do
-#   case "$1" in
-#     --ssh)
-#       use_ssh="true"
-#       shift
-#       ;;
-#     -h|--hooks)
-#       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
-#         declare -A "hooks=$2"
-#         shift 2
-#       else
-#         echo "Error: Argument for $1 is missing" >&2
-#         exit 1
-#       fi
-#       ;;
-#     -*|--*=) # unsupported flags
-#       echo "Error: Unsupported flag $1" >&2
-#       exit 1
-#       ;;
-#     *) # postserve positional arguments
-#       PARAMS="$PARAMS $1"
-#       shift
-#       ;;
-#   esac
-# done
-# # set positional arguments in their proper place
-# eval set -- "$PARAMS"
-
-# for hook in "${!hooks[@]}"; do
-#   case "$hook" in
-#     pre|post|a+x|+x)
-#       ;;
-#     *)
-#       echo "Error: Unknown hook type '$hook' with value '${hooks[$hook]}'"
-#       exit 1
-#   esac
-# done
+# echo "\$hook_pre=$hook_pre"
+# echo "\$hook_post=$hook_post"
+# echo "\$hook_uninstall=$hook_uninstall"
+# echo "\$hook_plus_x=$hook_plus_x"
+# echo "\$hook_all_plus_x=$hook_all_plus_x"
+# echo "\$@=$@"
 
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
