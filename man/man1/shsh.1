@@ -101,19 +101,41 @@ SHELL: sh, bash, zsh, fish, etc.
 \fI\,install \/\fR[\fI\,--ssh\/\fR] [\fI\,site\/\fR]\fI\,/<package>\/\fR[\fI\,@ref\/\fR] [\fI\,folder\/\fR] [\fI\,-h|--hook <hook>\/\fR]
 .SS DESCRIPTION
 Installs a package from github (or a custom site)
-.SS "Hook types:"
 .IP
-[pre],[post]: Any arbitrary script that runs before and after linking, respectively.
-[+x]: Before linking, adds executable bit to the file given in the argunment.
-[a+x]: Before linking, when set, it will add executable bit to all files.
+.SH "\-V|\-\-VARIABLE <VAR>=<VAL>"
 .SS OPTIONS
-.TP
-\fB\-h\fR, \fB\-\-hook\fR HOOK
-add HOOK to this package, which is triggered while installing
-or upgrading a package
+.HP
+\fB\-h\fR, \fB\-\-hook\fR <HOOK_TYPE>[=<CONTENT>]
+.IP
+add HOOK to this package, which is triggered while
+installing or upgrading a package
+.HP
+\fB\-v\fR \fB\-\-variable\fR <VAR>=<VAL>
+.IP
+set a variable VAR with value VAL,
+useful for setting up files for linking
 .TP
 \fB\-\-verbose\fR
 display more info for some commands
+.SS "Hook types:"
+.TP
+pre=<SCRIPT>
+Any arbitrary POSIX script that runs before linking.
+.TP
+post=<SCRIPT>
+Any arbitrary POSIX script that runs after linking.
+.TP
+uninstall=<...>
+Any arbitrary POSIX script that runs before uninstalling.
+For the above hooks, if multiples are given, the older
+one will be overriden.
+.TP
++x=<FILE>
+Before linking, adds executable bit to the FILE. If
+multiples are given, they will be run in sequential order.
+.TP
+a+x
+Before linking, add executable bit to all files.
 .SS EXAMPLES
 .TP
 shsh install soraxas/dot\-reminder
@@ -121,6 +143,10 @@ install 'soraxas/dot\-reminder' as a package
 .TP
 shsh install \-\-ssh <package>
 install with ssh protocal (rather than https)
+.TP
+shsh install <package> \-v FISH_COMPLETIONS=synoservice.fish:forgit.fish
+link 'synoservice.fish' and 'forgit.fish' as fish
+completion files
 .TP
 shsh install <package> \-\-hook pre="mv bin/foo bin/bar"
 Execute the script "mv bin/foo bin/bar" before `shsh`
@@ -131,10 +157,11 @@ add a hook that add executable bits to the file 'foobar',
 before linking is performed
 .TP
 shsh install <package> \-h pre='make all' \-h post='rm \-r build/*'
-add a hook that runs 'make all' to build binaries, right after
-cloning and before linking is performed. Then, linking is
-performed with its usual rules (i.e. all executable files in root
-and in bin/). Finally, 'rm \-r build/*' is ran to remove leftovers.
+add a hook that runs 'make all' to build binaries, right
+after cloning and before linking is performed. Then,
+linking is performed with its usual rules (i.e. all
+executable files in root and in bin/). Finally,
+\&'rm \-r build/*' is ran to remove leftovers.
 .SH "SUBCMD: SHSH LINK"
 .B shsh
 \fI\,link \/\fR[\fI\,--no-deps\/\fR] \fI\,<directory> <package>\/\fR
