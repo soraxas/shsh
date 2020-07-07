@@ -4,7 +4,7 @@
 #
 # Usage: shsh install [site]/<package>[@ref] [<folder>/<folder>]
 #                     [-h|--hook <hook>] [-v|--variable <VAR>=<VAL>] [--ssh]
-#                     [--nocleanup] [--force]
+#                     [--nocleanup] [-f|--force]
 #
 # Options:
 #       -h, --hook <HOOK_TYPE>[=<CONTENT>]
@@ -15,7 +15,7 @@
 #                    useful for setting up files for linking 
 #       --nocleanup  do not perform cleanup (shsh uninstall <package>)
 #                    even if something failed in the installination process
-#       --force      force the installation even if the package exists
+#       -f, --force  force the installation even if the package exists
 #       --ssh        use ssh protocal instead of https
 #
 #       --verbose    display more info for some commands
@@ -74,7 +74,7 @@ if [ "$#" != 0 ]; then
       --nocleanup)
         no_cleanup="true"
         ;;
-      --force)
+      -f|--force)
         force_install="true"
         ;;
       -h|--hook)
@@ -129,13 +129,6 @@ if [ "$#" != 0 ]; then
   done
   shift # remove the EOL token
 fi
-
-# echo "\$hook_pre=$hook_pre"
-# echo "\$hook_post=$hook_post"
-# echo "\$hook_uninstall=$hook_uninstall"
-# echo "\$hook_plus_x=$hook_plus_x"
-# echo "\$hook_all_plus_x=$hook_all_plus_x"
-# echo "\$@=$@"
 
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
@@ -222,6 +215,7 @@ trap on_exit EXIT
 
 
 ## INSTALLING
+[ -n "$force_install" ] && shsh uninstall "$folder" >/dev/null 2>&1 || true
 # only perform link if clone is successful (and package not exists before)
 if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
   exit
