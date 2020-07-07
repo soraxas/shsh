@@ -4,7 +4,7 @@
 shsh \- manual page for shsh v2.2.1
 .SH SYNOPSIS
 .B shsh
-\fI\,<command> \/\fR[\fI\,<args>\/\fR] [\fI\,--verbose\/\fR]
+\fI\,<command> \/\fR[\fI\,<command args>\/\fR] [\fI\,--verbose\/\fR] [\fI\,--help\/\fR]
 .SH DESCRIPTION
 A versatile shell scripts handler
 .SS "Some useful shsh commands are:"
@@ -288,6 +288,13 @@ FISH_COMPLETIONS
 list of fish shell completion files to link
 [default: all files in completions/*.fish and
 completions/fish/*.fish]
+.SH FILES
+SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be an executable file
+that store all installed packages. Whenever shsh install a package, it
+will add the package to SHSHRC. If there is an existing entry, it will
+update that entry with the new flags/argunment instead. It will search
+for all lines within SHSHRC that begins with `shsh install`, ignoring
+all preceeding whitespace. For more details, visit project homepage.
 .SH EXAMPLES
 .TP
 shsh install user/repo

@@ -2,7 +2,7 @@
 #
 # Summary: A versatile shell scripts handler
 #
-# Usage: shsh <command> [<args>] [--verbose]
+# Usage: shsh <command> [<command args>] [--verbose] [--help]
 #
 # Options:
 #       --help        display help message for any commands
@@ -51,6 +51,14 @@
 #                       [default: all files in completions/*.fish and
 #                       completions/fish/*.fish]
 #
+# Files:
+# SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be an executable file 
+# that store all installed packages. Whenever shsh install a package, it 
+# will add the package to SHSHRC. If there is an existing entry, it will
+# update that entry with the new flags/argunment instead. It will search
+# for all lines within SHSHRC that begins with `shsh install`, ignoring
+# all preceeding whitespace. For more details, visit project homepage.
+#
 # Report bugs to <oscar@tinyiu.com>, or https://github.com/soraxas/shsh
 
 set -e
@@ -94,6 +102,8 @@ export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
 export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
 export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"
 export SHSH_INSTALL_MAN="${SHSH_INSTALL_MAN:=$SHSH_PREFIX/man}"
+shsh_config_prefix="${XDG_CONFIG_HOME:=$HOME/.config}"
+export SHSHRC="${SHSHRC:=$XDG_CONFIG_HOME/shshrc}"
 
 bin_path="$(dirname `resolve_link "$0"`)"
 export PATH="${bin_path}:${PATH}"
