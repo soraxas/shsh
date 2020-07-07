@@ -30,20 +30,16 @@ if [ -n "${ZSH_COMPLETIONS:=}" ]; then
     else
       target="$SHSH_PREFIX/completions/zsh/compctl/${completion##*/}"
     fi
-    echo_if_verbose "Linking '$src' to '$target'"
-    ln -s "$src" "$target"
+    add_link "$src" "$target"
   done
 fi
 
 link_fish_completion_file() {
-  [ -e "$1" ] || [ -L "$1" ] || continue
-  
   src="$1"
   target="$SHSH_PREFIX/completions/fish/"
   mkdir -p "$target"
 
-  echo_if_verbose "Linking '$src' to '$target'"
-  ln -s "$src" "$target"
+  add_link "$src" "$target"
 }
 
 if [ -n "${FISH_COMPLETIONS:=}" ]; then

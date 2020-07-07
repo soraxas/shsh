@@ -4,11 +4,12 @@
 shsh \- manual page for shsh v2.2.1
 .SH SYNOPSIS
 .B shsh
-\fI\,install \/\fR[\fI\,--ssh\/\fR] [\fI\,site\/\fR]\fI\,/<package>\/\fR[\fI\,@ref\/\fR] [\fI\,folder\/\fR] [\fI\,-h|--hook <hook>\/\fR]
+\fI\,install \/\fR[\fI\,site\/\fR]\fI\,/<package>\/\fR[\fI\,@ref\/\fR] [\fI\,<folder>/<folder>\/\fR]
 .SH DESCRIPTION
 Installs a package from github (or a custom site)
-.IP
-[\-v|\-\-variable <VAR>=<VAL>]
+.TP
+[\-h|\-\-hook <hook>] [\-v|\-\-variable <VAR>=<VAL>] [\-\-ssh]
+[\-\-nocleanup]
 .SH OPTIONS
 .HP
 \fB\-h\fR, \fB\-\-hook\fR <HOOK_TYPE>[=<CONTENT>]
@@ -20,6 +21,13 @@ installing or upgrading a package
 .IP
 set a variable VAR with value VAL,
 useful for setting up files for linking
+.TP
+\fB\-\-nocleanup\fR
+do not perform cleanup (shsh uninstall <package>)
+even if something failed in the installination process
+.TP
+\fB\-\-ssh\fR
+use ssh protocal instead of https
 .TP
 \fB\-\-verbose\fR
 display more info for some commands
@@ -46,6 +54,9 @@ Before linking, add executable bit to all files.
 .TP
 shsh install soraxas/dot\-reminder
 install 'soraxas/dot\-reminder' as a package
+.TP
+shsh install soraxas/git\-utils git/tools
+install 'soraxas/git\-utils' to a folder within 'git/tools'
 .TP
 shsh install \-\-ssh <package>
 install with ssh protocal (rather than https)

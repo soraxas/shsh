@@ -37,7 +37,6 @@ for bin in $bins; do
   src="$SHSH_PACKAGES_PATH/$package/$bin"
   target="$SHSH_INSTALL_BIN/$name"
   
-  echo_if_verbose "Linking '$src' to '$target'"
-  ln -s "$src" "$target"
+  add_link "$src" "$target"
   # chmod +x "$SHSH_INSTALL_BIN/$name"
 done

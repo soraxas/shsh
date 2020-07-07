@@ -22,8 +22,7 @@ link_mans() {
       src="$file"
       target="$SHSH_INSTALL_MAN/man${n}/$manfile"
   
-      echo_if_verbose "Linking '$src' to '$target'"
-      ln -s "$src" "$target"
+      add_link "$src" "$target"
       ;;
   esac
 }

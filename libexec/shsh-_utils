@@ -56,6 +56,14 @@ remove_linked() {
   done
 }
 
+add_link() {
+  # argunments: src=$1; target=$2
+  [ -e "$1" ] || [ -L "$1" ] || return 0
+
+  echo_if_verbose "Linking '$1' to '$2'"
+  ln -s "$1" "$2"
+}
+
 git_check_up_to_date() {
   cd "$1" || exit 1
   git remote update > /dev/null 2>&1
@@ -89,4 +97,45 @@ update_line() {
   # given a token of a line, update the line with new content
   awk '$0~v {$0="'"$2"'"} 1' v="$1" \
     "$_lockfile" > "${_lockfile}.tmp" && mv "${_lockfile}.tmp" "${_lockfile}"
+}
+
+check_key_val_pair() {
+  # Check if the given argument is in XX=XX format
+  case "$1" in (*=*) return 0 ;;esac
+  echo "Invalid argunment for flag '$2' with argunment '$1'"
+  echo "Must be in the format of $2 <KEY>=<VALUE>"
+  exit 1
+}
+
+requote_args() {
+  # Given a list of args, add quotes if necessary
+  C=''
+  for i in "$@"; do
+    case "$i" in
+      *[[:space:]]*)  # contain space
+        case "$i" in
+          *\'*)  # escape single quote
+            i=`printf "%s" "$i" | sed "s/'/'\"'\"'/g"`
+            ;;
+          *) : ;;
+        esac
+        # quote only the parts after equal sign
+        # i.e. in the format of pre='echo foo && echo bar'
+        case "$i" in
+          *=*)  # escape single quote
+            i="${i%%=*}='${i#*=}'"
+            ;;
+          *)  # normal case
+            i="'$i'" ;;
+        esac ;;
+      *) # no space, do nothing
+        : ;;
+    esac
+    if [ -z "$C" ]; then
+      C="$i"
+    else
+      C="$C $i"
+    fi
+  done
+  printf "%s" "$C"
 }

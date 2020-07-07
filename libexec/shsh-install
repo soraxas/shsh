@@ -2,8 +2,9 @@
 #, respectively.
 # Summary: Installs a package from github (or a custom site)
 #
-# Usage: shsh install [--ssh] [site]/<package>[@ref] [folder] [-h|--hook <hook>]
-#                     [-v|--variable <VAR>=<VAL>]
+# Usage: shsh install [site]/<package>[@ref] [<folder>/<folder>]
+#                     [-h|--hook <hook>] [-v|--variable <VAR>=<VAL>] [--ssh]
+#                     [--nocleanup]
 #
 # Options:
 #       -h, --hook <HOOK_TYPE>[=<CONTENT>]
@@ -12,6 +13,9 @@
 #       -v --variable <VAR>=<VAL>
 #                    set a variable VAR with value VAL,
 #                    useful for setting up files for linking 
+#       --nocleanup  do not perform cleanup (shsh uninstall <package>)
+#                    even if something failed in the installination process
+#       --ssh        use ssh protocal instead of https
 #
 #       --verbose    display more info for some commands
 #
@@ -28,6 +32,8 @@
 # Examples:
 #   shsh install soraxas/dot-reminder
 #                    install 'soraxas/dot-reminder' as a package
+#   shsh install soraxas/git-utils git/tools
+#                    install 'soraxas/git-utils' to a folder within 'git/tools'
 #   shsh install --ssh <package>
 #                    install with ssh protocal (rather than https)
 #   shsh install <package> -v FISH_COMPLETIONS=synoservice.fish:forgit.fish
@@ -49,12 +55,9 @@
 
 set -e
 
-check_key_val_pair() {
-  case "$1" in (*=*) return 0 ;;esac
-  echo "Invalid argunment for flag '$2' with argunment '$1'"
-  echo "Must be in the format of $2 <KEY>=<VALUE>"
-  exit 1
-}
+. "${UTILS_FUNC:?}"
+
+original_args="$(requote_args "$@")"
 
 use_ssh="false"
 
@@ -66,6 +69,9 @@ if [ "$#" != 0 ]; then
     case "$opt" in
       --ssh)
         use_ssh="true"
+        ;;
+      --nocleanup)
+        no_cleanup="true"
         ;;
       -h|--hook)
         case "$1" in
@@ -204,15 +210,66 @@ execute_hooks() {
   (cd "$target_folder" && eval "$2")
 }
 
-# only perform link if clone is successful (and package not exists before)
-if shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
-  shsh-_deps "$folder"
-  # [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
-  # [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
-  # [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
+on_exit () {
+  [ $? -eq 0 ] && exit
+  # non-zero exit status
+  [ -n "$no_cleanup" ] && exit
+  echo "> Error occured. Cleaning up..."
+  shsh uninstall "$folder"
+}
+trap on_exit EXIT
 
-  shsh-_link-bins "$folder"
-  shsh-_link-man "$folder"
-  shsh-_link-completions "$folder"
-  # [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+
+## INSTALLING
+# only perform link if clone is successful (and package not exists before)
+if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
+  exit
+fi
+shsh-_deps "$folder"
+
+
+## LINKING
+# [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
+# [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
+# [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
+
+shsh-_link-bins "$folder"
+shsh-_link-man "$folder"
+shsh-_link-completions "$folder"
+# [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+
+
+## SHSHRC
+# add successfully installed package to shshrc
+if [ -e "$SHSHRC" ]; then
+  set +e  # allow non-zero exit status in pattern matching
+  existing="$(grep -E "^\s*shsh install $1(\s.*)?$" "$SHSHRC")"
+  # extract suffix if any (e.g. '&& \' or '|| \')
+  _ending_pattern='\s+([&][&]|[|][|])\s*[\]\s*$'
+  existing_suffix="$(echo "$existing" | grep -oE "$_ending_pattern")"
+  # extract prefix if any (i.e. white spaces)
+  existing_prefix="$(echo "$existing" | grep -oE "^\s*")"
+  # remove these from the statement for comparison
+  existing="$(echo "$existing" | sed -E "s/$_ending_pattern//; s/^(\s*)//")"
+  new_statement="shsh install $original_args"
+
+  if [ -z "$existing" ]; then
+    # append the file with new package
+    echo "> Appending statement to \$SHSHRC: \"$new_statement\""
+    echo "$new_statement" >> "$SHSHRC"
+
+  # check if existings are the same (e.g. with same flags etc.)
+  elif [ "$existing" != "shsh install $original_args" ]; then
+    # update the file with new args/flags
+    new_statement="${existing_prefix}${new_statement}${existing_suffix}"
+    # 1st sed pattern: escape '&' (in awk gsub it has the meaning of matched string)
+    # 2nd sed pattern: all backslash needs to be doubled in awk
+    new_statement="$(echo "$new_statement" | \
+      sed 's/&/\\&/g; s/\\/\\\\/g')"
+    
+    echo "> Updating existing statement in \$SHSHRC to \"$new_statement\""
+    cat "$SHSHRC" | awk '{gsub(old,new); print}' old="^[[:space:]]*shsh install $1([[:space:]].*)?$" \
+      new="$new_statement" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
+  fi
+  set -e
 fi
