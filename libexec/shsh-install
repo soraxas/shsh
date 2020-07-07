@@ -4,7 +4,7 @@
 #
 # Usage: shsh install [site]/<package>[@ref] [<folder>/<folder>]
 #                     [-h|--hook <hook>] [-v|--variable <VAR>=<VAL>] [--ssh]
-#                     [--nocleanup]
+#                     [--nocleanup] [--force]
 #
 # Options:
 #       -h, --hook <HOOK_TYPE>[=<CONTENT>]
@@ -15,6 +15,7 @@
 #                    useful for setting up files for linking 
 #       --nocleanup  do not perform cleanup (shsh uninstall <package>)
 #                    even if something failed in the installination process
+#       --force      force the installation even if the package exists
 #       --ssh        use ssh protocal instead of https
 #
 #       --verbose    display more info for some commands
@@ -72,6 +73,9 @@ if [ "$#" != 0 ]; then
         ;;
       --nocleanup)
         no_cleanup="true"
+        ;;
+      --force)
+        force_install="true"
         ;;
       -h|--hook)
         case "$1" in
@@ -206,16 +210,12 @@ if [ -z "$folder" ]; then
 fi
 target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
-execute_hooks() {
-  echo "> Executing $1"
-  (eval "set -x && cd \"$target_folder\" && $2")
-}
-
 on_exit () {
   [ $? -eq 0 ] && exit
   # non-zero exit status
   [ -n "$no_cleanup" ] && exit
   echo "> Error occured. Cleaning up..."
+  export hook_uninstall
   shsh uninstall "$folder"
 }
 trap on_exit EXIT
@@ -224,20 +224,19 @@ trap on_exit EXIT
 ## INSTALLING
 # only perform link if clone is successful (and package not exists before)
 if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
-  # exit
-  :
+  exit
 fi
 shsh-_deps "$folder"
 
-[ -n "$hook_plus_x" ] && execute_hooks "+x hook" "IFS=:; for x in \$hook_plus_x; do chmod +x \"\$x\"; done"
-[ -n "$hook_all_plus_x" ] && execute_hooks "a+x hook" "chmod -R +x ."
-[ -n "$hook_pre" ] && execute_hooks "pre-hook" "$hook_pre"
+[ -n "$hook_plus_x" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$hook_plus_x; do chmod +x \"\$x\"; done"
+[ -n "$hook_all_plus_x" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
+[ -n "$hook_pre" ] && execute_hooks "pre-hook" "$target_folder" "$hook_pre"
 
 ## LINKING
 shsh-_link-bins "$folder"
 shsh-_link-man "$folder"
 shsh-_link-completions "$folder"
-[ -n "$hook_post" ] && execute_hooks "post-hook" "$hook_post"
+[ -n "$hook_post" ] && execute_hooks "post-hook" "$target_folder" "$hook_post"
 
 
 ## SHSHRC

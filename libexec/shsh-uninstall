@@ -4,6 +4,8 @@
 
 set -e
 
+. "${UTILS_FUNC:?}"
+
 if [ "$#" -ne 1 ]; then
   shsh-help uninstall
   exit 1
@@ -43,5 +45,6 @@ fi
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"
 shsh-_unlink-completions "$package"
+[ -n "$hook_uninstall" ] && execute_hooks "uninstall-hook" "$target_folder" "$hook_uninstall"
 
 rm -rf "${SHSH_PACKAGES_PATH:?}/$package"

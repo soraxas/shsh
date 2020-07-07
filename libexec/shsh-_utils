@@ -99,6 +99,14 @@ update_line() {
     "$_lockfile" > "${_lockfile}.tmp" && mv "${_lockfile}.tmp" "${_lockfile}"
 }
 
+execute_hooks() {
+  # $1: user-friendly description
+  # $2: target folder
+  # $3: the script to execute
+  echo "> Executing $1"
+  (eval "set -x && cd \"$2\" && $3")
+}
+
 check_key_val_pair() {
   # Check if the given argument is in XX=XX format
   case "$1" in (*=*) return 0 ;;esac
