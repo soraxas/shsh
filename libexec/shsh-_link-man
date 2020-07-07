@@ -27,14 +27,14 @@ link_mans() {
   esac
 }
 
-if [ -n "${MANS:=}" ]; then
-  IFS=:
-  for file in $MANS; do
+if [ -z "${MANS+x}" ]; then
+  # man can be in package root or in a subdir named 'man'
+  for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
     link_mans "$file"
   done
 else
-  # man can be in package root or in a subdir named 'man'
-  for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
+  IFS=:
+  for file in $MANS; do
     link_mans "$file"
   done
 fi

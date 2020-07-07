@@ -12,9 +12,12 @@ if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
   . "$SHSH_PACKAGES_PATH/$package/package.sh"
 fi
 
-[ -n "$BINS" ] && bins=$(echo "${BINS:-}" | tr ':' '\n')
+# variable expansion with ${..+x} to all empty variables
+# as user might want to NOT link anything by setting it as empty
+# with --variable BIN=
+[ -n "${BINS+x}" ] && bins=$(echo "${BINS:-}" | tr ':' '\n')
 
-if [ -z "$bins" ]; then
+if [ -z "${bins+x}" ]; then
   list_all_executable() {
     cd "$1" && find "$2" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l
   }

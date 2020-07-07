@@ -42,12 +42,12 @@ link_fish_completion_file() {
   add_link "$src" "$target"
 }
 
-if [ -n "${FISH_COMPLETIONS:=}" ]; then
-  for file in $FISH_COMPLETIONS; do
+if [ -z "${FISH_COMPLETIONS+x}" ]; then
+  for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
     link_fish_completion_file "$file"
   done
 else
-  for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
+  for file in $FISH_COMPLETIONS; do
     link_fish_completion_file "$file"
   done
 fi

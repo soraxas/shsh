@@ -75,21 +75,21 @@ if [ "$#" != 0 ]; then
         ;;
       -h|--hook)
         case "$1" in
-          pre|post|uninstall|+x)
-            check_key_val_pair "$1" "$opt"
-            ;;
+          # pre|post|uninstall|+x)
+          #   check_key_val_pair "$1" "$opt"
+          #   ;;
           pre=*|post=*|uninstall=*)
             _hook_type="${1%%=*}"
             _hook_value="${1#*=}"
             eval "hook_$_hook_type='$_hook_value'"
-            shift ;;
+            ;;
           +x=*)
             if [ -z "$hook_plus_x" ]; then
               hook_plus_x="${1#*=}"
             else
               hook_plus_x="$hook_plus_x:${1#*=}"
             fi
-            shift ;;
+            ;;
           a+x)
             hook_all_plus_x=true
             ;;
@@ -98,6 +98,7 @@ if [ "$#" != 0 ]; then
             exit 1
             ;;
         esac
+        shift
         ;;
       -v|--variable)
         check_key_val_pair "$1" "$opt"
@@ -164,8 +165,8 @@ if [ -n "$2" ]; then
     */*)
       ;;
     *)
-      shsh-help install
-      echo "Optional argunment [folder] must be in the format <...>/<...>"
+      # shsh-help install
+      echo "Optional argunment [folder] must be in the format <...>/<...>, not '$2'"
       exit 1
       ;;
   esac
@@ -207,7 +208,7 @@ target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
 execute_hooks() {
   echo "> Executing $1"
-  (cd "$target_folder" && eval "$2")
+  (eval "set -x && cd \"$target_folder\" && $2")
 }
 
 on_exit () {
@@ -223,20 +224,20 @@ trap on_exit EXIT
 ## INSTALLING
 # only perform link if clone is successful (and package not exists before)
 if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
-  exit
+  # exit
+  :
 fi
 shsh-_deps "$folder"
 
+[ -n "$hook_plus_x" ] && execute_hooks "+x hook" "IFS=:; for x in \$hook_plus_x; do chmod +x \"\$x\"; done"
+[ -n "$hook_all_plus_x" ] && execute_hooks "a+x hook" "chmod -R +x ."
+[ -n "$hook_pre" ] && execute_hooks "pre-hook" "$hook_pre"
 
 ## LINKING
-# [ -n "${hooks[+x]}" ] && execute_hooks "+x-hook" "chmod +x ${hooks[+x]}"
-# [ -n "${hooks[a+x]}" ] && execute_hooks "a+x hook" "chmod -R +x ."
-# [ -n "${hooks[pre]}" ] && execute_hooks "pre-hook" "${hooks[pre]}"
-
 shsh-_link-bins "$folder"
 shsh-_link-man "$folder"
 shsh-_link-completions "$folder"
-# [ -n "${hooks[post]}" ] && execute_hooks "post-hook" "${hooks[post]}"
+[ -n "$hook_post" ] && execute_hooks "post-hook" "$hook_post"
 
 
 ## SHSHRC
