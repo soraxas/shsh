@@ -13,9 +13,11 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v1
-
-      - name: initialise submodules
+      - name: initialise bats submodules
         run: git submodule update --init
+
+      - name: setup mock git config
+        run: git config --global user.email "user@example.com"; git config --global user.name "User Name"
 
       - name: Test
         run: make test
