@@ -1,6 +1,10 @@
-.PHONY: man test clean self-linking
+.PHONY: man test clean self-linking install
+
+XDG_DATA_HOME := $(or $(XDG_DATA_HOME),$(HOME)/.local/share/)
+SHSH_ROOT := $(or $(SHSH_ROOT),$(XDG_DATA_HOME)/shsh)
 
 HELP2MAN := help2man
+LN_CMD := ln -srf
 
 MAIN_SHSH_SRC := libexec/shsh
 # FILES without underscore (which are private)
@@ -19,32 +23,26 @@ SHSH_SELF_BINS_LINKS := cellar/bin/shsh
 SHSH_SELF_MANS_LINKS := $(addprefix cellar/, $(MAN_SUBCMD_TARGET) $(MAN_MAIN_TARGET))
 SHSH_SELF_COMPLETIONS_LINKS := cellar/completions/bash/shsh.bash cellar/completions/fish/shsh.fish cellar/completions/zsh/compctl/shsh.zsh
 
-# a:
-# 	@$(eval CHANGE_MAN_TAG := $(shell if [ "a" = "a" ]; then \
-# 		echo "perl -0777 -pe 's/.IP\\\n(shsh install .*?)\\\n.IP/.TP\\\n"'$$$$1'"/g'"; else \
-# 		echo cat; fi))
-# 	@ echo $(CHANGE_MAN_TAG)
 
-all: man
+install: self-linking
 
 man: $(MAN_SUBCMD_TARGET) $(MAN_MAIN_TARGET)
-
 
 # Self-link shsh's man files, bins, and completions into cellar.
 # This is useful to not add shsh's own bin folder into PATH, and
 # instead only maintain one bin path (cellar) in PATH.
-# TODO: make it respect env var regardless of install location of shsh
-self-linking: $(SHSH_SELF_BINS_LINKS) $(SHSH_SELF_MANS_LINKS) $(SHSH_SELF_COMPLETIONS_LINKS)
+self-linking: $(addprefix $(SHSH_ROOT)/, $(SHSH_SELF_BINS_LINKS) $(SHSH_SELF_MANS_LINKS) $(SHSH_SELF_COMPLETIONS_LINKS))
 
-cellar/%: % | man
-	ln -srf "$<" "$@"
+$(SHSH_ROOT)/cellar/%: % | man
+	@ mkdir -p "$(dir $@)"
+	-$(LN_CMD) "$<" "$@"
 
 # pairs of src, target for linking completion files
-$(SHSH_SELF_COMPLETIONS_LINKS): $(wildcard completions/*)
-	ln -srf completions/shsh.bash cellar/completions/bash/shsh.bash
-	ln -srf completions/shsh.fish cellar/completions/fish/shsh.fish
-	ln -srf completions/shsh.zsh cellar/completions/zsh/compctl/shsh.zsh
-
+$(addprefix $(SHSH_ROOT)/, $(SHSH_SELF_COMPLETIONS_LINKS)): $(wildcard completions/*)
+	@ mkdir -p $(addprefix $(SHSH_ROOT)/cellar/completions/, bash fish zsh/compctl)
+	-$(LN_CMD) completions/shsh.bash $(SHSH_ROOT)/cellar/completions/bash/shsh.bash
+	-$(LN_CMD) completions/shsh.fish $(SHSH_ROOT)/cellar/completions/fish/shsh.fish
+	-$(LN_CMD) completions/shsh.zsh $(SHSH_ROOT)/cellar/completions/zsh/compctl/shsh.zsh
 
 # Includes all subcommand's man to the main shsh man page
 # The awk extract the useful parts, head and tail remove the first and last lines,
@@ -98,7 +96,5 @@ test:
 clean:
 	rm -rf build/
 	rm -rf man/
-	rm -rf $(SHSH_SELF_BINS_LINKS)
-	rm -rf $(SHSH_SELF_MANS_LINKS)
-	rm -rf $(SHSH_SELF_COMPLETIONS_LINKS)
+	rm -rf $(addprefix $(SHSH_ROOT)/, $(SHSH_SELF_BINS_LINKS) $(SHSH_SELF_MANS_LINKS) $(SHSH_SELF_COMPLETIONS_LINKS))
 	rm -rf $(MAN_SEE_ALSO)
