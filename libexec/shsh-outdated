@@ -27,6 +27,8 @@ check_up_to_date() {
 if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
+  # max timeout 20 sec
+  flock -V 2>&1 | grep -iq "BusyBox" || flock_opt="-w 20"
 
   # echo $lockfile
   if [ -z "$quiet" ]; then  # verbose
@@ -45,14 +47,14 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
         else
           msg="Outdated with $package"
         fi
-        flock -w 20 5 || :
+        flock ${flock_opt} 5 || :
         update_line "$package" "$msg" "$lockfile"
         clear_prev_lines "$line_nums"
         cat "$lockfile"
       else
-        # try to obtains lock to output to stdout, with max timeout 20 sec
         if [ -n "$output" ]; then
-          flock -w 20 5 || :
+          # try to obtains lock to output to stdout
+          flock ${flock_opt} 5 || :
           echo "$package"
         fi
       fi
