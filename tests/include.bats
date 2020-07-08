@@ -3,21 +3,21 @@
 load test_helper
 
 @test "without arguments, prints an error" {
-  eval "$(shsh-init - sh)"
+  eval "$(shsh-init sh)"
   run include
   assert_failure
   assert_output "Usage: include <package> <file>"
 }
 
 @test "with one argument, prints an error" {
-  eval "$(shsh-init - sh)"
+  eval "$(shsh-init sh)"
   run include user/repo
   assert_failure
   assert_output "Usage: include <package> <file>"
 }
 
 @test "when package is not installed, prints an error" {
-  eval "$(shsh-init - sh)"
+  eval "$(shsh-init sh)"
   run include user/repo file
   assert_failure
   assert_output "Package not installed: user/repo"
@@ -28,7 +28,7 @@ load test_helper
   mock_clone
   shsh-_clone false site username/repo
 
-  eval "$(shsh-init - sh)"
+  eval "$(shsh-init sh)"
   run include username/repo non_existent
   assert_failure
   assert_output "File not found: $SHSH_PREFIX/packages/username/repo/non_existent"
@@ -40,7 +40,7 @@ load test_helper
   mock_clone
   shsh-_clone false site username/repo
 
-  eval "$(shsh-init - sh)"
+  eval "$(shsh-init sh)"
   include username/repo function.sh
 
   run func_name

@@ -2,12 +2,12 @@
 #
 # Summary: Clones a package from a site, but doesn't install it
 #
-# Usage: shsh _clone <use_ssh> <site> <package> [<ref>] [folder]
+# Usage: shsh _clone <use_ssh> <site> <package> <ref> <folder>
 
 set -e
 
-if [ "$#" -lt 3 ] && [ "$#" -gt 5 ]; then
-  shsh-help _clone
+if [ "$#" -ne 5 ]; then
+  shsh help _clone
   exit 1
 fi
 
@@ -18,7 +18,7 @@ ref="$4"
 folder="$5"
 
 if [ -z "$site" ] || [ -z "$package" ] || [ -z "$folder" ]; then
-  shsh-help _clone
+  shsh help _clone
   exit 1
 fi
 
@@ -33,4 +33,6 @@ else
   URI="https://${site}/$package.git"
 fi
 
-git clone ${SHSH_FULL_CLONE:+"--depth=1"} ${ref:+"-b $ref"} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
+[ -z "$SHSH_FULL_CLONE" ] && depth_option="--depth=1"
+
+git clone ${depth_option:+"$depth_option"} ${ref:+"-b $ref"} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"

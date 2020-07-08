@@ -6,7 +6,7 @@ load test_helper
   run shsh-_deps
 
   assert_failure
-  assert_line "Usage: shsh _deps <package>"
+  assert_line --partial "shsh _deps"
 }
 
 @test "without dependencies, does nothing" {

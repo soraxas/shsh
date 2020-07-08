@@ -20,9 +20,8 @@
 # The following environment variables has effects in `shsh` of
 # changing the default directories of stored files.
 #
-#   XDG_DATA_HOME       directory of shsh's root, i.e.
-#                       SHSH_ROOT=$XDG_DATA_HOME/shsh
-#                       [default: ~/.config]
+#   SHSH_ROOT           directory of shsh's root
+#                       [default: $XDG_DATA_HOME/shsh]
 #   SHSH_PREFIX         directory to store everything
 #                       [default: $SHSH_ROOT/cellar]
 #   SHSH_PACKAGES_PATH  directory to store packages
@@ -50,6 +49,7 @@
 #   FISH_COMPLETIONS    list of fish shell completion files to link
 #                       [default: all files in completions/*.fish and
 #                       completions/fish/*.fish]
+#   DEPS                list of dependent packages to install beforehand
 #
 # Files:
 # SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be an executable file 
@@ -95,9 +95,12 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
   echo "$(pwd -P)"/"$TARGET_FILE"
 )
 
-shsh_root_prefix="${XDG_DATA_HOME:-$HOME/.local/share}"
-export SHSH_ROOT="$shsh_root_prefix/shsh"
-
+_xdg_data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+export SHSH_ROOT="${SHSH_ROOT:="$_xdg_data_home/shsh"}"
+# echo $SHSH_ROOT
+# echo $_xdg_data_home
+# echo $SHSH_ROOT
+# s
 export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
 export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
 export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"

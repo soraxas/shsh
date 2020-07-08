@@ -13,8 +13,8 @@ load test_helper
 }
 
 @test "inherited SHSH_ROOT" {
-  XDG_DATA_HOME=/local/share run shsh echo SHSH_ROOT
-  assert_output "$XDG_DATA_HOME/shsh"
+  SHSH_ROOT= XDG_DATA_HOME=/local/share run shsh echo SHSH_ROOT
+  assert_output "/local/share/shsh"
 }
 
 @test "default SHSH_PREFIX" {

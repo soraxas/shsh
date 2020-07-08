@@ -254,10 +254,9 @@ Upgrades a package
 The following environment variables has effects in `shsh` of
 changing the default directories of stored files.
 .TP
-XDG_DATA_HOME
-directory of shsh's root, i.e.
-SHSH_ROOT=$XDG_DATA_HOME/shsh
-[default: ~/.config]
+SHSH_ROOT
+directory of shsh's root
+[default: $XDG_DATA_HOME/shsh]
 .TP
 SHSH_PREFIX
 directory to store everything
@@ -302,6 +301,9 @@ FISH_COMPLETIONS
 list of fish shell completion files to link
 [default: all files in completions/*.fish and
 completions/fish/*.fish]
+.TP
+DEPS
+list of dependent packages to install beforehand
 .SH FILES
 SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be an executable file
 that store all installed packages. Whenever shsh install a package, it

@@ -5,8 +5,8 @@ load test_helper
 @test "without args shows summary of common commands" {
   run shsh-help
   assert_success
-  assert_line "Usage: shsh <command> [<args>]"
-  assert_line "Some useful shsh commands are:"
+  assert_line --partial "Usage: shsh <command>"
+  assert_line --partial "Some useful shsh commands are:"
 }
 
 @test "invalid command" {
@@ -26,6 +26,8 @@ SH
   run shsh-help hello
   assert_success
   assert_output <<SH
+Says "hello" to you, from shsh
+
 Usage: shsh hello <world>
 
 This command is useful for saying hello.
@@ -43,6 +45,8 @@ SH
   run shsh-help hello
   assert_success
   assert_output <<SH
+Says "hello" to you, from shsh
+
 Usage: shsh hello <world>
 
 Says "hello" to you, from shsh
@@ -76,6 +80,8 @@ SH
   run shsh-help hello
   assert_success
   assert_output <<SH
+Says "hello" to you, from shsh
+
 Usage: shsh hello <world>
        shsh hi [everybody]
        shsh hola --translate
@@ -100,6 +106,8 @@ SH
   run shsh-help hello
   assert_success
   assert_output <<SH
+Says "hello" to you, from shsh
+
 Usage: shsh hello <world>
 
 This is extended help text.
