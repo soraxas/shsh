@@ -17,13 +17,18 @@ jobs:
         with:
           bats-version: 1.1.0
 
+
       - name: Check out code
         uses: actions/checkout@v1
       - name: initialise bats submodules
         run: git submodule update --init
-
       - name: setup mock git config
         run: git config --global user.email "user@example.com"; git config --global user.name "User Name"
 
       - name: Test
         run: make test
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v2
+
