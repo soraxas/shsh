@@ -31,11 +31,11 @@
 #   SHSH_INSTALL_MAN    directory to store mans
 #                       [default: $SHSH_PREFIX/man]
 #
-# The following environment variables changes `shsh`'s linking
-# behaviour by overriding/customising the list of files to be
-# linked into cellar. They can be specified by 'package.sh' (see
-# repository), or by the --variable flag in `shsh install`, or
-# by running `shsh` with the following environmental variables.
+# The following variables changes `shsh`'s linking behaviour by 
+# overriding/customising the list of files to be linked into cellar. 
+# They can be specified by 'package.sh' (see homepage), or with the 
+# --variable flag in `shsh install`, but setting them as environmental
+# variables will has no effect.
 # Note that all of the following variables can be a colon separated 
 # list that follows the PATH variable convention, e.g. FOO:BAR
 #
@@ -97,10 +97,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
 
 _xdg_data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
 export SHSH_ROOT="${SHSH_ROOT:="$_xdg_data_home/shsh"}"
-# echo $SHSH_ROOT
-# echo $_xdg_data_home
-# echo $SHSH_ROOT
-# s
+
 export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
 export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
 export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"
@@ -111,6 +108,11 @@ export SHSHRC="${SHSHRC:=$XDG_CONFIG_HOME/shshrc}"
 bin_path="$(dirname `resolve_link "$0"`)"
 export PATH="${bin_path}:${PATH}"
 export UTILS_FUNC="$bin_path/shsh-_utils"
+
+for v in BINS MANS DEPS \
+  BASH_COMPLETIONS ZSH_COMPLETIONS FISH_COMPLETIONS; do
+  unset "$v"
+done
 
 for arg; do
   shift
