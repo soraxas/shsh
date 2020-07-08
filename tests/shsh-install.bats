@@ -5,19 +5,19 @@ load test_helper
 @test "without arguments prints usage" {
   run shsh-install
   assert_failure
-  assert_line "Usage: shsh install [--ssh] [site]/<package>[@ref]"
+  assert_line --partial "Usage: shsh install"
 }
 
 @test "incorrect argument prints usage" {
   run shsh-install first_arg
   assert_failure
-  assert_line "Usage: shsh install [--ssh] [site]/<package>[@ref]"
+  assert_line --partial "Usage: shsh install"
 }
 
 @test "too many arguments prints usage" {
   run shsh-install a/b wrong
   assert_failure
-  assert_line "Usage: shsh install [--ssh] [site]/<package>[@ref]"
+  assert_line --partial "Optional argunment [folder] must be in the format"
 }
 
 @test "executes install steps in right order" {
@@ -44,7 +44,7 @@ shsh-_link-completions username/package"
 
   run shsh-install site/username/package
 
-  assert_line "shsh-_clone false site username/package"
+  assert_line "shsh-_clone false site username/package  username/package"
 }
 
 @test "without site, uses github as default site" {
@@ -56,7 +56,7 @@ shsh-_link-completions username/package"
 
   run shsh-install username/package
 
-  assert_line "shsh-_clone false github.com username/package"
+  assert_line "shsh-_clone false github.com username/package  username/package"
 }
 
 @test "using ssh protocol" {
@@ -68,7 +68,7 @@ shsh-_link-completions username/package"
 
   run shsh-install --ssh username/package
 
-  assert_line "shsh-_clone true github.com username/package"
+  assert_line "shsh-_clone true github.com username/package  username/package"
 }
 
 @test "installs with custom version" {
@@ -80,7 +80,7 @@ shsh-_link-completions username/package"
 
   run shsh-install username/package@v1.2.3
 
-  assert_line "shsh-_clone false github.com username/package v1.2.3"
+  assert_line "shsh-_clone false github.com username/package v1.2.3 username/package"
 }
 
 @test "empty version is ignored" {
@@ -92,7 +92,7 @@ shsh-_link-completions username/package"
 
   run shsh-install username/package@
 
-  assert_line "shsh-_clone false github.com username/package"
+  assert_line "shsh-_clone false github.com username/package  username/package"
 }
 
 @test "doesn't fail" {

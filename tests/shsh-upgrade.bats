@@ -5,19 +5,19 @@ load test_helper
 @test "without arguments shows usage" {
   run shsh-upgrade
   assert_failure
-  assert_line "Usage: shsh upgrade <package>"
+  assert_line --partial "Usage: shsh upgrade "
 }
 
 @test "with invalid argument, shows usage" {
   run shsh-upgrade lol
   assert_failure
-  assert_line "Usage: shsh upgrade <package>"
+  assert_line --partial "Usage: shsh upgrade "
 }
 
 @test "with too many arguments, shows usage" {
   run shsh-upgrade a/b wrong
   assert_failure
-  assert_line "Usage: shsh upgrade <package>"
+  assert_line --partial "Usage: shsh upgrade "
 }
 
 @test "upgrades a package to the latest version" {
@@ -28,6 +28,6 @@ load test_helper
 
   shsh-upgrade username/package
 
-  run shsh-outdated
+  run shsh-outdated --quiet
   assert_output ""
 }

@@ -50,7 +50,7 @@ load test_helper
 
   run shsh-_unlink-bins username/package
   assert_success
-  assert [ -e "$(readlink $SHSH_INSTALL_BIN/exec3)" ]
+  assert [ ! -e "$(readlink $SHSH_INSTALL_BIN/exec3)" ]
 }
 
 @test "doesn't remote root bins or files in bin folder if there is a BINS config on package.sh" {

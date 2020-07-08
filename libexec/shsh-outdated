@@ -53,7 +53,7 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
         # try to obtains lock to output to stdout, with max timeout 20 sec
         if [ -n "$output" ]; then
           flock -w 20 5 || :
-          echo "$output"
+          echo "$package"
         fi
       fi
     ) 5>>"$lockfile" &

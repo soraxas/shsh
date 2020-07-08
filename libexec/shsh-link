@@ -4,6 +4,8 @@
 
 set -e
 
+. "${UTILS_FUNC:?}"
+
 no_deps="false"
 
 case $1 in

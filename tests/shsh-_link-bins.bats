@@ -23,7 +23,7 @@ load test_helper
   mock_clone
   shsh-_clone false site username/package
 
-  run shsh-_link-bins username/package
+  SHSH_VERBOSE=1 run shsh-_link-bins username/package
 
   assert_success
   assert [ "$(readlink $SHSH_INSTALL_BIN/exec1)" = "${SHSH_PACKAGES_PATH}/username/package/bin/exec1" ]

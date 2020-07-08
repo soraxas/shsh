@@ -156,7 +156,7 @@ esac
 package="${user}/${name}"
 
 # defaults to package's name, but allows custom folder name
-folder="$package"
+folder="${package%%@*}"
 if [ -n "$2" ]; then
   case "$2" in
     */*)
@@ -198,9 +198,6 @@ EOF
     ;;
 esac
 
-if [ -z "$folder" ]; then
-  folder="$package"
-fi
 target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
 on_exit () {

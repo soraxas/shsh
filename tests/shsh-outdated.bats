@@ -16,7 +16,7 @@ load test_helper
   shsh-install username/uptodate
   create_exec username/outdated "second"
 
-  run shsh-outdated
+  run shsh-outdated --quiet
   assert_success
   assert_output username/outdated
 }
@@ -28,7 +28,7 @@ load test_helper
 
   create_command git 'if [ "$1" = "symbolic-ref" ]; then exit 128; fi'
 
-  run shsh-outdated
+  run shsh-outdated --quiet
   assert_success
   assert_output ""
 }

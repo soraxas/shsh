@@ -62,6 +62,7 @@ create_exec() {
   cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p bin
   touch bin/$exec
+  chmod +x "bin/$exec"
 
   git add .
   git commit -m "Add $exec"

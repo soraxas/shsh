@@ -5,7 +5,7 @@ load test_helper
 @test "with arguments shows usage" {
   run shsh-list a_arg
   assert_failure
-  assert_line "Usage: shsh list"
+  assert_line --partial "Usage: shsh list"
 }
 
 @test "list installed packages" {
