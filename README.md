@@ -1,17 +1,21 @@
 # Shsh [![Releases](https://img.shields.io/github/release/soraxas/shsh.svg?label=&color=0366d6)](https://github.com/soraxas/shsh/releases/latest)
 
-<img src="docs/images/shsh-logo.png" title="" alt="" data-align="center">
+<p align="center">
+   <img src="docs/images/shsh-logo.png">
+</p>
 
 A **sh**ell **s**cripts **h**andler (**shsh**) for managing shell scripts, functions, standalone binaries, and more.
 
-Shsh allows you to quickly install shell packages directly from github or
-other sites. Instead of looking for specific install instructions for each
-package and messing with your path, shsh will create a central location for
-all packages and manage their executable, completions files, and man files for you.
+[![CI](https://github.com/soraxas/shsh/workflows/CI/badge.svg)](https://github.com/soraxas/shsh/actions?query=workflow%3ACI)
+[![Build Status](https://img.shields.io/travis/soraxas/shsh/master.svg?label=travis)](https://travis-ci.org/soraxas/shsh)
+[![Master Update](https://img.shields.io/github/last-commit/soraxas/shsh/master.svg)](https://github.com/soraxas/shsh/commits/master)
+[![License](https://img.shields.io/github/license/soraxas/shsh.svg)](https://github.com/soraxas/shsh/blob/master/LICENSE)
 
-Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [Dash](https://wiki.archlinux.org/index.php/Dash).
+## What it does
 
-[![Build Status](https://travis-ci.org/shshpm/shsh.svg?branch=master)](https://travis-ci.org/soraxas/shsh)
+Shsh allows you to quickly install shell packages directly from github or other sites. Instead of looking for specific install instructions for each package and messing with your `$PATH`, shsh will create a central location for all packages and manage their executable, completions files, and man files for you.
+
+Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [dash](https://wiki.archlinux.org/index.php/Dash).
 
 ## Manual Installation
 
@@ -52,7 +56,7 @@ $ shsh self-upgrade
 $ shsh install sstephenson/bats
 ```
 
-This will install bats from https://github.com/sstephenson/bats and add `bin/bats` to the PATH.
+This will install [bats](https://github.com/sstephenson/bats) and add `bin/bats` to `$PATH`.
 
 ### Installing packages from other sites
 
@@ -124,8 +128,8 @@ Packages are simply repos (username/repo). You may also specify a site
 Any files inside a bin directory are added to the path. If there is no bin
 directory, any executable files in the package root are added to the path.
 
-Any manpages (files ended in `\.[0-9]`) inside a `man` directory are added
-to the manpath.
+Any man pages (files ended in `\.[0-9]`) inside a `man` directory are added
+to the man path.
 
 Optionally, a repo might contain a `package.sh` file which specifies binaries,
 dependencies and completions in the following format:
