@@ -18,7 +18,7 @@ check_up_to_date() {
   dir="$SHSH_PACKAGES_PATH/$1"
   if [ ! -L "$dir" ]; then
     if ! git_check_up_to_date "$dir"; then
-      echo "$dir"
+      echo "$1"
     fi
   fi
 }

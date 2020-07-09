@@ -42,12 +42,12 @@ echo_if_verbose() {
 remove_linked() {
   # Given a folder as first arg, if anything that follows it
   # is a link resides within the folder, delete it
-  _package="$1"
+  _package="$(resolve_link "$1")"
   shift
   for _link; do
     # do nothing if the arugnment is not an actual file
     [ -e "$_link" ] || [ -L "$_link" ] || continue
-    case $(resolve_link "$_link") in
+    case "$(resolve_link "$_link")" in
       "$_package/"*)
         echo_if_verbose "Unlinking $_link"
         rm -f "$_link"

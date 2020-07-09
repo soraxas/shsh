@@ -22,7 +22,8 @@ load test_helper
 # This command is useful for saying hello.
 echo hello
 SH
-
+  chmod +x "${SHSH_TEST_DIR}/bin/shsh-hello"
+  
   run shsh-help hello
   assert_success
   assert_output <<SH
@@ -41,7 +42,8 @@ SH
 # Summary: Says "hello" to you, from shsh
 echo hello
 SH
-
+  chmod +x "${SHSH_TEST_DIR}/bin/shsh-hello"
+  
   run shsh-help hello
   assert_success
   assert_output <<SH
@@ -61,7 +63,8 @@ SH
 # This extended help won't be shown.
 echo hello
 SH
-
+  chmod +x "${SHSH_TEST_DIR}/bin/shsh-hello"
+  
   run shsh-help --usage hello
   assert_success "Usage: shsh hello <world>"
 }
@@ -76,7 +79,8 @@ SH
 # Help text.
 echo hello
 SH
-
+  chmod +x "${SHSH_TEST_DIR}/bin/shsh-hello"
+  
   run shsh-help hello
   assert_success
   assert_output <<SH
@@ -102,7 +106,8 @@ SH
 
 echo hello
 SH
-
+  chmod +x "${SHSH_TEST_DIR}/bin/shsh-hello"
+  
   run shsh-help hello
   assert_success
   assert_output <<SH
