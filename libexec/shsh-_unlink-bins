@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 package="$1"

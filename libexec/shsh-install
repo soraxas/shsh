@@ -55,13 +55,13 @@
 
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 original_args="$(requote_args "$@")"
 
 use_ssh="false"
-
+# shellcheck disable=SC2116
 EOL=$(echo '\00\07\01\00')
 if [ "$#" != 0 ]; then
   set -- "$@" "$EOL"
@@ -83,19 +83,19 @@ if [ "$#" != 0 ]; then
           #   check_key_val_pair "$1" "$opt"
           #   ;;
           pre=*|post=*|uninstall=*)
-            _hook_type="${1%%=*}"
+            _hook_type="$(echo "${1%%=*}" | tr '[:lower:]' '[:upper:]')"
             _hook_value="${1#*=}"
-            eval "hook_$_hook_type='$_hook_value'"
+            eval "SHSH_HOOK_$_hook_type='$_hook_value'"
             ;;
           +x=*)
-            if [ -z "$hook_plus_x" ]; then
-              hook_plus_x="${1#*=}"
+            if [ -z "$SHSH_HOOK_PLUS_X" ]; then
+              SHSH_HOOK_PLUS_X="${1#*=}"
             else
-              hook_plus_x="$hook_plus_x:${1#*=}"
+              SHSH_HOOK_PLUS_X="$SHSH_HOOK_PLUS_X:${1#*=}"
             fi
             ;;
           a+x)
-            hook_all_plus_x=true
+            SHSH_HOOK_ALL_PLUS_X=true
             ;;
           *)
             echo "Unrecognized hook type '$1'"
@@ -110,11 +110,12 @@ if [ "$#" != 0 ]; then
         _val="${1#*=}"
         [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
         eval "$_var='$_val'"
-        export "$_var"
+        export "${_var?}"
         shift ;;
       --*=*)  # convert '--name=arg' to '--name' 'arg'
         set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
-      -[^-]?*)  # convert '-abc' to '-a' '-b' '-c'
+      -[!-]?*)  # convert '-abc' to '-a' '-b' '-c'
+        # shellcheck disable=SC2046  # we want word splitting
         set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;       
       --)  # process remaining arguments as positional
         while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;  
@@ -201,6 +202,7 @@ esac
 target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
 on_exit () {
+  # shellcheck disable=SC2181
   [ $? -eq 0 ] && exit
   # non-zero exit status
   [ -n "$no_cleanup" ] && exit
@@ -212,6 +214,7 @@ trap on_exit EXIT
 
 
 ## INSTALLING
+# shellcheck disable=SC2015
 [ -n "$force_install" ] && shsh uninstall "$folder" >/dev/null 2>&1 || true
 # only perform link if clone is successful (and package not exists before)
 if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
@@ -219,15 +222,15 @@ if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
 fi
 shsh-_deps "$folder"
 
-[ -n "$hook_plus_x" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$hook_plus_x; do chmod +x \"\$x\"; done"
-[ -n "$hook_all_plus_x" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
-[ -n "$hook_pre" ] && execute_hooks "pre-hook" "$target_folder" "$hook_pre"
+[ -n "$SHSH_HOOK_PLUS_X" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$SHSH_HOOK_PLUS_X; do chmod +x \"\$x\"; done"
+[ -n "$SHSH_HOOK_ALL_PLUS_X" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
+[ -n "$SHSH_HOOK_PRE" ] && execute_hooks "pre-hook" "$target_folder" "$SHSH_HOOK_PRE"
 
 ## LINKING
 shsh-_link-bins "$folder"
 shsh-_link-man "$folder"
 shsh-_link-completions "$folder"
-[ -n "$hook_post" ] && execute_hooks "post-hook" "$target_folder" "$hook_post"
+[ -n "$SHSH_HOOK_POST" ] && execute_hooks "post-hook" "$target_folder" "$SHSH_HOOK_POST"
 
 
 ## SHSHRC
@@ -259,8 +262,8 @@ if [ -e "$SHSHRC" ]; then
       sed 's/&/\\&/g; s/\\/\\\\/g')"
     
     echo "> Updating existing statement in \$SHSHRC to \"$new_statement\""
-    cat "$SHSHRC" | awk '{gsub(old,new); print}' old="^[[:space:]]*shsh install $1([[:space:]].*)?$" \
-      new="$new_statement" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
+    awk '{gsub(old,new); print}' old="^[[:space:]]*shsh install $1([[:space:]].*)?$" \
+      new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
   fi
   set -e
 fi

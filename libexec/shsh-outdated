@@ -3,8 +3,8 @@
 # Summary: Displays a list of outdated packages
 # Usage: shsh outdated [-q|--quiet]
 
-# set -e
-
+set -e
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 case "$1" in
@@ -28,7 +28,7 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
   # max timeout 20 sec
-  flock -V 2>&1 | grep -iq "BusyBox" || flock_opt="-w 20"
+  flock -V 2>&1 | grep -iq "BusyBox" || flock_use_timeout="true"
 
   # echo $lockfile
   if [ -z "$quiet" ]; then  # verbose
@@ -38,6 +38,7 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
     line_nums=$(wc -l < "$lockfile")
     cat "$lockfile"
   fi
+  # shellcheck disable=SC2094  # flock does not write to the lockfile
   for package in $(shsh list); do
     (
       output=$(check_up_to_date "$package")
@@ -47,14 +48,14 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
         else
           msg="Outdated with $package"
         fi
-        flock ${flock_opt} 5 || :
+        flock ${flock_use_timeout:+"-w" 20} 5 || :
         update_line "$package" "$msg" "$lockfile"
         clear_prev_lines "$line_nums"
         cat "$lockfile"
       else
         if [ -n "$output" ]; then
           # try to obtains lock to output to stdout
-          flock ${flock_opt} 5 || :
+          flock ${flock_use_timeout:+"-w" 20} 5 || :
           echo "$package"
         fi
       fi

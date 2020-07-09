@@ -18,13 +18,13 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
   # useful for mac without GNU readlink
   # based on https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
   _target="$(basename "$1")"
-  cd "$(dirname "$1")"
+  cd "$(dirname "$1")" || exit 1
   i=0
   # Iterate down a (possible) chain of symlinks
   while [ -L "$_target" ]; do
-      _target=`readlink $_target`
-      cd `dirname $_target`
-      _target=`basename $_target`
+      _target="$(readlink "$_target")"
+      cd "$(dirname "$_target")" || exit 1
+      _target="$(basename "$_target")"
       i=$((i+1))
       if [ "$i" -gt 1000 ]; then  # check for symlink loop
         echo "Probably encountered symlink loops while resolving path" 1>&2 && exit 1
@@ -123,7 +123,7 @@ requote_args() {
       *[[:space:]]*)  # contain space
         case "$i" in
           *\'*)  # escape single quote
-            i=`printf "%s" "$i" | sed "s/'/'\"'\"'/g"`
+            i="$(printf "%s" "$i" | sed "s/'/'\"'\"'/g")"
             ;;
           *) : ;;
         esac

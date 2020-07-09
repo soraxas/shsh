@@ -3,7 +3,7 @@
 # Usage: shsh uninstall <package>
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 if [ "$#" -ne 1 ]; then
@@ -45,6 +45,6 @@ fi
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"
 shsh-_unlink-completions "$package"
-[ -n "$hook_uninstall" ] && execute_hooks "uninstall-hook" "$target_folder" "$hook_uninstall"
+[ -n "$SHSH_HOOK_UNINSTALL" ] && execute_hooks "uninstall-hook" "$SHSH_PACKAGES_PATH/$package" "$SHSH_HOOK_UNINSTALL"
 
 rm -rf "${SHSH_PACKAGES_PATH:?}/$package"

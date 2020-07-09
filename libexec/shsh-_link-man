@@ -3,14 +3,14 @@
 set -e
 
 package="$1"
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 echo_if_verbose "> Starting to link man..."
 
 link_mans() {
   file="$1"
-  [ -e "$file" ] || [ -L "$file" ] || continue
+  [ -e "$file" ] || [ -L "$file" ] || return
   
   case "$file" in
     *.[1-9])

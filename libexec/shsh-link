@@ -3,7 +3,7 @@
 # Usage: shsh link [--no-deps] <directory> <package>
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 no_deps="false"

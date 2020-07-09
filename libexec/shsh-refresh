@@ -5,7 +5,7 @@
 # Note: verbose has no effect if --all is specified, as they run in subshells
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 if [ "$#" -ne 1 ]; then
@@ -52,7 +52,7 @@ if [ -n "$upgrade_all" ]; then
 fi
 
 package="$1"
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 # unlink everything

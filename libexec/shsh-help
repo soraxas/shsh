@@ -12,12 +12,14 @@
 # The remainder of the comment block is displayed as extended
 # documentation.
 
+set -e
+
 command_path() {
-  local command="$1"
-  if [ -z "$command" ]; then
+  _command="$1"
+  if [ -z "$_command" ]; then
     command -v shsh || true
   else
-    command -v shsh-"$command" || true
+    command -v shsh-"$_command" || true
   fi
 }
 
@@ -81,18 +83,17 @@ collect_documentation() {
 }
 
 documentation_for() {
-  local filename="$(command_path "$1")"
-  if [ -n "$filename" ]; then
-    extract_initial_comment_block < "$filename" | collect_documentation
+_filename="$(command_path "$1")"
+  if [ -n "$_filename" ]; then
+    extract_initial_comment_block < "$_filename" | collect_documentation
   fi
 }
 
 print_summary() {
-  local command="$1"
-  local summary usage help
-  eval "$(documentation_for "$command")"
+  _command="$1"
+  eval "$(documentation_for "$_command")"
 
-  echo "$summary"
+  echo "${summary:=}"
 }
 
 print_summaries() {
@@ -102,16 +103,15 @@ print_summaries() {
 }
 
 print_help() {
-  local command="$1"
-  local summary usage help
-  eval "$(documentation_for "$command")"
+  _command="$1"
+  eval "$(documentation_for "$_command")"
   [ -n "$help" ] || help="$summary"
 
-  if [ -n "$usage" ] || [ -n "$summary" ]; then
+  if [ -n "${usage:=}" ] || [ -n "${summary:=}" ]; then
     if [ -n "$usage" ]; then
       echo "$usage"
     else
-      echo "Usage: shsh ${command}"
+      echo "Usage: shsh ${_command}"
     fi
     if [ -n "$help" ]; then
       echo
@@ -125,46 +125,58 @@ print_help() {
 }
 
 print_usage() {
-  local command="$1"
-  local summary usage help
-  eval "$(documentation_for "$command")"
+  _command="$1"
+  eval "$(documentation_for "$_command")"
   [ -z "$usage" ] || echo "$usage"
 }
 
-unset usage
-if [ "$1" = "--usage" ]; then
-  usage="1"
+unset only_print_usage
+for arg; do
   shift
-fi
-
-# TAG completions
-if [ "$1" = "--complete" ]; then
-  exec shsh-commands
-fi
+  case "$arg" in
+    --usage)
+      only_print_usage="true"
+      ;;
+    --complete)
+      exec shsh-commands
+      ;;
+    -*)
+      echo "Unknown flag '$arg'"
+      exit 1
+      ;;
+    *)
+      set -- "$@" "$arg"
+  esac
+done
 
 if [ -z "$1" ] || [ "$1" = "shsh" ]; then
+  if [ -n "$only_print_usage" ]; then
+    print_usage
+    exit
+  fi
   print_summary
   echo
   print_usage
-  [ -z "$usage" ] || exit
   echo
   echo "Some useful shsh commands are:"
+  # shellcheck disable=SC2046  # we want word splitting
   print_summaries $(shsh-commands)
 
   echo
+  # shellcheck disable=SC2016
   echo 'See `shsh <command> --help` or `man shsh-<command>` for specific help.'
 
   eval "$(documentation_for "")"
-  printf "\n$help\n"
+  printf '\n%s\n' "$help"
 
 else
   command="$1"
   if [ -n "$(command_path "$command")" ]; then
-    print_summary "$command"
-    echo
-    if [ -n "$usage" ]; then
+    if [ -n "$only_print_usage" ]; then
       print_usage "$command"
     else
+      print_summary "$command"
+      echo
       print_help "$command"
     fi
   else

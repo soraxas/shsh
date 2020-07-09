@@ -3,7 +3,7 @@
 # Usage: shsh upgrade <package|[-a|--all]> 
 
 set -e
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 case $1 in

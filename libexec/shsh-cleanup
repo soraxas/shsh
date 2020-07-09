@@ -22,7 +22,7 @@ for arg; do
       exit 1
   esac
 done
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 for file in "$SHSH_INSTALL_BIN/"* "$SHSH_INSTALL_MAN/man"*"/"* \

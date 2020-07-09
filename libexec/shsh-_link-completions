@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
 
 set -e
+# shellcheck disable=SC2153  # no misspelling
 
 package="$1"
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 echo_if_verbose "> Starting to link completions..."
@@ -41,7 +42,7 @@ link_fish_completion_file() {
 
   add_link "$src" "$target"
 }
-
+# shellcheck disable=SC2153  # no misspelling
 if [ -z "${FISH_COMPLETIONS+x}" ]; then
   for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
     link_fish_completion_file "$file"

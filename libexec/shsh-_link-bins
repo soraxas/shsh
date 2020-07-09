@@ -3,7 +3,7 @@
 set -e
 
 package="$1"
-
+# shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
 echo_if_verbose "> Starting to link bins..."
@@ -15,6 +15,7 @@ fi
 # variable expansion with ${..+x} to all empty variables
 # as user might want to NOT link anything by setting it as empty
 # with --variable BIN=
+# shellcheck disable=SC2153  # no misspelling
 [ -n "${BINS+x}" ] && bins=$(echo "${BINS:-}" | tr ':' '\n')
 
 if [ -z "${bins+x}" ]; then
