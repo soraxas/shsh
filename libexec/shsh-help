@@ -49,7 +49,7 @@ collect_documentation() {
       next
     }
 
-    /^( *$|       )/ && reading_usage {
+    /^( *$|       | +or: +)/ && reading_usage {
       usage = usage "\n" $0
       next
     }

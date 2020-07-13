@@ -51,3 +51,12 @@ complete -f -c shsh -n '__fish_shsh_needs_command' -l version -d "Show version n
 complete -f -c shsh -n "__fish_shsh_using_command list" -s d -l details -d "display more details of packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s a -l all -d "performs on all packages"
 complete -f -c shsh -n "__fish_shsh_using_command refresh" -s a -l all -d "performs on all packages"
+
+complete -f -c shsh -n "__fish_shsh_using_command install" -s h -l hook -d "add hook to the package"
+complete -f -c shsh -n "__fish_shsh_using_command install" -s v -l variable -d "set a variable during installation"
+complete -f -c shsh -n "__fish_shsh_using_command install" -s f -l force -d "force the installation even if the package exists"
+complete -f -c shsh -n "__fish_shsh_using_command install"      -l nocleanup -d "do not perform cleanup"
+complete -f -c shsh -n "__fish_shsh_using_command install"      -l ssh -d "use ssh protocal instead of https"
+
+complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l use-rc -d "uninstall all packages not present in SHSHRC"
+complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l noconfirm -d "do not prompt to confirm"

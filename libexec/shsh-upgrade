@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 # Summary: Upgrades a package
-# Usage: shsh upgrade <package|[-a|--all]> 
+#
+# Usage: shsh upgrade <package>
+#   or:  shsh upgrade <-a|--all>
+#
+# Options:
+#       -a, --all    upgrade all packages, instead of invidivual package
+
 
 set -e
 

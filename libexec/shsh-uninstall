@@ -1,14 +1,60 @@
 #!/usr/bin/env sh
 # Summary: Uninstalls a package
 # Usage: shsh uninstall <package>
+#   or:  shsh uninstall --use-rc [--noconfirm]
+#
+# Options:
+#       --use-rc     uninstall all packages that is not present in SHSHRC file
+#       --noconfirm  do not prompt to confirm uninstalling each package
 
 set -e
 
 . "${UTILS_FUNC:?}"
 
-if [ "$#" -ne 1 ]; then
+for arg; do
+  shift
+  case "$arg" in
+  --use-rc|--rc)
+    use_rc_file="true"
+    ;;
+  --noconfirm|--no-confirm)
+    noconfirm="true"
+    ;;
+  -*)
+    shsh-help uninstall
+    exit 1
+    ;;
+  *)
+    set -- "$@" "$arg"
+    ;;
+  esac
+done
+
+if [ "$#" -ne 1 ] && [ -z "$use_rc_file" ]; then
   shsh-help uninstall
   exit 1
+fi
+
+if [ -n "$use_rc_file" ] && [ "$#" -ne 0 ]; then
+  shsh-help uninstall
+  exit 1
+fi
+
+# using SHSHRC file
+if [ -n "$use_rc_file" ]; then
+  for package in $(shsh list); do
+    set +e
+    shshrc_get_existing_install_cmd "$package"
+    set -e
+
+    if [ -z "$existing" ]; then
+      if [ -n "$noconfirm" ] || prompt "Uninstall $package?"; then
+        echo "> Uninstalling $package"
+        shsh uninstall "$package"
+      fi
+    fi
+  done
+  exit
 fi
 
 # TAG completions
