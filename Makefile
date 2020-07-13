@@ -93,6 +93,9 @@ $(MAIN_SHSH_SRC): LICENSE
 test:
 	bats tests
 
+shellcheck:
+	shellcheck libexec/*
+
 clean:
 	rm -rf build/
 	rm -rf man/

@@ -149,25 +149,21 @@ requote_args() {
 }
 
 prompt ()  {
-  echo -n "$1 [y/N]? "
-  read answer
   while true; do
+    printf '%s [y/N]? ' "$1"
+    read -r answer
     case $answer in
       y|Y|yes|YES) return 0;;
       ''|n|N|no|NO) return 1;;
       *)
         echo 'Invalid response';
-        echo -n "$1 [y/N]? "
-        read answer;;
     esac
   done
 }
 
 shshrc_get_existing_install_cmd() {
   set +e
-  unset existing
-  unset existing_prefix
-  unset existing_suffix
+  unset existing existing_prefix existing_suffix
   # given $1 as the package name, return the existing line in SHSHRC that installs
   # that package
   if [ -e "$SHSHRC" ]; then
@@ -180,4 +176,7 @@ shshrc_get_existing_install_cmd() {
     # remove these from the statement for comparison
     existing="$(echo "$existing" | sed -E "s/$_ending_pattern//; s/^(\s*)//")"
   fi
+  export existing
+  export existing_prefix
+  export existing_suffix
 }

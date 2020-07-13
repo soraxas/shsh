@@ -7,7 +7,7 @@
 A **sh**ell **s**cripts **h**andler (**shsh**) for managing shell scripts, functions, standalone binaries, and more.
 
 [![CI](https://github.com/soraxas/shsh/workflows/CI/badge.svg)](https://github.com/soraxas/shsh/actions?query=workflow%3ACI)
-[![Build Status](https://img.shields.io/travis/soraxas/shsh/master.svg?label=travis)](https://travis-ci.org/soraxas/shsh)
+[![Build Status](https://img.shields.io/travis/soraxas/shsh/master.svg?logo=travis)](https://travis-ci.org/soraxas/shsh)
 [![Master Update](https://img.shields.io/github/last-commit/soraxas/shsh/master.svg)](https://github.com/soraxas/shsh/commits/master)
 [![License](https://img.shields.io/github/license/soraxas/shsh.svg)](https://github.com/soraxas/shsh/blob/master/LICENSE)
 
