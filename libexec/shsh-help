@@ -114,9 +114,7 @@ print_help() {
       echo "Usage: shsh ${_command}"
     fi
     if [ -n "$help" ]; then
-      echo
-      echo "$help"
-      echo
+      printf '\n%s\n\n' "$help"
     fi
   else
     echo "Sorry, this command isn't documented yet." >&2
@@ -157,14 +155,12 @@ if [ -z "$1" ] || [ "$1" = "shsh" ]; then
   print_summary
   echo
   print_usage
-  echo
-  echo "Some useful shsh commands are:"
+  printf '\n%s\n' 'Some useful shsh commands are:'
   # shellcheck disable=SC2046  # we want word splitting
   print_summaries $(shsh-commands)
 
-  echo
   # shellcheck disable=SC2016
-  echo 'See `shsh <command> --help` or `man shsh-<command>` for specific help.'
+  printf '\n%s\n' 'See `shsh <command> --help` or `man shsh-<command>` for specific help.'
 
   eval "$(documentation_for "")"
   printf '\n%s\n' "$help"
