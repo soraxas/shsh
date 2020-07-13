@@ -237,14 +237,7 @@ shsh-_link-completions "$folder"
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  existing="$(grep -E "^\s*shsh install $1(\s.*)?$" "$SHSHRC")"
-  # extract suffix if any (e.g. '&& \' or '|| \')
-  _ending_pattern='\s+([&][&]|[|][|])\s*[\]\s*$'
-  existing_suffix="$(echo "$existing" | grep -oE "$_ending_pattern")"
-  # extract prefix if any (i.e. white spaces)
-  existing_prefix="$(echo "$existing" | grep -oE "^\s*")"
-  # remove these from the statement for comparison
-  existing="$(echo "$existing" | sed -E "s/$_ending_pattern//; s/^(\s*)//")"
+  shshrc_get_existing_install_cmd "$package"
   new_statement="shsh install $original_args"
 
   if [ -z "$existing" ]; then

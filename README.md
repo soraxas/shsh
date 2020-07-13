@@ -13,9 +13,9 @@ A **sh**ell **s**cripts **h**andler (**shsh**) for managing shell scripts, funct
 
 ## What it does
 
-Shsh allows you to quickly install shell packages directly from github or other sites. Instead of looking for specific install instructions for each package and messing with your `$PATH`, shsh will create a central location for all packages and manage their executable, completions files, and man files for you.
+Shsh allows you to quickly install shell packages directly from github or other sites. Instead of looking for specific install instructions for each package and messing with your `$PATH`, shsh will create a central location for all packages and manage their executable, completions files, and man files for you. It is multi-threaded to speed up updating and setting up your packages.
 
-Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [dash](https://wiki.archlinux.org/index.php/Dash).
+Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [dash](https://wiki.archlinux.org/index.php/Dash). The performance of shsh is enhanced by using `dash` and with a multi-threaded. The flexibility of shsh comes from **hooks** where you can run arbitrary scripts that persists across package updates.
 
 ## Manual Installation
 
