@@ -140,15 +140,24 @@ EOF
   esac
 done
 
+main_help_shorted() {
+  # display a stripped main help text (to avoid filling up screen)
+  if [ -n "$show_help" ]; then
+    shsh-help
+  else
+    shsh-help | sed '/^Environment:/,$d'
+  fi
+}
+
 command="$1"
 case "$command" in
---help|"")
-  shsh-help
+"")
+  main_help_shorted
   ;;
 * )
   command_path="$(command -v "shsh-$command" || true)"
   if [ -z "$command_path" ]; then
-    shsh-help
+    main_help_shorted
     exit 1
   fi
   if [ -n "$show_help" ]; then
