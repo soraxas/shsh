@@ -58,6 +58,7 @@ complete -f -c shsh -n "__fish_shsh_using_command install" -s v -l variable -d "
 complete -f -c shsh -n "__fish_shsh_using_command install" -s f -l force -d "force the installation even if the package exists"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l nocleanup -d "do not perform cleanup"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l ssh -d "use ssh protocal instead of https"
+complete -f -c shsh -n "__fish_shsh_using_command install"      -l plain -d "build a plain package from the ground up"
 
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l use-rc -d "uninstall all packages not present in SHSHRC"
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l noconfirm -d "do not prompt to confirm"

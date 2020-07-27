@@ -93,13 +93,17 @@ if [ "$#" != 0 ]; then
         ;;
       -h|--hook)
         case "$1" in
-          # pre|post|uninstall|+x)
-          #   check_key_val_pair "$1" "$opt"
-          #   ;;
           pre=*|post=*|uninstall=*)
-            _hook_type="$(echo "${1%%=*}" | tr '[:lower:]' '[:upper:]')"
+            _hook_type="$(echo "${1%%=*}" | tr '[:upper:]' '[:lower:]')"
             _hook_value="${1#*=}"
-            eval "SHSH_HOOK_$_hook_type='$_hook_value'"
+            case "$_hook_type" in
+              pre)
+                export SHSH_HOOK_PRE="$_hook_value" ;;
+              post)
+                export SHSH_HOOK_POST="$_hook_value" ;;
+              uninstall)
+                export SHSH_HOOK_UNINSTALL="$_hook_value" ;;
+              esac
             ;;
           +x=*)
             if [ -z "$SHSH_HOOK_PLUS_X" ]; then
@@ -234,15 +238,19 @@ trap on_exit EXIT
 
 
 ## INSTALLING
+# shellcheck disable=SC2015
+[ -n "$force_install" ] && shsh uninstall "$folder" >/dev/null 2>&1 || true
 if [ -z "$plain_package" ]; then
-  # shellcheck disable=SC2015
-  [ -n "$force_install" ] && shsh uninstall "$folder" >/dev/null 2>&1 || true
   # only perform link if clone is successful (and package not exists before)
   if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
     exit
   fi
   shsh-_deps "$folder"
 else
+  if [ -e "$SHSH_PACKAGES_PATH/$folder" ]; then
+    echo "Package '$folder' is already present"
+    exit
+  fi
   mkdir -p "$target_folder"
   package="$folder"
 fi
