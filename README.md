@@ -158,9 +158,12 @@ has_cmd() {
 is_hostname() {
   [ $(cat /etc/hostname) = "$1" ] 
 }
+is_wsl() {    
+  cat /proc/version | grep -q '[Mm]icrosoft'    
+}
 ```
 
-### Recipes examples
+### Examples
 
 - The powerful [delta](https://github.com/dandavison/delta) for viewing diff or git-diff output:
   
@@ -177,7 +180,7 @@ is_hostname() {
       shsh install git-town/git-town -h pre='go build && ./git-town completions fish > git-town.fish' -v FISH_COMPLETIONS=git-town.fish
   ```
 
-- Install scripts only on certain machine
+- Install scripts only on some certain machine
   
   ```shell
   # for running bash tests
@@ -190,6 +193,21 @@ is_hostname() {
   ```shell
   # for opening reverse port
   shsh install gist.github.com/soraxas/0ef22338ad01e470cd62595d2e5623dd soraxas/open-rev-ports -h a+x
+  ```
+
+- Running post hook for `wsl-open` in **wsl**
+  
+  ```shell
+  # script to simulate xdg-open in wsl
+  is_wsl && \
+    shsh install 4U6U57/wsl-open -h post='echo "*; wsl-open '"'"'%s'"'"'" > ~/.mailcap'
+  ```
+
+- Scripts for installing pre-compiled binary for **wsl**
+  
+  ```shell
+  is_wsl && \
+    shsh install --plain wsl-tools/win32yank -v _ARCH=x64 -v _VERSION=v0.0.4 -h pre='curl -sLo out.zip https://github.com/equalsraf/win32yank/releases/download/$_VERSION/win32yank-$_ARCH.zip && unzip out.zip' -h +x=win32yank.exe
   ```
 
 ## Credits
