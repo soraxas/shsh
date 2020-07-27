@@ -144,6 +144,53 @@ ZSH_COMPLETIONS=completions/_package
 BINS specified in this fashion have higher precedence then the inference rules
 above.
 
+## Recipes
+
+The following are a list of recipes that uses `shsh` plus some lightweight hooks to bootstrap installing script/binaries on a new system. I personally has the following contents in my `~/.config/shshrc` file.
+
+I had defined handy functions in the `shshrc` file:
+
+```shell
+has_cmd() {    
+  command -v "$1" >/dev/null    
+}
+is_hostname() {
+  [ $(cat /etc/hostname) = "$1" ] 
+}
+```
+
+### Recipes examples
+
+- The powerful [delta](https://github.com/dandavison/delta) for viewing diff or git-diff output:
+  
+  ```shell
+  # if we have cargo, we can build delta directly    
+  has_cmd cargo && \    
+    shsh install dandavison/delta -h pre=make -v BINS=target/release/delta
+  ```
+
+- High-level git workflow with [git-town](https://github.com/git-town/git-town)
+  
+  ```shell
+  has_cmd go && \
+      shsh install git-town/git-town -h pre='go build && ./git-town completions fish > git-town.fish' -v FISH_COMPLETIONS=git-town.fish
+  ```
+
+- Install scripts only on certain machine
+  
+  ```shell
+  # for running bash tests
+  is_hostname Arch && \
+    shsh install bats-core/bats-core
+  ```
+
+- Make sure files has executable bits in **gist**
+  
+  ```shell
+  # for opening reverse port
+  shsh install gist.github.com/soraxas/0ef22338ad01e470cd62595d2e5623dd soraxas/open-rev-ports -h a+x
+  ```
+
 ## Credits
 
 - [basher](https://github.com/basherpm/basher) for the wonderful framework
