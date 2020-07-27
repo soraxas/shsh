@@ -12,7 +12,7 @@ load test_helper
   assert_output "/tmp/shsh"
 }
 
-@test "inherited SHSH_ROOT" {
+@test "inherited SHSH_ROOT with XDG_DATA_HOME" {
   SHSH_ROOT= XDG_DATA_HOME=/local/share run shsh echo SHSH_ROOT
   assert_output "/local/share/shsh"
 }

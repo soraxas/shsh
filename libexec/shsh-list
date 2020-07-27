@@ -7,6 +7,8 @@
 #   -d, --details    display the URL of the repository
 
 set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
 
 case $1 in
   -d|--details)
@@ -29,6 +31,13 @@ for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
   if [ -z "$show_details" ]; then
     echo "$username/$package"
   else
-    printf "%-30s %-30s\n" "$username/$package" "($(git --git-dir="${SHSH_PACKAGES_PATH}/$username/$package/".git config --get remote.origin.url))"
+    if [ -L "$package_path" ]; then
+      # is a locally linked folder
+      extra_info="$(resolve_link "$package_path")"
+    else
+      # is a git with remote upstream
+      extra_info="$(git --git-dir="$package_path/".git config --get remote.origin.url)"
+    fi
+    printf "%-30s %-30s\n" "$username/$package" "($extra_info)"
   fi
 done

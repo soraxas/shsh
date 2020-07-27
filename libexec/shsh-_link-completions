@@ -49,6 +49,6 @@ if [ -z "${FISH_COMPLETIONS+x}" ]; then
   done
 else
   for file in $FISH_COMPLETIONS; do
-    link_fish_completion_file "$file"
+    link_fish_completion_file "$SHSH_PACKAGES_PATH/$package/$file"
   done
 fi
