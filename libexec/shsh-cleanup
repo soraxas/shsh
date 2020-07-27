@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Summary: Cleanup all broken links
-# Usage: shsh cleanup
+# Usage: shsh cleanup [-d|--dry]
 #
 # Check all links within the cellar directories and remove all broken
 # links, i.e., delete all broken links in cellar/{bin,completions,man}
