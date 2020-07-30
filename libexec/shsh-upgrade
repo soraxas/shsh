@@ -86,7 +86,7 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-if [ -d "$package_path/".git ]; then
+if [ -d "${SHSH_PACKAGES_PATH}/$package/".git ]; then
   # git package
   if git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
     exit
@@ -114,6 +114,7 @@ if [ -d "$target_folder/".git ]; then
   git pull
 else
   # remove the folder and rerun hook in a plain folder
+  # shellcheck disable=SC2011
   ls -A1 | xargs rm -rf
 fi
 

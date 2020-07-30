@@ -71,6 +71,7 @@ original_args="$(requote_args "$@")"
 
 parse_hooks_and_setvar "$@"
 # set back $@ from leftovers
+# shellcheck disable=SC2086
 set -- $SHSH_ARGV
 
 use_ssh="false"

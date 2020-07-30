@@ -225,7 +225,7 @@ parse_hooks_and_setvar() {
     done
     shift # remove the EOL token
   fi
-  SHSH_ARGV="$@"
+  SHSH_ARGV="$*"
   export SHSH_ARGV
 }
 
