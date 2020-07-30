@@ -19,8 +19,8 @@ end
 function __fish_shsh_get_package_with_desc
   # get package with the verbose flag, where url will be display as package's description
   # remove the useless ".git" endings
-  shsh list --details | awk 'match($0, /(^\S+).*\s+[(]https?:[/]{2}(.*)[)]/, m) {print m[1]"\t"m[2];}' \
-  | string replace -r --all ".git\$" ""
+  shsh list --details | string replace -fr '(^\S+)\s+[(](.*)[)]' '$1\t$2' \
+  | string replace --all -r '(http[s]?://|[.]git$)' ''
 end
 
 # only have commands completions
