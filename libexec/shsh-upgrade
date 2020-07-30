@@ -86,21 +86,48 @@ if [ -z "$name" ]; then
   exit 1
 fi
 
-if git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
-  exit
+if [ -d "$package_path/".git ]; then
+  # git package
+  if git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
+    exit
+  fi
+else
+  # plain package
+  shshrc_get_existing_install_cmd "$package"
+  eval "parse_hooks_and_setvar $existing"
 fi
 
 # unlink everything first
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"
 shsh-_unlink-completions "$package"
-# upgrade the package
+
+target_folder="${SHSH_PACKAGES_PATH}/$package"
+
 cd "${SHSH_PACKAGES_PATH}/$package"
-git pull
+# upgrade the package
+if [ -d "$target_folder/".git ]; then
+  # cleanup any modified files
+  git clean -xdf
+  git checkout .
+  # use git to pull
+  git pull
+else
+  # remove the folder and rerun hook in a plain folder
+  ls -A1 | xargs rm -rf
+fi
+
+# re-run hooks
+[ -n "$SHSH_HOOK_PRE" ] && execute_hooks "pre-hook" "$target_folder" "$SHSH_HOOK_PRE"
+[ -n "$SHSH_HOOK_PLUS_X" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$SHSH_HOOK_PLUS_X; do chmod +x \"\$x\"; done"
+[ -n "$SHSH_HOOK_ALL_PLUS_X" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
+
 # relink the package components
 shsh-_link-bins "$package"
 shsh-_link-man "$package"
 shsh-_link-completions "$package"
+[ -n "$SHSH_HOOK_POST" ] && execute_hooks "post-hook" "$target_folder" "$SHSH_HOOK_POST"
+
 # upgrade any dependencies it needs
 for dep in $(shsh-_deps --get "$package")
 do

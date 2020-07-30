@@ -161,6 +161,74 @@ prompt ()  {
   done
 }
 
+parse_hooks_and_setvar() {
+  # shellcheck disable=SC2116
+  EOL=$(echo '\00\07\01\00')
+  if [ "$#" != 0 ]; then
+    set -- "$@" "$EOL"
+    while [ "$1" != "$EOL" ]; do
+      opt="$1"; shift
+      case "$opt" in
+        -h|--hook)
+          case "$1" in
+            pre=*|post=*|uninstall=*)
+              _hook_type="$(echo "${1%%=*}" | tr '[:upper:]' '[:lower:]')"
+              _hook_value="${1#*=}"
+              case "$_hook_type" in
+                pre)
+                  SHSH_HOOK_PRE="$_hook_value"
+                  export SHSH_HOOK_PRE
+                  ;;
+                post)
+                  SHSH_HOOK_POST="$_hook_value"
+                  export SHSH_HOOK_POST
+                  ;;
+                uninstall)
+                  SHSH_HOOK_UNINSTALL="$_hook_value"
+                  export SHSH_HOOK_UNINSTALL
+                  ;;
+                esac
+              ;;
+            +x=*)
+              if [ -z "$SHSH_HOOK_PLUS_X" ]; then
+                SHSH_HOOK_PLUS_X="${1#*=}"
+              else
+                SHSH_HOOK_PLUS_X="$SHSH_HOOK_PLUS_X:${1#*=}"
+              fi
+              export SHSH_HOOK_PLUS_X
+              ;;
+            a+x)
+              SHSH_HOOK_ALL_PLUS_X=true
+              export SHSH_HOOK_ALL_PLUS_X
+              ;;
+            *)
+              echo "Unrecognized hook type '$1'"
+              exit 1
+              ;;
+          esac
+          shift
+          ;;
+        -v|--variable)
+          check_key_val_pair "$1" "$opt"
+          _var="${1%%=*}"
+          _val="${1#*=}"
+          [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
+          eval "$_var='$_val'"
+          export "${_var?}"
+          shift ;;
+        --*=*)  # convert '--name=arg' to '--name' 'arg'
+          set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
+        *)
+          # set back any unused args
+          set -- "$@" "$opt"
+      esac
+    done
+    shift # remove the EOL token
+  fi
+  SHSH_ARGV="$@"
+  export SHSH_ARGV
+}
+
 shshrc_get_existing_install_cmd() {
   set +e
   unset existing existing_prefix existing_suffix

@@ -69,6 +69,10 @@ set -e
 
 original_args="$(requote_args "$@")"
 
+parse_hooks_and_setvar "$@"
+# set back $@ from leftovers
+set -- $SHSH_ARGV
+
 use_ssh="false"
 # shellcheck disable=SC2116
 EOL=$(echo '\00\07\01\00')
@@ -91,45 +95,6 @@ if [ "$#" != 0 ]; then
         set -- "PLACE/HOLDER" "$@"
         plain_package="true"
         ;;
-      -h|--hook)
-        case "$1" in
-          pre=*|post=*|uninstall=*)
-            _hook_type="$(echo "${1%%=*}" | tr '[:upper:]' '[:lower:]')"
-            _hook_value="${1#*=}"
-            case "$_hook_type" in
-              pre)
-                export SHSH_HOOK_PRE="$_hook_value" ;;
-              post)
-                export SHSH_HOOK_POST="$_hook_value" ;;
-              uninstall)
-                export SHSH_HOOK_UNINSTALL="$_hook_value" ;;
-              esac
-            ;;
-          +x=*)
-            if [ -z "$SHSH_HOOK_PLUS_X" ]; then
-              SHSH_HOOK_PLUS_X="${1#*=}"
-            else
-              SHSH_HOOK_PLUS_X="$SHSH_HOOK_PLUS_X:${1#*=}"
-            fi
-            ;;
-          a+x)
-            SHSH_HOOK_ALL_PLUS_X=true
-            ;;
-          *)
-            echo "Unrecognized hook type '$1'"
-            exit 1
-            ;;
-        esac
-        shift
-        ;;
-      -v|--variable)
-        check_key_val_pair "$1" "$opt"
-        _var="${1%%=*}"
-        _val="${1#*=}"
-        [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
-        eval "$_var='$_val'"
-        export "${_var?}"
-        shift ;;
       --*=*)  # convert '--name=arg' to '--name' 'arg'
         set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
       -[!-]?*)  # convert '-abc' to '-a' '-b' '-c'

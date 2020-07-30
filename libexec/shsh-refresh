@@ -55,6 +55,9 @@ package="$1"
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
+shshrc_get_existing_install_cmd "$package"
+eval "parse_hooks_and_setvar $existing"
+
 # unlink everything
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"

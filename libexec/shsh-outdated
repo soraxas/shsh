@@ -16,7 +16,8 @@ esac
 check_up_to_date() {
   # check updates with git, where directory is $1
   dir="$SHSH_PACKAGES_PATH/$1"
-  if [ ! -L "$dir" ]; then
+  # only perfrom it if it's actually a git package
+  if [ ! -L "$dir" ] && [ -d "$dir/".git ]; then
     if ! git_check_up_to_date "$dir"; then
       echo "$1"
     fi
