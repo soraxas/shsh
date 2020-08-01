@@ -9,6 +9,8 @@ A **sh**ell **s**cripts **h**andler (**shsh**) for managing shell scripts, funct
 [![CI](https://github.com/soraxas/shsh/workflows/CI/badge.svg)](https://github.com/soraxas/shsh/actions?query=workflow%3ACI)
 [![ShellCheck](https://github.com/soraxas/shsh/workflows/ShellCheck/badge.svg)](https://github.com/soraxas/shsh/actions?query=workflow%3AShellCheck)
 [![Build Status](https://img.shields.io/travis/soraxas/shsh/master.svg?logo=travis)](https://travis-ci.org/soraxas/shsh)
+[![AUR Version](https://img.shields.io/aur/version/shsh.svg)](https://aur.archlinux.org/packages/shsh)
+[![AUR-git Version](https://img.shields.io/aur/version/shsh-git.svg?label=aur-git)](https://aur.archlinux.org/packages/shsh-git)
 [![Master Update](https://img.shields.io/github/last-commit/soraxas/shsh/master.svg)](https://github.com/soraxas/shsh/commits/master)
 [![License](https://img.shields.io/github/license/soraxas/shsh.svg)](https://github.com/soraxas/shsh/blob/master/LICENSE)
 
