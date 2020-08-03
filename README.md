@@ -25,9 +25,11 @@ Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://
 1. **Manual:** Checkout shsh inside `$XDG_DATA_HOME`, e.g., at `~/.local/share/shsh`
    
    ```sh
+    # clone shsh and add shsh to $PATH variable
     $ git clone https://github.com/soraxas/shsh ~/.local/share/shsh
-    # add shsh to $PATH variable
-    export PATH="$HOME/.local/share/shsh/bin:$PATH"'
+    $ export PATH="$HOME/.local/share/shsh/bin:$PATH"
+    # Optional: link shsh's own completion files and man pages to cellar
+    $ cd ~/.local/share/shsh && make self-linking
    ```
 
     **Or with AUR (Arch):** Install `shsh` or `shsh-git` pacakage in AUR, e.g.
@@ -39,8 +41,9 @@ Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://
 2. Initialise shsh in your shell init file, e.g.
    
    ```sh
-    $ eval "$(shsh init SHELL)"
-    # SHELL: sh, bash, zsh, fish, etc.
+    # in ~/.bashrc, ~/.zshrc, etc.
+    eval "$(shsh init SHELL)"
+    # SHELL: sh, bash, zsh, fish
    ```
    
     **Fish**: Use the following commands instead:
