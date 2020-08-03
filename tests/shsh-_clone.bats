@@ -25,7 +25,7 @@ load test_helper
 
   run shsh-_clone false site username/package version foldera/folderb
   assert_success
-  assert_output "git clone --depth=1 -b version --recursive https://site/username/package.git ${SHSH_PACKAGES_PATH}/foldera/folderb"
+  assert_output "git clone --depth=1 --single-branch --branch version --recursive https://site/username/package.git ${SHSH_PACKAGES_PATH}/foldera/folderb"
 }
 
 @test "does nothing if package is already present" {
