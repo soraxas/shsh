@@ -35,4 +35,4 @@ fi
 
 [ -z "$SHSH_FULL_CLONE" ] && depth_option="--depth=1"
 
-git clone ${depth_option:+"$depth_option"} ${ref:+"-b $ref"} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
+git clone ${depth_option:+"$depth_option"} ${ref:+--single-branch --branch "$ref"} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
