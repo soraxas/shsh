@@ -45,9 +45,7 @@ if [ -n "$upgrade_all" ]; then
     flock -u 5 || :
   }
 
-  command -v tput >/dev/null && export SHSH_USE_TPUT=1
-  # turn off line wrapping for correct display
-  [ -n "$SHSH_USE_TPUT" ] && tput rmam && restore_tput=1
+  turn_off_line_wrapping
 
   for package in $(shsh list); do
     echo "Checking status of $package..." >> "$lockfile"
@@ -73,7 +71,7 @@ if [ -n "$upgrade_all" ]; then
   done
   wait
 
-  [ -n "$restore_tput" ] && tput smam  # turn line wrapping back on
+  restore_line_wrapping
   rm -f "$lockfile"
   exit
 fi

@@ -151,6 +151,16 @@ requote_args() {
   printf "%s" "$C"
 }
 
+turn_off_line_wrapping() {
+  command -v tput >/dev/null && export SHSH_USE_TPUT=1
+  # turn off line wrapping for correct display
+  [ -n "$SHSH_USE_TPUT" ] && tput rmam && restore_tput=1
+}
+
+restore_line_wrapping() {
+  [ -n "$restore_tput" ] && tput smam  # turn line wrapping back on
+}
+
 prompt ()  {
   while true; do
     printf '%s [y/N]? ' "$1"

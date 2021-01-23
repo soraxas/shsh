@@ -46,6 +46,7 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # max timeout 20 sec
   flock -V 2>&1 | grep -iq "BusyBox" || flock_use_timeout="true"
 
+  turn_off_line_wrapping
   # echo $lockfile
   if [ -z "$quiet" ]; then  # verbose
     for package in $(shsh list); do
@@ -75,6 +76,7 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
     ) 5>>"$lockfile" &
   done
   wait
+  restore_line_wrapping
   # cleanup
   rm -f "$lockfile"
 else
