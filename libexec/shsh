@@ -124,7 +124,7 @@ for arg; do
       ;;
     --version)
       cat << EOF
-shsh (shell script handler) v2.4.3
+shsh (shell script handler) v2.4.4
 
 Copyright (c) 2014 Juan Ibiapina, 2020 Tin Lai (@soraxas)
 This is free software; see the source for copying conditions.  There is NO

@@ -233,6 +233,10 @@ shsh-_link-completions "$folder"
 
 
 ## SHSHRC
+# by default, create SHSHRC if not exists yet.
+if [ ! -e "$SHSHRC" ]; then
+  touch "$SHSHRC" || true
+fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
