@@ -1,23 +1,38 @@
 #!/usr/bin/env sh
 # Summary: Upgrades a package
 #
-# Usage: shsh upgrade <package>
+# Usage: shsh upgrade <package> [-f|--force]
 #   or:  shsh upgrade <-a|--all>
 #
 # Options:
 #       -a, --all    upgrade all packages, instead of invidivual package
+#       -f, --force  force upgrade a package even if the cloned repository is
+#                    up-to-date
+#       --nohooks    supress the evaluation of existing hooks in SHSHRC file
+#                    (default is executing all previously saved hooks)
 
 
 set -e
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
-case $1 in
-  -a|--all)
-    upgrade_all="true"
-    shift
-  ;;
-esac
+for arg; do
+  shift
+  case "$arg" in
+    -a|--all)
+      upgrade_all="true"
+    ;;
+    -f|--force)
+      force_upgrade="true"
+    ;;
+    --nohooks)
+      nohooks="true"
+    ;;
+    *)
+      # set back any unused args
+      set -- "$@" "$arg"
+  esac
+done
 
 if [ -n "$upgrade_all" ]; then
   lockfile="$(mktemp)"
@@ -37,7 +52,9 @@ if [ -n "$upgrade_all" ]; then
   cat "$lockfile"
   for package in $(shsh list); do
     (
-      if git_check_up_to_date "$SHSH_PACKAGES_PATH/$package"; then
+      if [ ! -e "$SHSH_PACKAGES_PATH/$package/".git ]; then
+        update_and_refresh_screen "$package" "Require explicit upgrade for plain-package $package"
+      elif git_check_up_to_date "$SHSH_PACKAGES_PATH/$package"; then
         update_and_refresh_screen "$package" "Already up-to-date with $package"
       else
         update_and_refresh_screen "$package" "Updating $package..."
@@ -88,11 +105,14 @@ fi
 
 if [ -d "${SHSH_PACKAGES_PATH}/$package/".git ]; then
   # git package
-  if git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
+  if [ -z "$force_upgrade" ] && git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
     exit
   fi
 else
   # plain package
+  :
+fi
+if [ -z "$nohooks" ]; then
   shshrc_get_existing_install_cmd "$package"
   eval "parse_hooks_and_setvar $existing"
 fi

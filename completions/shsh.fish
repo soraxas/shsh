@@ -50,6 +50,8 @@ complete -f -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
 complete -f -c shsh -n '__fish_shsh_needs_command' -l version -d "Show version number"
 complete -f -c shsh -n "__fish_shsh_using_command list" -s d -l details -d "display more details of packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s a -l all -d "performs on all packages"
+complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s f -l force -d "force upgrade a package even if up-to-date"
+complete -f -c shsh -n "__fish_shsh_using_command upgrade" -l nohooks -d "do not execute saved hooks in SHSHRC"
 complete -f -c shsh -n "__fish_shsh_using_command refresh" -s a -l all -d "performs on all packages"
 complete -f -c shsh -n "__fish_shsh_using_command cleanup" -s d -l dry -d "perform a dry run"
 

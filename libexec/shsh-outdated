@@ -17,12 +17,27 @@ check_up_to_date() {
   # check updates with git, where directory is $1
   dir="$SHSH_PACKAGES_PATH/$1"
   # only perfrom it if it's actually a git package
-  if [ ! -L "$dir" ] && [ -d "$dir/".git ]; then
-    if ! git_check_up_to_date "$dir"; then
-      echo "$1"
-    fi
+  if [ ! -L "$dir" ] && [ -e "$dir/".git ]; then
+    ret=0
+    git_check_up_to_date "$dir" || ret=$?
+    return $ret
+  fi
+  # indicate this is a plain package
+  return 2
+}
+
+check_up_to_date_verbose() {
+  ret=0
+  check_up_to_date "$1" || ret=$?
+  if [ "$ret" -eq 0 ]; then
+    echo "OK $1"
+  elif [ "$ret" -eq 1 ]; then
+    echo "Outdated with $1"
+  elif [ "$ret" -eq 2 ]; then
+    echo "Unknown with $1"
   fi
 }
+
 
 
 if command -v mktemp >/dev/null && command -v flock >/dev/null; then
@@ -42,19 +57,16 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # shellcheck disable=SC2094  # flock does not write to the lockfile
   for package in $(shsh list); do
     (
-      output=$(check_up_to_date "$package")
       if [ -z "$quiet" ]; then  # verbose
-        if [ -z "$output" ]; then
-          msg="OK $package"
-        else
-          msg="Outdated with $package"
-        fi
+        msg=$(check_up_to_date_verbose "$package")
         flock ${flock_use_timeout:+"-w" 20} 5 || :
         update_line "$package" "$msg" "$lockfile"
         clear_prev_lines "$line_nums"
         cat "$lockfile"
       else
-        if [ -n "$output" ]; then
+        ret=0
+        check_up_to_date "$package" || ret=$?
+        if [ "$ret" -eq 1 ]; then
           # try to obtains lock to output to stdout
           flock ${flock_use_timeout:+"-w" 20} 5 || :
           echo "$package"
@@ -68,6 +80,12 @@ if command -v mktemp >/dev/null && command -v flock >/dev/null; then
 else
   # doesn't contain the necessary utilities, we will perform in sequential order
   for package in $(shsh list); do
-    check_up_to_date "$package"
+    if [ -z "$quiet" ]; then  # verbose
+      check_up_to_date_verbose "$package"
+    else
+      ret=0
+      check_up_to_date "$package" || ret=$?
+      [ "$ret" -eq 1 ] && echo "$package"
+    fi
   done
 fi
