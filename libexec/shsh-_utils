@@ -76,12 +76,15 @@ git_check_up_to_date() {
 
 clear_prev_lines() {
   if [ -n "$SHSH_USE_TPUT" ]; then
-    for _ in $(seq 1 "$1"); do
-      # go to previous line
-      tput cuu 1
-      # clear line
-      tput el
-    done
+    # clear all lines at once (ed clear from current to end of screen)
+    tput cuu "$1"
+    tput ed
+   # for _ in $(seq 1 "$1"); do
+   #   # go to previous line
+   #   tput cuu 1
+   #   # clear line
+   #   tput el
+   # done
   else
     for _ in $(seq 1 "$1"); do
       # go to previous line
