@@ -3,7 +3,7 @@
 load test_helper
 
 @test "displays nothing if there are no packages" {
-  run shsh-outdated
+  run shsh-outdated --quiet
   assert_success
   assert_output ""
 }

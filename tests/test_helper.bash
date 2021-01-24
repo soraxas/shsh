@@ -19,6 +19,7 @@ export PATH="${BATS_TEST_DIRNAME}/../libexec:$PATH"
 export PATH="${SHSH_TMP_BIN}:$PATH"
 
 export UTILS_FUNC="${SHSH_ROOT}/libexec/shsh-_utils"
+export SHSH_NOMULTITHREAD="true"
 
 mkdir -p "${SHSH_TMP_BIN}"
 mkdir -p "${SHSH_TEST_DIR}/path"

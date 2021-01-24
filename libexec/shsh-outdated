@@ -40,7 +40,7 @@ check_up_to_date_verbose() {
 
 
 
-if command -v mktemp >/dev/null && command -v flock >/dev/null; then
+if [ -z "$SHSH_NOMULTITHREAD" ] && command -v mktemp >/dev/null && command -v flock >/dev/null; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
   # max timeout 20 sec
@@ -87,7 +87,7 @@ else
     else
       ret=0
       check_up_to_date "$package" || ret=$?
-      [ "$ret" -eq 1 ] && echo "$package"
+      [ "$ret" -eq 1 ] && echo "$package" || :
     fi
   done
 fi
