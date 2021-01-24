@@ -87,7 +87,9 @@ else
     else
       ret=0
       check_up_to_date "$package" || ret=$?
-      [ "$ret" -eq 1 ] && echo "$package" || :
+      if [ "$ret" -eq 1 ]; then
+        echo "$package"
+      fi
     fi
   done
 fi
