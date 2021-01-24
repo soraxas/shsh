@@ -152,6 +152,8 @@ requote_args() {
 }
 
 turn_off_line_wrapping() {
+  # tput requires $TERM to functions properly
+  [ -z "$TERM" ] && return
   command -v tput >/dev/null && export SHSH_USE_TPUT=1
   # turn off line wrapping for correct display
   [ -n "$SHSH_USE_TPUT" ] && tput rmam && restore_tput=1
