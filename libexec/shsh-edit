@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# Summary: Edits the auto-generated shshrc file with $EDITOR
+# Usage: shsh edit
+
+set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
+
+if [ -z "$EDITOR" ]; then
+  if command -v nvim &> /dev/null; then
+    EDITOR="nvim"
+  elif command -v vim &> /dev/null; then
+    EDITOR="vim"
+  elif command -v nano &> /dev/null; then
+    EDITOR="nano"
+  fi
+fi
+
+exec "$EDITOR" "$SHSHRC"
