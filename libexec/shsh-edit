@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Summary: Edits the auto-generated shshrc file with $EDITOR
+# Summary: Edits the auto-amending shshrc file with $EDITOR
 # Usage: shsh edit
 
 set -e
@@ -7,11 +7,11 @@ set -e
 . "${UTILS_FUNC:?}"
 
 if [ -z "$EDITOR" ]; then
-  if command -v nvim &> /dev/null; then
+  if command_exists nvim; then
     EDITOR="nvim"
-  elif command -v vim &> /dev/null; then
+  elif command_exists vim; then
     EDITOR="vim"
-  elif command -v nano &> /dev/null; then
+  elif command_exists nano; then
     EDITOR="nano"
   fi
 fi

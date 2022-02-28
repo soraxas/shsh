@@ -20,7 +20,7 @@ shopt -s nullglob
 IFS=:
 { for path in $PATH; do
     for command in "${path}/$package-"*; do
-      command="${command##*$package-}"
+      command="${command##*"$package"-}"
       if [[ ! "$command" == _* ]]; then
         echo "${command}"
       fi
