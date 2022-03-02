@@ -27,12 +27,13 @@ case "$shell_type" in
 esac
 
 if [ ! -f "$startup_script" ]; then
-  echo "Startup script "$startup_script" does not exist"
+  echo "Startup script '$startup_script' does not exist"
   exit 1
 fi
 
 ## now add the basher initialisation lines to the user's startup script
 echo "Adding shsh initialisation"
+#shellcheck disable=SC2016
 case "$startup_type" in
   simple)
     printf '%s\n' '' >>"$startup_script"
