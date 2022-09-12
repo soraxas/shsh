@@ -48,22 +48,22 @@ if [ -n "$upgrade_all" ]; then
   turn_off_line_wrapping
 
   for package in $(shsh list); do
-    echo "Checking status of $package..." >> "$lockfile"
+    echo "⟳ Checking status of $package..." >> "$lockfile"
   done
   line_nums=$(wc -l < "$lockfile")
   cat "$lockfile"
   for package in $(shsh list); do
     (
       if [ ! -e "$SHSH_PACKAGES_PATH/$package/".git ]; then
-        update_and_refresh_screen "$package" "Require explicit upgrade for plain-package $package"
+        update_and_refresh_screen "$package" "⌘ Require explicit upgrade for plain-package $package"
       elif git_check_up_to_date "$SHSH_PACKAGES_PATH/$package"; then
-        update_and_refresh_screen "$package" "Already up-to-date with $package"
+        update_and_refresh_screen "$package" "≡ Already up-to-date with $package"
       else
-        update_and_refresh_screen "$package" "Updating $package..."
+        update_and_refresh_screen "$package" "↯ Updating $package..."
         if shsh-upgrade "$package" >/dev/null 2>&1; then
-          msg="Updated $package"
+          msg="✓ Updated $package"
         else
-          msg="Failed to update $package, with exit code $?"
+          msg="✘ Failed to update $package, with exit code $?"
         fi
         update_and_refresh_screen "$package" "$msg"
       fi
