@@ -11,4 +11,5 @@ jobs:
       uses: ludeeus/action-shellcheck@master
       with:
         check_together: 'yes'
-        ignore: 'cellar lib tests completions man bin docs'
+        ignore_paths: 'cellar lib tests completions man bin docs'
+        version: v0.8.0
