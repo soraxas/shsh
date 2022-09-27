@@ -20,13 +20,21 @@ Shsh allows you to quickly install shell packages directly from github or other 
 
 Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [dash](https://wiki.archlinux.org/index.php/Dash). The performance of shsh is enhanced by using `dash` and with our use of multi-threaded approach. The flexibility of shsh comes from **hooks** where you can run arbitrary scripts that persists across package updates.
 
-## Automatic Installation
+## Quick Start
+
+### Automatic Installation
 
 Automatically bootstrap and install `shsh` (which would also modify your shell's init script)
 ```sh
 curl -s https://raw.githubusercontent.com/soraxas/shsh/master/bootstrap/install.sh | sh
 ```
 
+### Recipes
+
+[Ranger](https://github.com/ranger/ranger): A powerful terminal file manger
+ ```sh
+shsh install ranger/ranger -v REMOVE_EXTENSION=true -v BINS=ranger.py -h pre='sed -i "1d;2i#!/usr/bin/python3 -O" ranger.py'
+```
 
 ## Installation
 
