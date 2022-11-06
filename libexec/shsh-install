@@ -11,15 +11,19 @@
 #
 # Options:
 #       -h, --hook <HOOK_TYPE>[=<CONTENT>]
-#                    add HOOK to this package, which is triggered while 
+#                    add HOOK to this package, which is triggered while
 #                    installing or upgrading a package
 #       -v --variable <VAR>=<VAL>
 #                    set a variable VAR with value VAL,
-#                    useful for setting up files for linking 
+#                    useful for setting up files for linking
 #       --nocleanup  do not perform cleanup (shsh uninstall <package>)
 #                    even if something failed in the installination process
 #       --plain      do not clone from a git repository; useful to use hooks
 #                    script to build a package from the ground up
+#       --gh-release download binary assets from a github release; this
+#                    flag implies --plain
+#                    TODO: currently it is bias towards linux and amd64;
+#                          to-be generalised towards detecting current arch.
 #       -f, --force  force the installation even if the package exists
 #       --ssh        use ssh protocal instead of https
 #
@@ -34,7 +38,7 @@
 #   +x=<FILE>        Before linking, adds executable bit to the FILE. If
 #                    multiples are given, they will be run in sequential order.
 #   a+x              Before linking, add executable bit to all files.
-# 
+#
 # Examples:
 #   shsh install soraxas/dot-reminder
 #                    install 'soraxas/dot-reminder' as a package
@@ -53,9 +57,9 @@
 #                    before linking is performed
 #   shsh install <package> -h pre='make all' -h post='rm -r build/*'
 #                    add a hook that runs 'make all' to build binaries, right
-#                    after cloning and before linking is performed. Then, 
-#                    linking is performed with its usual rules (i.e. all 
-#                    executable files in root and in bin/). Finally, 
+#                    after cloning and before linking is performed. Then,
+#                    linking is performed with its usual rules (i.e. all
+#                    executable files in root and in bin/). Finally,
 #                    'rm -r build/*' is ran to remove leftovers.
 #   shsh install --plain wsl-tools/win32yank -h pre='curl -sLo out.zip \
 #                https://<..>/releases/<..>.zip && unzip out.zip' -h +x=win32yank.exe
@@ -91,18 +95,21 @@ if [ "$#" != 0 ]; then
       -f|--force)
         force_install="true"
         ;;
+      --gh-release)
+        gh_release="true"
+        ;;
       --plain)
         # set a dummy remote package name
         # set -- "PLACE/HOLDER" "$@"
         plain_package="true"
         ;;
       --*=*)  # convert '--name=arg' to '--name' 'arg'
-        set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
+        set -- "${opt%%=*}" "${opt#*=}" "$@";;
       -[!-]?*)  # convert '-abc' to '-a' '-b' '-c'
         # shellcheck disable=SC2046  # we want word splitting
-        set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;       
+        set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;
       --)  # process remaining arguments as positional
-        while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;  
+        while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;
       -*)
         echo "Error: Unsupported flag '$opt'" >&2
         exit 1
@@ -126,6 +133,10 @@ fi
 #   echo "Argunment <folder>/<folder> is necessary for plain package"
 #   exit 1
 # fi
+
+if [ -n "$gh_release" ]; then
+  plain_package="true"
+fi
 
 case "$1" in
   */*/*)
@@ -170,12 +181,7 @@ IFS=/ read -r user name <<EOF
 $package
 EOF
 
-if [ -z "$user" ]; then
-  shsh-help install
-  exit 1
-fi
-
-if [ -z "$name" ]; then
+if [ -z "$user" ] || [ -z "$name" ]; then
   shsh-help install
   exit 1
 fi
@@ -221,6 +227,56 @@ else
   package="$folder"
 fi
 
+# script for gh release
+if [ -n "$gh_release" ]; then
+  _response="$(curl https://api.github.com/repos/"$package"/releases/latest)"
+  available_archives="$(jq -r '.assets[] | select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$"))' <<EOF
+$_response
+EOF
+)"
+
+  # check arch
+  for pref in x86_64 amd64; do
+    item="$(echo "$available_archives" | jq -r 'select(.name|test("'$pref'"))')"
+    if [ -n "$item" ]; then
+      break
+    fi
+  done
+
+  if [ -z "$item" ]; then
+    echo "Unable to find suitable release asset. Available release assets are: $(jq -r '.assets[].name' <<EOF
+$_response
+EOF
+)"
+    exit 1
+  fi
+
+  # prefer statically linked assets
+  for pref in linux-musl linux; do
+    _item="$(echo "$item" | jq -r 'select(.name|test("'$pref'"))')"
+    if [ -n "$_item" ]; then
+      item="$_item"
+      break
+    fi
+  done
+
+  _filename="$(echo "$item" | jq -r '.name' | head -1)"
+  case "$_filename" in
+    *gz|*xz)
+      unarchive_cmd="tar xvf"
+      ;;
+    *zip)
+      unarchive_cmd="unzip"
+      ;;
+  esac
+  echo ">> Going to download release asset '$_filename'"
+
+  # We don't want the nested variables to expand
+  # shellcheck disable=SC2016
+  _script='wget '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$_filename"'
+  execute_hooks "downloading gh-release" "$target_folder" "$_script"
+fi
+
 [ -n "$SHSH_HOOK_PRE" ] && execute_hooks "pre-hook" "$target_folder" "$SHSH_HOOK_PRE"
 [ -n "$SHSH_HOOK_PLUS_X" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$SHSH_HOOK_PLUS_X; do chmod +x \"\$x\"; done"
 [ -n "$SHSH_HOOK_ALL_PLUS_X" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
@@ -256,7 +312,7 @@ if [ -e "$SHSHRC" ]; then
     # 2nd sed pattern: all backslash needs to be doubled in awk
     new_statement="$(echo "$new_statement" | \
       sed 's/&/\\&/g; s/\\/\\\\/g')"
-    
+
     echo "> Updating existing statement in \$SHSHRC to \"$new_statement\""
     awk '{gsub(old,new); print}' old="^[[:space:]]*shsh install $1([[:space:]].*)?$" \
       new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
