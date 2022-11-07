@@ -8,7 +8,7 @@
 #       --help        display help message for any commands
 #       --version     output version information and exit
 #       --verbose     display more info for some commands
-# 
+#
 # Examples:
 #   shsh install user/repo    install 'user/repo' as a package
 #   shsh list                 list all installed packages
@@ -31,18 +31,18 @@
 #   SHSH_INSTALL_MAN    directory to store mans
 #                       [default: $SHSH_PREFIX/man]
 #
-# The following variables changes `shsh`'s linking behaviour by 
-# overriding/customising the list of files to be linked into cellar. 
-# They can be specified by 'package.sh' (see homepage), or with the 
+# The following variables changes `shsh`'s linking behaviour by
+# overriding/customising the list of files to be linked into cellar.
+# They can be specified by 'package.sh' (see homepage), or with the
 # --variable flag in `shsh install`, but setting them as environmental
 # variables will has no effect.
-# Note that all of the following variables can be a colon separated 
+# Note that all of the following variables can be a colon separated
 # list that follows the PATH variable convention, e.g. FOO:BAR
 #
 #   BINS                list of binary/script files to link
 #                       [default: all executable files in root and bin/*]
 #   MANS                list of man pages to link
-#                       [default: all files in man/*.[0-9] and 
+#                       [default: all files in man/*.[0-9] and
 #                       man/man.[0-9]/*.[0-9]]
 #   BASH_COMPLETIONS    list of bash shell completion files to link
 #   ZSH_COMPLETIONS     list of zsh shell completion files to link
@@ -50,10 +50,12 @@
 #                       [default: all files in completions/*.fish and
 #                       completions/fish/*.fish]
 #   DEPS                list of dependent packages to install beforehand
+#   ROOT                specify a subfolder within the repo-root to act
+#                       as where all operations are performed
 #
 # Files:
-# SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be a plain-text file 
-# that store all installed packages. Whenever shsh install a package, it 
+# SHSHRC: The file `$XDG_CONFIG_HOME/shshrc` shall be a plain-text file
+# that store all installed packages. Whenever shsh install a package, it
 # will add the package to SHSHRC. If there is an existing entry, it will
 # update that entry with the new flags/argunment instead. It will search
 # for all lines within SHSHRC that begins with `shsh install`, ignoring
@@ -98,7 +100,7 @@ bin_path="$(dirname "$(resolve_link "$0")")"
 # shellcheck source=libexec/shsh-_env-var
 . "$bin_path/shsh-_env-var"
 
-for v in BINS MANS DEPS \
+for v in ROOT BINS MANS DEPS \
   BASH_COMPLETIONS ZSH_COMPLETIONS FISH_COMPLETIONS; do
   unset "$v"
 done
@@ -114,7 +116,7 @@ for arg; do
       ;;
     --version)
       cat << EOF
-shsh (shell script handler) v2.6.0
+shsh (shell script handler) v2.7.0
 
 Copyright (c) 2014 Juan Ibiapina, 2020 Tin Lai (@soraxas)
 This is free software; see the source for copying conditions.  There is NO

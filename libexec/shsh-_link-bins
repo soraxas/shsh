@@ -2,14 +2,15 @@
 
 set -e
 
-package="$1"
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
+target_folder="$(get_operation_root "$SHSH_PACKAGES_PATH/$1")"
+
 echo_if_verbose "> Starting to link bins..."
-if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+if [ -e "$target_folder/package.sh" ]; then
   # shellcheck source=/dev/null
-  . "$SHSH_PACKAGES_PATH/$package/package.sh"
+  . "$target_folder/package.sh"
 fi
 
 # variable expansion with ${..+x} to all empty variables
@@ -22,11 +23,11 @@ if [ -z "${bins+x}" ]; then
   list_all_executable() {
     cd "$1" && find "$2" -maxdepth 1 -mindepth 1 -perm -u+x -type f -or -type l
   }
-  if [ -e "$SHSH_PACKAGES_PATH/$package/bin" ]; then
-    bins=$(list_all_executable "$SHSH_PACKAGES_PATH/$package" bin)
+  if [ -e "$target_folder/bin" ]; then
+    bins=$(list_all_executable "$target_folder" bin)
   else
     # remove the "./" prefix with cut
-    bins=$(list_all_executable "$SHSH_PACKAGES_PATH/$package" "." | cut -sd / -f 2-)
+    bins=$(list_all_executable "$target_folder" "." | cut -sd / -f 2-)
   fi
 fi
 
@@ -37,10 +38,28 @@ for bin in $bins; do
   name="${bin##*/}"
   if ${REMOVE_EXTENSION:-false}; then
     name="${name%%.*}"
+  else
+    # @ sign can be used to separate the source and target name
+    case "$bin" in
+      *@*)
+        IFS=@ read -r bin name <<EOF
+$bin
+EOF
+      ;;
+    esac
   fi
-  src="$SHSH_PACKAGES_PATH/$package/$bin"
+  src="$target_folder/$bin"
   target="$SHSH_INSTALL_BIN/$name"
-  
+
+  # this for-loop approach allows us to expand any globbing character '*' that
+  # exists in the $src variable. If there are more than one matches, we will
+  # be taking the first match.
+  for matched_src in $src; do
+    src="$matched_src"
+    break
+  done
+
   add_link "$src" "$target"
-  # chmod +x "$SHSH_INSTALL_BIN/$name"
+  # incase the original file is not executable
+  chmod +x "$target"
 done

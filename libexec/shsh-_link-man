@@ -2,16 +2,17 @@
 
 set -e
 
-package="$1"
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
+
+target_folder="$(get_operation_root "$SHSH_PACKAGES_PATH/$1")"
 
 echo_if_verbose "> Starting to link man..."
 
 link_mans() {
   file="$1"
   [ -e "$file" ] || [ -L "$file" ] || return 0
-  
+
   case "$file" in
     *.[1-9])
       # get the last digit
@@ -21,7 +22,7 @@ link_mans() {
 
       src="$file"
       target="$SHSH_INSTALL_MAN/man${n}/$manfile"
-  
+
       add_link "$src" "$target"
       ;;
   esac
@@ -29,7 +30,19 @@ link_mans() {
 
 if [ -z "${MANS+x}" ]; then
   # man can be in package root or in a subdir named 'man'
-  for file in "$SHSH_PACKAGES_PATH/$package"/man/man*/* "$SHSH_PACKAGES_PATH/$package"/man/* "$SHSH_PACKAGES_PATH/$package/"*; do
+  ##### the following brace expansion is not supported in POSIX
+  # "$target_folder"/{,auto}{complete,completion}{,s}{,/fish}/*.fish
+  for file in \
+    "$target_folder"/*                \
+    "$target_folder"/man/man*/*       \
+    "$target_folder"/share/man/man*/* \
+    "$target_folder"/man/*            \
+    "$target_folder"/doc/*            \
+    "$target_folder"/docs/*           \
+    "$target_folder"/share/man/*      \
+    "$target_folder"/share/doc/*      \
+    "$target_folder"/share/docs/*
+  do
     link_mans "$file"
   done
 else

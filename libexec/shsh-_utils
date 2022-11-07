@@ -102,12 +102,31 @@ update_line() {
     "$_lockfile" > "${_lockfile}.tmp" && mv "${_lockfile}.tmp" "${_lockfile}"
 }
 
+get_operation_root() {
+  dest="$1"
+  if [ -n "$ROOT" ]; then
+    # expand glob
+    for _expanded_var in $1/$ROOT; do
+      dest="$_expanded_var"
+      if [ ! -e "$dest" ]; then
+        >&2 echo ">> specified root '$ROOT' does not exists inside '$1'!"
+        exit 1
+      fi
+      break
+    done
+  fi
+  echo "$dest"
+}
+
 execute_hooks() {
   # $1: user-friendly description
   # $2: target folder
   # $3: the script to execute
   echo "> Executing $1"
-  (eval "set -x && cd \"$2\" && $3")
+  # most of the time, hooks might be executed when folder is empty... so it's better to leave it to the user to cd on-their-own
+  # dir="$(get_operation_root "$2")"
+  dir="$2"
+  (eval "set -x && cd \"$dir\" && $3")
 }
 
 check_key_val_pair() {
@@ -123,6 +142,10 @@ requote_args() {
   C=''
   for i in "$@"; do
     case "$i" in
+      -f|--force)
+        # skip
+        continue
+        ;;
       *[[:space:]]*)  # contain space
         case "$i" in
           *\'*)  # escape single quote
@@ -240,7 +263,7 @@ parse_hooks_and_setvar() {
           export "${_var?}"
           shift ;;
         --*=*)  # convert '--name=arg' to '--name' 'arg'
-          set -- "${opt%%=*}" "${opt#*=}" "$@";;                        
+          set -- "${opt%%=*}" "${opt#*=}" "$@";;
         *)
           # set back any unused args
           set -- "$@" "$opt"

@@ -3,21 +3,22 @@
 set -e
 # shellcheck disable=SC2153  # no misspelling
 
-package="$1"
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
+target_folder="$(get_operation_root "$SHSH_PACKAGES_PATH/$1")"
+
 echo_if_verbose "> Starting to link completions..."
-if [ -e "$SHSH_PACKAGES_PATH/$package/package.sh" ]; then
+if [ -e "$target_folder/package.sh" ]; then
   # shellcheck source=/dev/null
-  . "$SHSH_PACKAGES_PATH/$package/package.sh"
+  . "$target_folder/package.sh"
 fi
 
 IFS=:
 if [ -n "${BASH_COMPLETIONS:=}" ]; then
   mkdir -p "$SHSH_PREFIX/completions/bash"
   for completion in $BASH_COMPLETIONS; do
-    ln -s "$SHSH_PACKAGES_PATH/$package/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
+    ln -s "$target_folder/$completion" "$SHSH_PREFIX/completions/bash/${completion##*/}"
   done
 fi
 
@@ -25,7 +26,7 @@ if [ -n "${ZSH_COMPLETIONS:=}" ]; then
   mkdir -p "$SHSH_PREFIX/completions/zsh/compsys"
   mkdir -p "$SHSH_PREFIX/completions/zsh/compctl"
   for completion in $ZSH_COMPLETIONS; do
-    src="$SHSH_PACKAGES_PATH/$package/$completion"
+    src="$target_folder/$completion"
     if grep -q "#compdef" "$src"; then
       target="$SHSH_PREFIX/completions/zsh/compsys/${completion##*/}"
     else
@@ -44,11 +45,30 @@ link_fish_completion_file() {
 }
 # shellcheck disable=SC2153  # no misspelling
 if [ -z "${FISH_COMPLETIONS+x}" ]; then
-  for file in "$SHSH_PACKAGES_PATH/$package"/completions/fish/*.fish "$SHSH_PACKAGES_PATH/$package"/completions/*.fish; do
+  ##### the following brace expansion is not supported in POSIX
+  # "$target_folder"/{,auto}{complete,completion}{,s}{,/fish}/*.fish
+  for file in \
+    "$target_folder"/complete/*.fish             \
+    "$target_folder"/complete/fish/*.fish        \
+    "$target_folder"/completes/*.fish            \
+    "$target_folder"/completes/fish/*.fish       \
+    "$target_folder"/completion/*.fish           \
+    "$target_folder"/completion/fish/*.fish      \
+    "$target_folder"/completions/*.fish          \
+    "$target_folder"/completions/fish/*.fish     \
+    "$target_folder"/autocomplete/*.fish         \
+    "$target_folder"/autocomplete/fish/*.fish    \
+    "$target_folder"/autocompletes/*.fish        \
+    "$target_folder"/autocompletes/fish/*.fish   \
+    "$target_folder"/autocompletion/*.fish       \
+    "$target_folder"/autocompletion/fish/*.fish  \
+    "$target_folder"/autocompletions/*.fish      \
+    "$target_folder"/autocompletions/fish/*.fish
+  do
     link_fish_completion_file "$file"
   done
 else
   for file in $FISH_COMPLETIONS; do
-    link_fish_completion_file "$SHSH_PACKAGES_PATH/$package/$file"
+    link_fish_completion_file "$target_folder/$file"
   done
 fi
