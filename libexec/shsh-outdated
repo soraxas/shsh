@@ -17,9 +17,12 @@ check_up_to_date() {
   # check updates with git, where directory is $1
   dir="$SHSH_PACKAGES_PATH/$1"
   # only perfrom it if it's actually a git package
+  ret=0
   if [ ! -L "$dir" ] && [ -e "$dir/".git ]; then
-    ret=0
     git_check_up_to_date "$dir" || ret=$?
+    return $ret
+  elif [ -e "$dir/.gh-release_info" ]; then
+    gh_release_check_up_to_date "$1" "$dir" || ret=$?
     return $ret
   fi
   # indicate this is a plain package
@@ -30,11 +33,11 @@ check_up_to_date_verbose() {
   ret=0
   check_up_to_date "$1" || ret=$?
   if [ "$ret" -eq 0 ]; then
-    echo "OK $1"
+    echo "✓ Up-to-date  $1"
   elif [ "$ret" -eq 1 ]; then
-    echo "Outdated with $1"
+    echo "↯ Outdated    $1"
   elif [ "$ret" -eq 2 ]; then
-    echo "Unknown with $1"
+    echo "⌘ Unknown     $1"
   fi
 }
 
@@ -43,6 +46,7 @@ check_up_to_date_verbose() {
 if [ -z "$SHSH_NOMULTITHREAD" ] && command_exists mktemp && command_exists flock; then
   # perform checks with multithreads
   lockfile="$(mktemp)"
+  msgfile="$(mktemp)"
   # max timeout 20 sec
   flock -V 2>&1 | grep -iq "BusyBox" || flock_use_timeout="true"
 
@@ -50,10 +54,10 @@ if [ -z "$SHSH_NOMULTITHREAD" ] && command_exists mktemp && command_exists flock
   # echo $lockfile
   if [ -z "$quiet" ]; then  # verbose
     for package in $(shsh list); do
-      echo "Checking $package..." >> "$lockfile"
+      echo "Checking      $package..." >> "$msgfile"
     done
-    line_nums=$(wc -l < "$lockfile")
-    cat "$lockfile"
+    line_nums=$(wc -l < "$msgfile")
+    cat "$msgfile"
   fi
   # shellcheck disable=SC2094  # flock does not write to the lockfile
   for package in $(shsh list); do
@@ -61,9 +65,9 @@ if [ -z "$SHSH_NOMULTITHREAD" ] && command_exists mktemp && command_exists flock
       if [ -z "$quiet" ]; then  # verbose
         msg=$(check_up_to_date_verbose "$package")
         flock ${flock_use_timeout:+"-w" 20} 5 || :
-        update_line "$package" "$msg" "$lockfile"
+        update_line "$package" "$msg" "$msgfile"
         clear_prev_lines "$line_nums"
-        cat "$lockfile"
+        cat "$msgfile"
       else
         ret=0
         check_up_to_date "$package" || ret=$?
@@ -79,6 +83,7 @@ if [ -z "$SHSH_NOMULTITHREAD" ] && command_exists mktemp && command_exists flock
   restore_line_wrapping
   # cleanup
   rm -f "$lockfile"
+  rm -f "$msgfile"
 else
   # doesn't contain the necessary utilities, we will perform in sequential order
   for package in $(shsh list); do

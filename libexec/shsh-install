@@ -227,74 +227,7 @@ else
   package="$folder"
 fi
 
-# script for gh release
-if [ -n "$gh_release" ]; then
-  _response="$(curl https://api.github.com/repos/"$package"/releases/latest)"
-
-  # using EOF method as the original json might contain invalid characters
-  available_assets="$(jq -n --argjson data "$_response" '$data.assets')"
-
-  available_archives="$( echo "$available_assets" | jq -r 'map(select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$")))' )"
-
-  if [ -z "$available_archives" ]; then
-    echo ">> No available archives found. Will download non-archives as standalone executable instead."
-  else
-    available_assets="$available_archives"
-  fi
-
-  # check arch
-  for pref in x86_64 amd64 linux64; do
-    item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'$pref'"))')"
-    if [ -n "$item" ]; then
-      break
-    fi
-  done
-
-  if [ -z "$item" ]; then
-    printf "%s\n%s\n" ">> Unable to find suitable release asset. Available release assets are:" "$( echo "$available_assets" | jq -r '.[].name' )"
-    exit 1
-  fi
-
-  # prefer statically linked assets
-  for pref in linux-musl linux; do
-    _item="$(echo "$item" | jq -r 'select(.name|test("'$pref'"))')"
-    if [ -n "$_item" ]; then
-      item="$_item"
-      break
-    fi
-  done
-
-  _filename="$(echo "$item" | jq -r '.name' | head -1)"
-  case "$_filename" in
-    *gz|*xz)
-      unarchive_cmd="tar xvf"
-      ;;
-    *zip)
-      unarchive_cmd="unzip"
-      ;;
-    *)
-      # non-archive
-      unarchive_cmd="echo"
-      ;;
-  esac
-  echo ">> Going to download release asset '$_filename'"
-
-  # We don't want the nested variables to expand
-  # shellcheck disable=SC2016
-  _script='wget '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$_filename"'
-  execute_hooks "downloading gh-release" "$target_folder" "$_script"
-fi
-
-[ -n "$SHSH_HOOK_PRE" ] && execute_hooks "pre-hook" "$target_folder" "$SHSH_HOOK_PRE"
-[ -n "$SHSH_HOOK_PLUS_X" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$SHSH_HOOK_PLUS_X; do chmod +x \"\$x\"; done"
-[ -n "$SHSH_HOOK_ALL_PLUS_X" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
-
-## LINKING
-shsh-_link-bins "$folder"
-shsh-_link-man "$folder"
-shsh-_link-completions "$folder"
-[ -n "$SHSH_HOOK_POST" ] && execute_hooks "post-hook" "$target_folder" "$SHSH_HOOK_POST"
-
+shsh-_post-install "$folder" "$target_folder" "$gh_release" "$ref"
 
 ## SHSHRC
 # by default, create SHSHRC if not exists yet.

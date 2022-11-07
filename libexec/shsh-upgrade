@@ -36,22 +36,23 @@ done
 
 if [ -n "$upgrade_all" ]; then
   lockfile="$(mktemp)"
+  msgfile="$(mktemp)"
 
   update_and_refresh_screen() {
     flock -w 20 5 || :
-    update_line "$1" "$2" "$lockfile"
+    update_line "$1" "$2" "$msgfile"
     clear_prev_lines "$line_nums"
-    cat "$lockfile"
+    cat "$msgfile"
     flock -u 5 || :
   }
 
   turn_off_line_wrapping
 
   for package in $(shsh list); do
-    echo "⟳ Checking status of $package..." >> "$lockfile"
+    echo "⟳ Checking status of $package..." >> "$msgfile"
   done
-  line_nums=$(wc -l < "$lockfile")
-  cat "$lockfile"
+  line_nums=$(wc -l < "$msgfile")
+  cat "$msgfile"
   for package in $(shsh list); do
     (
       if [ ! -e "$SHSH_PACKAGES_PATH/$package/".git ]; then
@@ -73,6 +74,7 @@ if [ -n "$upgrade_all" ]; then
 
   restore_line_wrapping
   rm -f "$lockfile"
+  rm -f "$msgfile"
   exit
 fi
 
@@ -112,6 +114,12 @@ if [ -d "${SHSH_PACKAGES_PATH}/$package/".git ]; then
   if [ -z "$force_upgrade" ] && git_check_up_to_date "${SHSH_PACKAGES_PATH}/$package"; then
     exit
   fi
+elif [ -e "$target_folder/.gh-release_info" ]; then
+  # gh release
+  if gh_release_check_up_to_date "$package" "$target_folder"; then
+    exit
+  fi
+  gh_release="true"
 else
   # plain package
   :
@@ -137,21 +145,13 @@ if [ -d "$target_folder/".git ]; then
   # use git to pull
   git pull
 else
+  # plain package or gh release
   # remove the folder and rerun hook in a plain folder
   # shellcheck disable=SC2011
   ls -A1 | xargs rm -rf
 fi
 
-# re-run hooks
-[ -n "$SHSH_HOOK_PRE" ] && execute_hooks "pre-hook" "$target_folder" "$SHSH_HOOK_PRE"
-[ -n "$SHSH_HOOK_PLUS_X" ] && execute_hooks "+x hook" "$target_folder" "IFS=:; for x in \$SHSH_HOOK_PLUS_X; do chmod +x \"\$x\"; done"
-[ -n "$SHSH_HOOK_ALL_PLUS_X" ] && execute_hooks "a+x hook" "$target_folder" "chmod -R +x ."
-
-# relink the package components
-shsh-_link-bins "$package"
-shsh-_link-man "$package"
-shsh-_link-completions "$package"
-[ -n "$SHSH_HOOK_POST" ] && execute_hooks "post-hook" "$target_folder" "$SHSH_HOOK_POST"
+shsh-_post-install "$package" "$target_folder" "$gh_release" "$ref"
 
 # upgrade any dependencies it needs
 for dep in $(shsh-_deps --get "$package")

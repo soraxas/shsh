@@ -74,6 +74,18 @@ git_check_up_to_date() {
   fi
 }
 
+gh_release_check_up_to_date() {
+  package="$1"
+  folder="$2"
+  # currently this does not respect requested tag-name
+  current_date="$(jq -r '.published_at' < "$folder/.gh-release_info")"
+  latest_date="$(request_gh_release_info "$package" 2>/dev/null | jq -r '.published_at')"
+  if [ "$(date --date="$current_date" +%s)" -lt "$(date --date="$latest_date" +%s)" ]; then
+    return 1
+  fi
+  return 0
+}
+
 clear_prev_lines() {
   if [ -n "$SHSH_USE_TPUT" ]; then
     # clear all lines at once (ed clear from current to end of screen)
@@ -127,6 +139,25 @@ execute_hooks() {
   # dir="$(get_operation_root "$2")"
   dir="$2"
   (eval "set -x && cd \"$dir\" && $3")
+}
+
+request_gh_release_info() {
+  package="$1"
+  ref="$2"
+  url="https://api.github.com/repos/$package/releases"
+  if [ -n "$ref" ]; then
+    url="$url/tags/$ref"
+  else
+    url="$url/latest"
+  fi
+  out="$(curl "$url")"
+  case "$(jq -n --argjson data "$out" '$data.message')" in
+    *"API rate limit"*)
+      >&2 echo "Github release API rate limit reached"
+      exit 1
+      ;;
+  esac
+  printf '%s' "$out"
 }
 
 check_key_val_pair() {

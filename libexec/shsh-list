@@ -38,11 +38,13 @@ for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
       if [ -d "$package_path/".git ]; then
         # is a git with remote upstream
         extra_info="$(git --git-dir="$package_path/".git config --get remote.origin.url)"
+      elif [ -e "$package_path/.gh-release_info" ]; then
+        extra_info="gh-release: $(jq -r '.tag_name' < "$package_path/.gh-release_info")"
       else
         # is a plain package
         extra_info="plain package"
       fi
     fi
-    printf "%-30s %-30s\n" "$username/$package" "($extra_info)"
+    printf "%-35s %-30s\n" "$username/$package" "($extra_info)"
   fi
 done
