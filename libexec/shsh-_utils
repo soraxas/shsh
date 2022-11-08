@@ -35,7 +35,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
 
 echo_if_verbose() {
   if [ -n "$SHSH_VERBOSE" ]; then
-    echo "$1"
+    >&2 echo "$1"
   fi
 }
 
@@ -293,8 +293,8 @@ parse_hooks_and_setvar() {
           eval "$_var='$_val'"
           export "${_var?}"
           shift ;;
-        --*=*)  # convert '--name=arg' to '--name' 'arg'
-          set -- "${opt%%=*}" "${opt#*=}" "$@";;
+        # --*=*)  # convert '--name=arg' to '--name' 'arg'
+        #   set -- "${opt%%=*}" "${opt#*=}" "$@";;
         *)
           # set back any unused args
           set -- "$@" "$opt"

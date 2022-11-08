@@ -13,45 +13,69 @@ ref="$4"
 
 # script for gh release
 if [ -n "$gh_release" ]; then
+
   _response="$(request_gh_release_info "$package" "$ref")"
   # save the release tag to file
   jq -n --argjson data "$_response" '$data' > "$target_folder/.gh-release_info"
 
   # using EOF method as the original json might contain invalid characters
-  available_assets="$(jq -n --argjson data "$_response" '$data.assets')"
+  all_available_assets="$(jq -n --argjson data "$_response" '$data.assets')"
+  available_assets="$all_available_assets"
 
-  available_archives="$( echo "$available_assets" | jq -r 'map(select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$")))' )"
+  #########################################
+  # auto-determine the target asset name
+  #########################################
 
-  if [ -z "$(echo "$available_archives" | jq 'select(length > 0)' )" ]; then
-    echo ">> No available archives found. Will download non-archives as standalone executable instead."
-  else
-    available_assets="$available_archives"
-  fi
+  auto_determine_assets() {
+    available_assets="$1"
+    for pref in $gh_release_asset x86_64 amd64 linux64; do
+      item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$pref"'"))')"
+      if [ -n "$item" ]; then
+        echo "$item"
+      fi
+    done
+  }
 
-  # check arch
-  for pref in x86_64 amd64 linux64; do
-    item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'$pref'"))')"
-    if [ -n "$item" ]; then
-      break
+  filter_by_preference() {
+    # Filter out available options. If there are no more
+    # canidates left after the filtering, revert back to
+    # the original list
+    # $1 jq array
+    # $2 jq filter
+    available_assets="$1"
+    canidates="$( echo "$available_assets" | jq -r "$2" )"
+    if [ -n "$(echo "$canidates" | jq 'select(length > 0)' )" ]; then
+      # only replace when there are canidates left
+      available_assets="$canidates"
     fi
-  done
+    echo "$available_assets"
+    echo_if_verbose ">> filtering with '$2'"
+    echo_if_verbose ">>>> from '$(echo "$1" | jq -r '.[].name' | tr '\n' ' ')' to '$(echo "$available_assets" | jq -r '.[].name' | tr '\n' ' ')'"
+  }
 
-  if [ -z "$item" ]; then
-    printf "%s\n%s\n" ">> Unable to find suitable release asset. Available release assets are:" "$( echo "$available_assets" | jq -r '.[].name' )"
+  # necessary condition
+  available_assets="$(auto_determine_assets "$available_assets")"
+  available_assets="$(echo "$available_assets" | jq -s '.' )"
+
+  # check results
+  if [ -z "$(echo "$available_assets" | jq 'select(length > 0)' )" ]; then
+    printf "%s\n%s\n" ">> Unable to find suitable release asset. Available release assets are:" "$( echo "$all_available_assets" | jq -r '.[].name' )"
     exit 1
   fi
 
+  ##############################
+  # preferred condition
+  # archives
+  available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$")))')"
   # prefer statically linked assets
-  for pref in linux-musl linux; do
-    _item="$(echo "$item" | jq -r 'select(.name|test("'$pref'"))')"
-    if [ -n "$_item" ]; then
-      item="$_item"
-      break
-    fi
-  done
+  available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(linux-musl)|(linux)")))')"
 
-  _filename="$(echo "$item" | jq -r '.name' | head -1)"
-  case "$_filename" in
+  # get first item
+  item="$(echo "$available_assets" | jq -r '.[0]')"
+
+  gh_release_asset="$(echo "$item" | jq -r '.name' | head -1)"
+
+  case "$gh_release_asset" in
     *gz|*xz)
       unarchive_cmd="tar xvf"
       ;;
@@ -63,11 +87,11 @@ if [ -n "$gh_release" ]; then
       unarchive_cmd="echo"
       ;;
   esac
-  echo ">> Going to download release asset '$_filename'"
+  echo ">> Going to download release asset '$gh_release_asset'"
 
   # We don't want the nested variables to expand
   # shellcheck disable=SC2016
-  _script='wget '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$_filename"'
+  _script='wget '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$gh_release_asset"'
   execute_hooks "downloading gh-release" "$target_folder" "$_script"
 fi
 

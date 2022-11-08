@@ -95,8 +95,10 @@ if [ "$#" != 0 ]; then
       -f|--force)
         force_install="true"
         ;;
-      --gh-release)
+      --gh-release|--gh-release=*)
         gh_release="true"
+        gh_release_asset="${opt#*=}"
+        export gh_release_asset
         ;;
       --plain)
         # set a dummy remote package name
