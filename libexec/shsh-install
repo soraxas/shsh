@@ -257,7 +257,7 @@ if [ -e "$SHSHRC" ]; then
       sed 's/&/\\&/g; s/\\/\\\\/g')"
 
     echo "> Updating existing statement in \$SHSHRC to \"$new_statement\""
-    awk '{gsub(old,new); print}' old="^[[:space:]]*shsh install $1([[:space:]].*)?$" \
+    awk '{gsub(old,new); print}' old="^[[:space:]]*shsh[[:space:]]+install[[:space:]](.*[[:space:]])?$1([[:space:]].*)?$" \
       new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
   fi
   set -e

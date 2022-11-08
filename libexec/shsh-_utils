@@ -239,6 +239,7 @@ prompt ()  {
 }
 
 parse_hooks_and_setvar() {
+  echo_if_verbose ">> parsing install command: '$*'"
   # shellcheck disable=SC2116
   EOL=$(echo '\00\07\01\00')
   if [ "$#" != 0 ]; then
