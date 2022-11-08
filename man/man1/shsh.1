@@ -21,6 +21,9 @@ List completions for a command.
 edit
 Edits the auto\-amending shshrc file with $EDITOR
 .TP
+get
+Get the install command from $SHSHRC
+.TP
 help
 Display help for a command
 .TP
@@ -102,6 +105,13 @@ with the 'completions' TAG and provide a '\-\-completions' argument.
 Edits the auto\-amending shshrc file with $EDITOR
 .PP
 Edits the auto\-amending shshrc file with $EDITOR
+.SH "SUBCMD: SHSH GET"
+.B shsh
+\fI\,get <package>\/\fR
+.SS DESCRIPTION
+Get the install command from $SHSHRC
+.PP
+Get the install command from $SHSHRC
 .SH "SUBCMD: SHSH HELP"
 .B shsh
 \fI\,help \/\fR[\fI\,--usage\/\fR] \fI\,COMMAND\/\fR
@@ -408,6 +418,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 .B shsh-commands (1),
 .B shsh-completions (1),
 .B shsh-edit (1),
+.B shsh-get (1),
 .B shsh-help (1),
 .B shsh-init (1),
 .B shsh-install (1),

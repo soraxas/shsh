@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Summary: Get the install command from $SHSHRC
+#
+# Usage: shsh get <package>
+#
+
+set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
+
+shshrc_get_existing_install_cmd "$1"
+echo "$existing"

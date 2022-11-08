@@ -35,7 +35,7 @@ set -l shsh_cmds_with_desc (shsh help | awk -F '[[:space:]][[:space:]]+' '/^Some
 complete -f -c shsh -n '__fish_shsh_needs_command' -a "$shsh_cmds_with_desc"
 
 for cmd in (shsh commands)
-  if string match -q $cmd 'uninstall' 'upgrade' 'package-path' 'refresh'
+  if string match -q $cmd 'uninstall' 'upgrade' 'package-path' 'refresh' 'get'
     complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a '(__fish_shsh_get_package_with_desc)'
   else
     complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
@@ -48,6 +48,7 @@ complete -f -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
 
 # specific flags for different commands
 complete -f -c shsh -n '__fish_shsh_needs_command' -l version -d "Show version number"
+complete -f -c shsh -n "__fish_shsh_using_command get" -s f -l full -d 'show the full entry in $SHSHRC'
 complete -f -c shsh -n "__fish_shsh_using_command list" -s d -l details -d "display more details of packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s a -l all -d "performs on all packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s f -l force -d "force upgrade a package even if up-to-date"
