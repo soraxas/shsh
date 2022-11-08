@@ -177,7 +177,7 @@ requote_args() {
         # skip
         continue
         ;;
-      *[[:space:]]*)  # contain space
+      *[[:space:]]*|*'*'*)  # contain space or literal astrisk
         case "$i" in
           *\'*)  # escape single quote
             i="$(printf "%s" "$i" | sed "s/'/'\"'\"'/g")"
