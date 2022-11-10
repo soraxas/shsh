@@ -227,7 +227,7 @@ restore_line_wrapping() {
 
 prompt ()  {
   while true; do
-    printf '%s [y/N]? ' "$1"
+    >&2 printf '%s [y/N]? ' "$1"
     read -r answer
     case $answer in
       y|Y|yes|YES) return 0;;
@@ -237,6 +237,22 @@ prompt ()  {
     esac
   done
 }
+
+if ! command_exists jq; then
+  # bootstrap jq
+  jq() {
+    if ! command_exists jq_bootstrap; then
+      if prompt ">> jq is needed but not found. Bootstrap by downloading a binary release?"; then
+        shsh install _bootstrap/jq --plain -h pre='wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64' -v BINS='jq-*@jq_bootstrap'
+      else
+        exit 1
+      fi
+    fi
+
+    jq_bootstrap "$@"
+    exit $?
+  }
+fi
 
 parse_hooks_and_setvar() {
   echo_if_verbose ">> parsing install command: '$*'"
