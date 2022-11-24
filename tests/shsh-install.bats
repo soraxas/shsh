@@ -14,10 +14,15 @@ load test_helper
   assert_line --partial "Usage: shsh install"
 }
 
+@test "auto namespace" {
+  run shsh-install a/b myname
+  assert_line --partial "myname/myname"
+}
+
 @test "too many arguments prints usage" {
-  run shsh-install a/b wrong
+  run shsh-install a/b wrong/wrong/wrong
   assert_failure
-  assert_line --partial "Optional argunment [folder] must be in the format"
+  assert_line --partial "cannot has more than 2 subfolders"
 }
 
 @test "executes install steps in right order" {
@@ -46,6 +51,21 @@ shsh-_link-completions username/package"
 
   assert_line "shsh-_clone false site username/package  username/package"
 }
+
+@test "with ref, add ref" {
+  mock_command shsh-_clone
+  mock_command shsh-_deps
+  mock_command shsh-_link-bins
+  mock_command shsh-_link-man
+  mock_command shsh-_link-completions
+
+  run shsh-install username/package@v4.6.1
+  assert_line "shsh-_clone false github.com username/package v4.6.1 username/package"
+
+  run shsh-install mysite.com.hk/username/package@v4.6.2
+  assert_line "shsh-_clone false mysite.com.hk username/package v4.6.2 username/package"
+}
+
 
 @test "without site, uses github as default site" {
   mock_command shsh-_clone

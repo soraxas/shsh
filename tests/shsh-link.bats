@@ -13,13 +13,12 @@ resolve_link() {
 @test "without arguments prints usage" {
   run shsh-link
   assert_failure
-  assert_line "Usage: shsh link [--no-deps] <directory> <package>"
+  assert_line --partial "Usage: shsh link [--no-deps] <directory> <package>"
 }
 
 @test "fails with only one argument" {
   run shsh-link invalid
   assert_failure
-  assert_line "Usage: shsh link [--no-deps] <directory> <package>"
 }
 
 @test "fails with an invalid path" {
@@ -39,16 +38,15 @@ resolve_link() {
   mkdir package1
 
   run shsh-link package1 invalid
-  assert_failure
-  assert_line "Usage: shsh link [--no-deps] <directory> <package>"
+  assert_success
 
   run shsh-link package1 namespace1/
   assert_failure
-  assert_line "Usage: shsh link [--no-deps] <directory> <package>"
+  assert_line --partial "cannot be empty"
 
   run shsh-link package1 /package1
   assert_failure
-  assert_line "Usage: shsh link [--no-deps] <directory> <package>"
+  assert_line --partial "cannot be empty"
 }
 
 @test "links the package to packages under the correct namespace" {

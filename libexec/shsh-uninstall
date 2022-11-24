@@ -42,15 +42,15 @@ fi
 
 # using SHSHRC file
 if [ -n "$use_rc_file" ]; then
-  for package in $(shsh list); do
+  for _package in $(shsh list); do
     set +e
-    shshrc_get_existing_install_cmd "$package"
+    shshrc_get_existing_install_cmd "$_package"
     set -e
 
     if [ -z "$existing" ]; then
-      if [ -n "$noconfirm" ] || prompt "Uninstall $package?"; then
-        echo "> Uninstalling $package"
-        shsh uninstall "$package"
+      if [ -n "$noconfirm" ] || prompt "Uninstall $_package?"; then
+        echo "> Uninstalling $_package"
+        shsh uninstall "$_package"
       fi
     fi
   done
@@ -62,31 +62,9 @@ if [ "$1" = "--complete" ]; then
   exec shsh-list
 fi
 
-package="$1"
-
-if [ -z "$package" ]; then
-  shsh-help uninstall
-  exit 1
-fi
-
-IFS=/ read -r user name <<EOF
-$package
-EOF
-
-if [ -z "$user" ]; then
-  shsh-help uninstall
-  exit 1
-fi
-
-if [ -z "$name" ]; then
-  shsh-help uninstall
-  exit 1
-fi
-
-if [ ! -d "$SHSH_PACKAGES_PATH/$package" ]; then
-  echo "Package '$package' is not installed"
-  exit 1
-fi
+parse_install_folder "$1" && package="$_folder_full"
+package_exists "$package" || exit 1
+[ -z "$package" ] && exit 1
 
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"

@@ -40,7 +40,7 @@ create_package_exec() {
   local exec="package_bin/$2"
   cd "${SHSH_ORIGIN_DIR}/$package"
   mkdir -p package_bin
-  touch $exec
+  touch "$exec"
 
   touch "package.sh"
 

@@ -5,6 +5,8 @@
 # Usage: shsh _clone <use_ssh> <site> <package> <ref> <folder>
 
 set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
 
 if [ "$#" -ne 5 ]; then
   shsh help _clone
@@ -22,10 +24,8 @@ if [ -z "$site" ] || [ -z "$package" ] || [ -z "$folder" ]; then
   exit 1
 fi
 
-if [ -e "$SHSH_PACKAGES_PATH/$folder" ]; then
-  echo "Package '$folder' is already present"
-  exit 1
-fi
+package_not_exists "$folder" || exit 1
+
 
 if [ "$use_ssh" = "true" ]; then
   URI="git@$site:$package.git"
@@ -35,4 +35,4 @@ fi
 
 [ -z "$SHSH_FULL_CLONE" ] && depth_option="--depth=1"
 
-git clone ${depth_option:+"$depth_option"} ${ref:+--single-branch --branch "$ref"} --recursive "$URI" "${SHSH_PACKAGES_PATH}/$folder"
+git clone ${depth_option:+"$depth_option"} ${ref:+--single-branch --branch "$ref"} ${SHSH_RECURSIVE_CLONE:+"--recursive"} "$URI" "${SHSH_PACKAGES_PATH}/$folder"

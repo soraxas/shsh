@@ -30,6 +30,14 @@ print_fish_commands() {
   echo 'and set -p fish_user_paths $SHSH_ROOT/cellar/bin'
   # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
   # echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
+
+  if [ -d "$SHSH_ROOT/archpkg_root" ]; then
+    echo 'not contains $SHSH_ROOT/archpkg_root/usr/lib $LD_LIBRARY_PATH'
+    echo 'set -p LD_LIBRARY_PATH $SHSH_ROOT/archpkg_root/usr/lib'
+
+    echo 'not contains $SHSH_ROOT/archpkg_root/usr/share $XDG_DATA_DIRS'
+    echo 'set -p XDG_DATA_DIRS $SHSH_ROOT/archpkg_root/usr/share'
+  fi
 }
 
 print_sh_commands(){

@@ -11,13 +11,7 @@ load test_helper
 @test "with invalid arguments, prints usage" {
   run shsh-uninstall lol
   assert_failure
-  assert_line "Usage: shsh uninstall <package>"
-}
-
-@test "with too many arguments, prints usage" {
-  run shsh-uninstall a/b lol
-  assert_failure
-  assert_line "Usage: shsh uninstall <package>"
+  assert_line --partial "lol/lol"
 }
 
 @test "fails if package is not installed" {
@@ -30,6 +24,7 @@ load test_helper
   mock_clone
   create_package username/package
   shsh-install username/package
+  assert_success
 
   run shsh-uninstall username/package
   assert_success
@@ -41,6 +36,7 @@ load test_helper
   create_package username/package
   create_exec username/package exec1
   shsh-install username/package
+  assert_success
 
   run shsh-uninstall username/package
   assert_success

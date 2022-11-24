@@ -2,6 +2,18 @@
 #
 # Summary: Utilities that are used throughout the project
 
+
+# header guard
+if [ -n "$SHSH_UTILS_SOURCED" ]; then
+  return
+fi
+SHSH_UTILS_SOURCED="$(date)s"
+
+
+error_echo() {
+  >&2 echo "$@"
+}
+
 resolve_link() {
   if type greadlink >/dev/null 2>&1; then
     greadlink -f "$1"
@@ -17,6 +29,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
   # This is poor man's GNU `readlink -f`
   # useful for mac without GNU readlink
   # based on https://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+  set -e
   _target="$(basename "$1")"
   cd "$(dirname "$1")" || exit 1
   i=0
@@ -27,7 +40,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
       _target="$(basename "$_target")"
       i=$((i+1))
       if [ "$i" -gt 1000 ]; then  # check for symlink loop
-        echo "Probably encountered symlink loops while resolving path" 1>&2 && exit 1
+        error_echo "Probably encountered symlink loops while resolving path" && exit 1
       fi
   done
   echo "$(pwd -P)"/"$_target"
@@ -121,7 +134,7 @@ get_operation_root() {
     for _expanded_var in $1/$ROOT; do
       dest="$_expanded_var"
       if [ ! -e "$dest" ]; then
-        >&2 echo ">> specified root '$ROOT' does not exists inside '$1'!"
+        error_echo ">> specified root '$ROOT' does not exists inside '$1'!"
         exit 1
       fi
       break
@@ -153,7 +166,7 @@ request_gh_release_info() {
   out="$(curl "$url")"
   case "$(jq -n --argjson data "$out" '$data.message')" in
     *"API rate limit"*)
-      >&2 echo "Github release API rate limit reached"
+      error_echo "Github release API rate limit reached"
       exit 1
       ;;
   esac
@@ -163,8 +176,8 @@ request_gh_release_info() {
 check_key_val_pair() {
   # Check if the given argument is in XX=XX format
   case "$1" in (*=*) return 0 ;;esac
-  echo "Invalid argunment for flag '$2' with argunment '$1'"
-  echo "Must be in the format of $2 <KEY>=<VALUE>"
+  error_echo "Invalid argunment for flag '$2' with argunment '$1'"
+  error_echo "Must be in the format of $2 <KEY>=<VALUE>"
   exit 1
 }
 
@@ -233,9 +246,75 @@ prompt ()  {
       y|Y|yes|YES) return 0;;
       ''|n|N|no|NO) return 1;;
       *)
-        echo 'Invalid response';
+        error_echo 'Invalid response';
     esac
   done
+}
+
+parse_install_folder() {
+  # given a string in the format of <...>/<...>
+  # > extract export the relevant variable
+  # if a second argunment is given (and non-empty),
+  # if will be perform error check
+  unset _folder_namespace _folder_target _folder_full
+  error_check="$2"
+  if [ -z "$1" ]; then
+    if [ -n "$error_check" ]; then
+      error_echo "Given string is empty"
+      exit 2
+    fi
+    # skip processing
+    return 1
+  fi
+  case "$1" in
+    */*/*)
+        error_echo "> Given string '$1' cannot has more than 2 subfolders."
+        exit 1
+      ;;
+    */*)
+      IFS=/ read -r _folder_namespace _folder_target <<EOF
+$1
+EOF
+      if [ -z "$_folder_namespace" ]; then
+        error_echo "> folder namespace cannot be empty"
+        exit 1
+      fi
+      if [ -z "$_folder_target" ]; then
+        error_echo "> folder target cannot be empty"
+        exit 1
+      fi
+      ;;
+    *)
+      if [ -n "$error_check" ]; then
+        error_echo "> Given string '$1' must be in the format <...>/<...>."
+        exit 1
+      fi
+      error_echo "> Going to use '$1/$1' as the install folder"
+      _folder_namespace="$1"
+      _folder_target="$1"
+      ;;
+  esac
+  _folder_full="$_folder_namespace/$_folder_target"
+  export _folder_namespace
+  export _folder_target
+  export _folder_full
+  return 0
+}
+
+package_exists() {
+  if [ ! -d "$SHSH_PACKAGES_PATH/$1" ]; then
+    error_echo "Package '$1' is not installed"
+    return 1
+  fi
+  return 0
+}
+
+package_not_exists() {
+  if [ -d "$SHSH_PACKAGES_PATH/$1" ]; then
+    error_echo "Package '$1' is already present"
+    return 1
+  fi
+  return 0
 }
 
 if ! command_exists jq; then
@@ -296,7 +375,7 @@ parse_hooks_and_setvar() {
               export SHSH_HOOK_ALL_PLUS_X
               ;;
             *)
-              echo "Unrecognized hook type '$1'"
+              error_echo "Unrecognized hook type '$1'"
               exit 1
               ;;
           esac
@@ -306,7 +385,7 @@ parse_hooks_and_setvar() {
           check_key_val_pair "$1" "$opt"
           _var="${1%%=*}"
           _val="${1#*=}"
-          [ -z "$_var" ] && echo "Invalid argunment for '--variable' with '$1'" && exit 1
+          [ -z "$_var" ] && error_echo "Invalid argunment for '--variable' with '$1'" && exit 1
           eval "$_var='$_val'"
           export "${_var?}"
           shift ;;

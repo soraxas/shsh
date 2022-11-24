@@ -25,7 +25,7 @@ load test_helper
 
   run shsh-_clone false site username/package version foldera/folderb
   assert_success
-  assert_output "git clone --depth=1 --single-branch --branch version --recursive https://site/username/package.git ${SHSH_PACKAGES_PATH}/foldera/folderb"
+  assert_output "git clone --depth=1 --single-branch --branch version https://site/username/package.git ${SHSH_PACKAGES_PATH}/foldera/folderb"
 }
 
 @test "does nothing if package is already present" {
@@ -42,7 +42,7 @@ load test_helper
 
   run shsh-_clone false site username/package "" username/package
   assert_success
-  assert_output "git clone --depth=1 --recursive https://site/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
+  assert_output "git clone --depth=1 https://site/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
 }
 
 @test "without setting SHSH_FULL_CLONE, clones a package with depth option" {
@@ -51,7 +51,7 @@ load test_helper
 
   run shsh-_clone false github.com username/package "" username/package
   assert_success
-  assert_output "git clone --depth=1 --recursive https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
+  assert_output "git clone --depth=1 https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
 }
 
 @test "setting SHSH_FULL_CLONE to true, clones a package without depth option" {
@@ -60,7 +60,7 @@ load test_helper
 
   run shsh-_clone false github.com username/package "" username/package
   assert_success
-  assert_output "git clone --recursive https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
+  assert_output "git clone https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
 }
 
 @test "setting SHSH_FULL_CLONE to non-empty string, clones a package without depth option" {
@@ -69,7 +69,7 @@ load test_helper
 
   run shsh-_clone false github.com username/package "" username/package
   assert_success
-  assert_output "git clone --recursive https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
+  assert_output "git clone https://github.com/username/package.git ${SHSH_PACKAGES_PATH}/username/package"
 }
 
 @test "using ssh protocol" {
@@ -77,5 +77,5 @@ load test_helper
 
   run shsh-_clone true site username/package "" username/package
   assert_success
-  assert_output "git clone --depth=1 --recursive git@site:username/package.git ${SHSH_PACKAGES_PATH}/username/package"
+  assert_output "git clone --depth=1 git@site:username/package.git ${SHSH_PACKAGES_PATH}/username/package"
 }

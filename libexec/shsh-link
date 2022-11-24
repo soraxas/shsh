@@ -6,6 +6,11 @@ set -e
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
+parse_hooks_and_setvar "$@"
+# set back $@ from leftovers
+# shellcheck disable=SC2086
+set -- $SHSH_ARGV
+
 no_deps="false"
 
 case $1 in
@@ -21,7 +26,7 @@ if [ "$#" -ne 2 ]; then
 fi
 
 directory="$1"
-package="$2"
+parse_install_folder "$2" && package="$_folder_full"
 
 if [ ! -d "$directory" ]; then
   echo "Directory '$directory' not found."
@@ -33,19 +38,7 @@ if [ -z "$package" ]; then
   exit 1
 fi
 
-IFS=/ read -r namespace name <<EOF
-$package
-EOF
-
-if [ -z "$namespace" ]; then
-  shsh-help link
-  exit 1
-fi
-
-if [ -z "$name" ]; then
-  shsh-help link
-  exit 1
-fi
+package_not_exists "$package" || exit 1
 
 if [ -d "${SHSH_PACKAGES_PATH}/$package" ]; then
   echo "Package '$package' is already present"
@@ -53,18 +46,20 @@ if [ -d "${SHSH_PACKAGES_PATH}/$package" ]; then
 fi
 
 # Make sure the namespace directory exists before linking
-if [ ! -d "${SHSH_PACKAGES_PATH}/$namespace" ]; then
-  mkdir -p "${SHSH_PACKAGES_PATH}/$namespace"
-fi
+mkdir -p "${SHSH_PACKAGES_PATH}/$_folder_namespace"
 
 # Resolve local package path
 directory="$(resolve_link "$directory")"
 
-ln -s "$directory" "${SHSH_PACKAGES_PATH}/$package"
+target_folder="${SHSH_PACKAGES_PATH}/$_folder_namespace/$_folder_target"
 
-shsh-_link-bins "$package"
-shsh-_link-completions "$package"
-shsh-_link-man "$package"
+ln -s "$directory" "$target_folder"
+
+# shsh-_link-bins "$package"
+# shsh-_link-completions "$package"
+# shsh-_link-man "$package"
+
+shsh-_post-install "$package" "$target_folder"
 
 if [ "$no_deps" = "false" ]; then
   shsh-_deps "$package"

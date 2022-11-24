@@ -9,9 +9,9 @@ load test_helper
 }
 
 @test "with invalid argument, shows usage" {
-  run shsh-upgrade lol
+  run shsh-upgrade lol/lol/lol
   assert_failure
-  assert_line --partial "Usage: shsh upgrade "
+  assert_line --partial "cannot has more than 2 subfolders"
 }
 
 @test "with too many arguments, shows usage" {

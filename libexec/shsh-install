@@ -130,107 +130,121 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   exit 1
 fi
 
-# if [ -n "$plain_package" ] && [ "$#" -lt 2 ]; then
-#   shsh-help install
-#   echo "Argunment <folder>/<folder> is necessary for plain package"
-#   exit 1
-# fi
-
 if [ -n "$gh_release" ]; then
   plain_package="true"
 fi
 
-case "$1" in
-  */*/*)
-    IFS=/ read -r site user name <<EOF
-$1
-EOF
-    ;;
-  */*)
-    IFS=/ read -r user name <<EOF
-$1
-EOF
-    site="github.com"
-    ;;
-  *)
-    shsh-help install
-    exit 1
-    ;;
-esac
-package="${user}/${name}"
+############################################################
 
-# defaults to package's name, but allows custom folder name
-folder="${package%%@*}"
-if [ -n "$2" ]; then
-  case "$2" in
+# custom folder name
+parse_install_folder "$2" && package="$_folder_full"
+
+
+##########################################
+if [ -n "$plain_package" ]; then
+  operation="plain"
+elif [ -n "$archpkg" ]; then
+  operation="arckpkg"
+else
+  operation="gitclone"
+fi
+
+case "$operation" in
+  #########
+  plain|archpkg)
+    if [ -z "$package" ]; then
+      if parse_install_folder "$1"; then
+        package="$_folder_full"
+      else
+        error_echo "Cannot parse folder from argunment."
+        exit 1
+      fi
+    fi
+    ;;
+  #########
+  gitclone)
+    case "${1%%@*}" in
+    */*/*)
+      IFS=/ read -r site user name <<EOF
+$1
+EOF
+      ;;
     */*)
+      IFS=/ read -r user name <<EOF
+$1
+EOF
+      site="github.com"
       ;;
     *)
-      # shsh-help install
-      echo "Optional argunment [folder] must be in the format <...>/<...>, not '$2'"
+      shsh-help install
       exit 1
       ;;
+    esac
+    gitrepo="${user}/${name}"
+
+    # defaults to package's name
+    [ -z "$package" ] && package="${gitrepo%%@*}"
+
+    # extract ref if it exists
+    ref=""
+    case "$gitrepo" in
+    */*@*)
+      IFS=@ read -r gitrepo ref <<EOF
+$gitrepo
+EOF
+    ;;
   esac
-  folder="$2"
-fi
-
-if [ -z "$package" ]; then
-  shsh-help install
-  exit 1
-fi
-
-IFS=/ read -r user name <<EOF
-$package
-EOF
-
-if [ -z "$user" ] || [ -z "$name" ]; then
-  shsh-help install
-  exit 1
-fi
-
-ref=""
-case "$package" in
-  */*@*)
-    IFS=@ read -r package ref <<EOF
-$package
-EOF
+    ;;
+  #########
+  *)
+    error_echo "> Unknown error in selecting operation"
     ;;
 esac
 
-target_folder="${SHSH_PACKAGES_PATH}/$folder"
 
-on_exit () {
+## INSTALLING
+# shellcheck disable=SC2015
+[ -n "$force_install" ] && shsh uninstall "$package" >/dev/null 2>&1 || true
+
+package_not_exists "$package" || exit 1
+
+
+on_exit() {
   # shellcheck disable=SC2181
   [ $? -eq 0 ] && exit
   # non-zero exit status
   [ -n "$no_cleanup" ] && exit
   echo "> Error occured. Cleaning up..."
   export hook_uninstall
-  shsh uninstall "$folder"
+  shsh uninstall "$package"
 }
 trap on_exit EXIT
 
+case "$operation" in
+  plain)
+  ########################################################
+    # plain package or github-release
+    mkdir -p "${SHSH_PACKAGES_PATH}/$package"
+    ;;
+  archpkg)
+    mkdir -p "${SHSH_PACKAGES_PATH}/$package"
+    ;;
+  gitclone)
+    # only perform link if clone is successful (and package not exists before)
+    if ! shsh-_clone "$use_ssh" "$site" "$gitrepo" "$ref" "$package"; then
+      exit 1
+    fi
+    shsh-_deps "$package"
+    ;;
+  *)
+    error_echo "> Unknown error in selecting operation"
+    ;;
+esac
 
-## INSTALLING
-# shellcheck disable=SC2015
-[ -n "$force_install" ] && shsh uninstall "$folder" >/dev/null 2>&1 || true
-if [ -z "$plain_package" ]; then
-  # only perform link if clone is successful (and package not exists before)
-  if ! shsh-_clone "$use_ssh" "$site" "$package" "$ref" "$folder"; then
-    exit
-  fi
-  shsh-_deps "$folder"
-else
-  if [ -e "$SHSH_PACKAGES_PATH/$folder" ]; then
-    echo "Package '$folder' is already present"
-    exit
-  fi
-  mkdir -p "$target_folder"
-  package="$folder"
-fi
+shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package" "$gh_release" "$ref"
 
-shsh-_post-install "$folder" "$target_folder" "$gh_release" "$ref"
 
+[ -z "$SHSHRC" ] && exit
 ## SHSHRC
 # by default, create SHSHRC if not exists yet.
 if [ ! -e "$SHSHRC" ]; then
