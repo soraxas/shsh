@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # Summary: Installs a local directory as a shsh package
-# Usage: shsh link [--no-deps] <directory> <package>
+# Usage: shsh link [--no-deps] <directory> <package> [-h|--hook <hook>] [-v|--variable <VAR>=<VAL>]
 
 set -e
 # shellcheck source=libexec/shsh-_utils

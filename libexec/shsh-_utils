@@ -7,7 +7,7 @@
 if [ -n "$SHSH_UTILS_SOURCED" ]; then
   return
 fi
-SHSH_UTILS_SOURCED="$(date)s"
+SHSH_UTILS_SOURCED="$(date)"
 
 
 error_echo() {
@@ -163,10 +163,14 @@ request_gh_release_info() {
   else
     url="$url/latest"
   fi
-  out="$(curl "$url")"
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    HEADER="-H \"Authorization: Bearer $GITHUB_API_TOKEN\""
+  fi
+  out="$(curl ${GITHUB_API_TOKEN+-H "Authorization: Bearer $GITHUB_API_TOKEN"} "$url")"
   case "$(jq -n --argjson data "$out" '$data.message')" in
     *"API rate limit"*)
-      error_echo "Github release API rate limit reached"
+      error_echo '>> Github release API rate limit reached (consider setting a personal token as an environment variable $GITHUB_API_TOKEN)'
+      error_echo ">> msg: $out\n"
       exit 1
       ;;
   esac
