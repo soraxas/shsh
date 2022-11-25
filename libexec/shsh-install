@@ -257,7 +257,7 @@ esac
 shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package" "$gh_release" "$ref"
 
 
-[ -z "$SHSHRC" ] && return
+[ -z "$SHSHRC" ] && exit
 ## SHSHRC
 # by default, create SHSHRC if not exists yet.
 if [ ! -e "$SHSHRC" ]; then
