@@ -21,6 +21,8 @@ case $1 in
   ;;
 esac
 
+package_exists "$1" || exit 1
+
 if [ -n "$upgrade_all" ]; then
   lockfile="$(mktemp)"
 
