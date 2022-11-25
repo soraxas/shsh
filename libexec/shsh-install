@@ -24,6 +24,7 @@
 #                    flag implies --plain
 #                    TODO: currently it is bias towards linux and amd64;
 #                          to-be generalised towards detecting current arch.
+#       --arch[pkg] install the <package> as Arch package (or AUR)
 #       -f, --force  force the installation even if the package exists
 #       --ssh        use ssh protocal instead of https
 #
@@ -89,6 +90,9 @@ if [ "$#" != 0 ]; then
       --ssh)
         use_ssh="true"
         ;;
+      --arch|--archpkg)
+        archpkg="true"
+        ;;
       --nocleanup)
         no_cleanup="true"
         ;;
@@ -97,8 +101,13 @@ if [ "$#" != 0 ]; then
         ;;
       --gh-release|--gh-release=*)
         gh_release="true"
-        gh_release_asset="${opt#*=}"
-        export gh_release_asset
+        plain_package="true"
+        case "$gh_release_asset" in
+          *=*)
+            gh_release_asset="${opt#*=}"
+            export gh_release_asset
+          ;;
+        esac
         ;;
       --plain)
         # set a dummy remote package name
@@ -130,21 +139,22 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   exit 1
 fi
 
-if [ -n "$gh_release" ]; then
-  plain_package="true"
-fi
-
 ############################################################
 
+if [ -n "$2" ] && [ -n "$archpkg" ]; then
+  error_echo "> Arch/AUR package cannot use custom folder name."
+  exit 1
+fi
+
 # custom folder name
-parse_install_folder "$2" && package="$_folder_full"
+parse_install_folder "$2" "$operation" && package="$_folder_full"
 
 
 ##########################################
 if [ -n "$plain_package" ]; then
   operation="plain"
 elif [ -n "$archpkg" ]; then
-  operation="arckpkg"
+  operation="archpkg"
 else
   operation="gitclone"
 fi
@@ -153,7 +163,7 @@ case "$operation" in
   #########
   plain|archpkg)
     if [ -z "$package" ]; then
-      if parse_install_folder "$1"; then
+      if parse_install_folder "$1" "$operation"; then
         package="$_folder_full"
       else
         error_echo "Cannot parse folder from argunment."
@@ -197,7 +207,8 @@ EOF
     ;;
   #########
   *)
-    error_echo "> Unknown error in selecting operation"
+    error_echo "> Unknown error in selecting operation for parsing: '$operation'"
+    exit 1
     ;;
 esac
 
@@ -228,6 +239,7 @@ case "$operation" in
     ;;
   archpkg)
     mkdir -p "${SHSH_PACKAGES_PATH}/$package"
+    shsh-_install-archpkg "$1" "$package"
     ;;
   gitclone)
     # only perform link if clone is successful (and package not exists before)
@@ -237,14 +249,15 @@ case "$operation" in
     shsh-_deps "$package"
     ;;
   *)
-    error_echo "> Unknown error in selecting operation"
+    error_echo "> Unknown error in selecting operation: '$operation'"
+    exit 1
     ;;
 esac
 
 shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package" "$gh_release" "$ref"
 
 
-[ -z "$SHSHRC" ] && exit
+[ -z "$SHSHRC" ] && return
 ## SHSHRC
 # by default, create SHSHRC if not exists yet.
 if [ ! -e "$SHSHRC" ]; then
@@ -253,7 +266,7 @@ fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  shshrc_get_existing_install_cmd "$package"
+  shshrc_get_existing_install_cmd "$1"
   new_statement="shsh install $original_args"
 
   if [ -z "$existing" ]; then
@@ -270,7 +283,9 @@ if [ -e "$SHSHRC" ]; then
     new_statement="$(echo "$new_statement" | \
       sed 's/&/\\&/g; s/\\/\\\\/g')"
 
-    echo "> Updating existing statement in \$SHSHRC to \"$new_statement\""
+    echo "> Updating existing statement in \$SHSHRC"
+    echo ">>>> -was: \"$existing\""
+    echo ">>>> +new: \"$new_statement\""
     awk '{gsub(old,new); print}' old="^[[:space:]]*shsh[[:space:]]+install[[:space:]](.*[[:space:]])?$1([[:space:]].*)?$" \
       new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
   fi

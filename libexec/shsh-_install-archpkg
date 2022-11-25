@@ -1,0 +1,81 @@
+#!/usr/bin/env sh
+
+set -e
+
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
+
+archpkgname="$1"
+package="$2"
+
+echo "> Checking official Arch and AUR repos"
+# Check official repo - core
+(
+    out="$(git ls-remote --heads https://github.com/archlinux/svntogit-packages.git packages/"$1" 2>/dev/null)"
+    [ -z "$out" ] && return 1 || return 0
+) &
+pid_core="$!"
+
+# Check official repo - community
+(
+    out="$(git ls-remote --heads https://github.com/archlinux/svntogit-community.git packages/"$1" 2>/dev/null)"
+    [ -z "$out" ] && return 1 || return 0
+) &
+pid_comm="$!"
+
+# Check AUR repo
+(
+    http_status="$(curl -I -L -s https://aur.archlinux.org/cgit/aur.git/snapshot/"$archpkgname".tar.gz | head -n1 | awk '{print $2}')"
+    [ "$http_status" = "200" ] && return 0 || return 1
+) &
+pid_aur="$!"
+
+status_core=0
+status_comm=0
+status_aur=0
+
+wait "$pid_core" || status_core="$?"
+wait "$pid_comm" || status_comm="$?"
+wait "$pid_aur" || status_aur="$?"
+
+##################################
+unset svntogit_dest
+
+if [ "$status_core" = 0 ]; then
+    svntogit_dest="svntogit-packages"
+elif [ "$status_comm" = 0 ]; then
+    svntogit_dest="svntogit-community"
+fi
+
+echo "> Downloading PKGBUILD"
+(
+    set -e
+    cd "$SHSH_PACKAGES_PATH/$package"
+
+    if [ -n "$svntogit_dest" ]; then
+        git clone --single-branch --depth 1 https://github.com/archlinux/"$svntogit_dest" -b packages/"$archpkgname"
+        mv "$svntogit_dest/trunk" "$archpkgname"
+        rm -rf "$svntogit_dest"
+    elif [ "$status_aur" = 0 ]; then
+        git clone https://aur.archlinux.org/"$archpkgname".git
+    else
+        error_echo "Package '$archpkgname' cannot be found."
+        exit 1
+    fi
+
+    echo "> Running makepkg"
+    (
+        set -e
+        cd "$archpkgname"
+        #shellcheck disable=SC2086
+        makepkg ${SHSH_ARCHPKG_CHECK:-"--nocheck"}
+
+        echo "> Linking archpkg"
+        mkdir -p "$SHSH_INSTALL_ARCHPKG_ROOT"
+        cp -as "$(pwd)/pkg/$archpkgname/usr" "$SHSH_INSTALL_ARCHPKG_ROOT"
+    )
+)
+
+
+
+

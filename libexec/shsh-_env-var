@@ -38,6 +38,7 @@ export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
 export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
 export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"
 export SHSH_INSTALL_MAN="${SHSH_INSTALL_MAN:=$SHSH_PREFIX/man}"
+export SHSH_INSTALL_ARCHPKG_ROOT="${SHSH_INSTALL_ARCHPKG_ROOT:=$SHSH_ROOT/cellar/archpkg_root}"
 _xdg_config_home="${XDG_CONFIG_HOME:=$HOME/.config}"
 export SHSHRC="${SHSHRC:=$_xdg_config_home/shshrc}"
 

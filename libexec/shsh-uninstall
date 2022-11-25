@@ -69,6 +69,7 @@ package_exists "$package" || exit 1
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"
 shsh-_unlink-completions "$package"
+shsh-_unlink-archpkg "$package"
 [ -n "$SHSH_HOOK_UNINSTALL" ] && execute_hooks "uninstall-hook" "$SHSH_PACKAGES_PATH/$package" "$SHSH_HOOK_UNINSTALL"
 
 rm -rf "${SHSH_PACKAGES_PATH:?}/$package"

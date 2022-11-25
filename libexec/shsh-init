@@ -26,17 +26,21 @@ print_fish_commands() {
   echo "set -gx SHSH_PACKAGES_PATH $SHSH_PACKAGES_PATH"
 
   # add to fish_user_path instead for better management
-  echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
+  # echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
   echo 'and set -p fish_user_paths $SHSH_ROOT/cellar/bin'
+
   # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
   # echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
 
-  if [ -d "$SHSH_ROOT/archpkg_root" ]; then
-    echo 'not contains $SHSH_ROOT/archpkg_root/usr/lib $LD_LIBRARY_PATH'
-    echo 'set -p LD_LIBRARY_PATH $SHSH_ROOT/archpkg_root/usr/lib'
+  if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
+    # echo 'not contains $SHSH_ROOT/cellar/archpkg_root/usr/bin $fish_user_paths'
+    echo 'and set -p fish_user_paths $SHSH_ROOT/cellar/archpkg_root/usr/bin'
 
-    echo 'not contains $SHSH_ROOT/archpkg_root/usr/share $XDG_DATA_DIRS'
-    echo 'set -p XDG_DATA_DIRS $SHSH_ROOT/archpkg_root/usr/share'
+    # echo 'not contains $SHSH_ROOT/cellar/archpkg_root/usr/lib $LD_LIBRARY_PATH'
+    echo 'set -p LD_LIBRARY_PATH $SHSH_ROOT/cellar/archpkg_root/usr/lib'
+
+    # echo 'not contains $SHSH_ROOT/cellar/archpkg_root/usr/share $XDG_DATA_DIRS'
+    echo 'set -p XDG_DATA_DIRS $SHSH_ROOT/cellar/archpkg_root/usr/share'
   fi
 }
 
@@ -46,10 +50,22 @@ print_sh_commands(){
   echo "export SHSH_PACKAGES_PATH=$SHSH_PACKAGES_PATH"
 
   echo 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
+
+  if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
+    echo 'export PATH="$SHSH_ROOT/cellar/archpkg_root/usr/bin:$PATH"'
+    echo 'export LD_LIBRARY_PATH="$SHSH_ROOT/cellar/archpkg_root/usr/lib:$LD_LIBRARY_PATH"'
+    echo 'export XDG_DATA_DIRS="$SHSH_ROOT/cellar/archpkg_root/usr/share:$XDG_DATA_DIRS"'
+  fi
 }
 
 load_bash_package_completions() {
-  echo 'for f in $(command ls "$SHSH_ROOT/cellar/completions/bash"); do source "$SHSH_ROOT/cellar/completions/bash/$f"; done'
+  _folder="$SHSH_ROOT/cellar/completions"
+  echo 'for f in $(command ls "'"$_folder"'/bash"); do source "'"$_folder"'/bash/$f"; done'
+
+  _folder="$SHSH_INSTALL_ARCHPKG_ROOT/usr/share/bash-completion/completions"
+  if [ -d "$_folder" ]; then
+    echo 'for f in $(command ls "'"$_folder"'"); do source "'"$_folder"'/$f"; done'
+  fi
 }
 
 load_zsh_package_completions() {
@@ -89,5 +105,8 @@ case "$shell" in
     ;;
   fish )
     echo "set -p fish_complete_path $SHSH_PREFIX/completions/fish"
+    if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
+      echo "set -p fish_complete_path $SHSH_INSTALL_ARCHPKG_ROOT/usr/share/fish/completions"
+    fi
     ;;
 esac

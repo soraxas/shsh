@@ -163,12 +163,10 @@ request_gh_release_info() {
   else
     url="$url/latest"
   fi
-  if [ -n "$GITHUB_API_TOKEN" ]; then
-    HEADER="-H \"Authorization: Bearer $GITHUB_API_TOKEN\""
-  fi
   out="$(curl ${GITHUB_API_TOKEN+-H "Authorization: Bearer $GITHUB_API_TOKEN"} "$url")"
   case "$(jq -n --argjson data "$out" '$data.message')" in
     *"API rate limit"*)
+      # shellcheck disable=SC2016
       error_echo '>> Github release API rate limit reached (consider setting a personal token as an environment variable $GITHUB_API_TOKEN)'
       error_echo ">> msg: $out\n"
       exit 1
@@ -261,12 +259,13 @@ parse_install_folder() {
   # if a second argunment is given (and non-empty),
   # if will be perform error check
   unset _folder_namespace _folder_target _folder_full
-  error_check="$2"
+  operation="$2"
+  # error_check="$2"
   if [ -z "$1" ]; then
-    if [ -n "$error_check" ]; then
-      error_echo "Given string is empty"
-      exit 2
-    fi
+    # if [ -n "$error_check" ]; then
+    #   error_echo "Given string is empty"
+    #   exit 2
+    # fi
     # skip processing
     return 1
   fi
@@ -289,13 +288,14 @@ EOF
       fi
       ;;
     *)
-      if [ -n "$error_check" ]; then
-        error_echo "> Given string '$1' must be in the format <...>/<...>."
-        exit 1
-      fi
-      error_echo "> Going to use '$1/$1' as the install folder"
+      # if [ -n "$error_check" ]; then
+      #   error_echo "> Given string '$1' must be in the format <...>/<...>."
+      #   exit 1
+      # fi
       _folder_namespace="$1"
       _folder_target="$1"
+      [ "$operation" = "archpkg" ] && _folder_namespace="_archpkg"
+      error_echo "> Going to use '$_folder_namespace/$_folder_target' as the install folder"
       ;;
   esac
   _folder_full="$_folder_namespace/$_folder_target"
