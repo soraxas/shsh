@@ -298,7 +298,7 @@ EOF
       error_echo "> Going to use '$_folder_namespace/$_folder_target' as the install folder"
       ;;
   esac
-  if [ "$_folder_namespace" = "_archpkg" ]; then
+  if [ -n "$operation" ] && [ "$operation" != "archpkg" ] && [ "$_folder_namespace" = "_archpkg" ]; then
     error_echo "> The '_archpkg' namespace is reserved and cannot be used."
     exit 1
   fi

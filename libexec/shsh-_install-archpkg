@@ -8,25 +8,39 @@ set -e
 archpkgname="$1"
 package="$2"
 
+
+on_exit() {
+  # non-zero exit status
+  [ -n "$no_cleanup" ] && exit
+  echo "> Error occured. Cleaning up..."
+  export hook_uninstall
+  shsh uninstall "$package"
+}
+trap on_exit EXIT
+
+
 echo "> Checking official Arch and AUR repos"
 # Check official repo - core
 (
+    set -e
     out="$(git ls-remote --heads https://github.com/archlinux/svntogit-packages.git packages/"$1" 2>/dev/null)"
-    [ -z "$out" ] && return 1 || return 0
+    [ -z "$out" ] && exit 1 || exit 0
 ) &
 pid_core="$!"
 
 # Check official repo - community
 (
+    set -e
     out="$(git ls-remote --heads https://github.com/archlinux/svntogit-community.git packages/"$1" 2>/dev/null)"
-    [ -z "$out" ] && return 1 || return 0
+    [ -z "$out" ] && exit 1 || exit 0
 ) &
 pid_comm="$!"
 
 # Check AUR repo
 (
+    set -e
     http_status="$(curl -I -L -s https://aur.archlinux.org/cgit/aur.git/snapshot/"$archpkgname".tar.gz | head -n1 | awk '{print $2}')"
-    [ "$http_status" = "200" ] && return 0 || return 1
+    [ "$http_status" = "200" ] && exit 0 || exit 1
 ) &
 pid_aur="$!"
 
@@ -64,18 +78,18 @@ echo "> Downloading PKGBUILD"
     fi
 
     echo "> Running makepkg"
-    (
+    {
         set -e
         cd "$archpkgname"
         #shellcheck disable=SC2086
-        makepkg ${SHSH_ARCHPKG_CHECK:-"--nocheck"}
+        makepkg ${SHSH_ARCHPKG_CHECK:-"--nocheck"} ${SHSH_ARCHPKG_PGPCHECK:-"--skippgpcheck"}
 
         echo "> Linking archpkg"
         mkdir -p "$SHSH_INSTALL_ARCHPKG_ROOT"
         cp -as "$(pwd)/pkg/$archpkgname/usr" "$SHSH_INSTALL_ARCHPKG_ROOT"
-    )
+    }
 )
 
-
-
+# un-trap
+trap - EXIT
 
