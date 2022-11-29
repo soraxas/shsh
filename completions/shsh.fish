@@ -60,6 +60,7 @@ complete -f -c shsh -n "__fish_shsh_using_command install" -s h -l hook -d "add 
 complete -f -c shsh -n "__fish_shsh_using_command install" -s v -l variable -d "set a variable during installation"
 complete -f -c shsh -n "__fish_shsh_using_command install" -s f -l force -d "force the installation even if the package exists"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l nocleanup -d "do not perform cleanup"
+complete -f -c shsh -n "__fish_shsh_using_command install"      -l noconfirm -d "do not conform and perform sane default"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l ssh -d "use ssh protocal instead of https"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l plain -d "build a plain package from the ground up"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l gh-release -d "download binary from github release assets"

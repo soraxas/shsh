@@ -4,6 +4,8 @@
 # Usage: source "$(shsh package-path <package>)/file.sh"
 
 set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
 
 # TAG completions
 if [ "$1" = "--complete" ]; then
@@ -16,5 +18,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 package="$1"
+
+package_exists "$package" 2>/dev/null || exit 1
 
 echo "$SHSH_PACKAGES_PATH/$package"

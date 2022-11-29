@@ -69,7 +69,7 @@ echo "> Downloading PKGBUILD"
     if [ -n "$svntogit_dest" ]; then
         git clone --single-branch --depth 1 https://github.com/archlinux/"$svntogit_dest" -b packages/"$archpkgname"
         mv "$svntogit_dest/trunk" "$archpkgname"
-        rm -rf "$svntogit_dest"
+        rm -rf "${svntogit_dest:?}"
     elif [ "$status_aur" = 0 ]; then
         git clone https://aur.archlinux.org/"$archpkgname".git
     else
@@ -79,10 +79,83 @@ echo "> Downloading PKGBUILD"
 
     echo "> Running makepkg"
     {
-        set -e
-        cd "$archpkgname"
+        # move nested files to one level up
+        set -eu
+        mv "${SHSH_PACKAGES_PATH:?}/$package/$archpkgname/"* "$SHSH_PACKAGES_PATH/$package/"
+        rm -rf "${SHSH_PACKAGES_PATH:?}/$package/$archpkgname"
+        set +u
+
+        _patch_awk_pattern() {
+            set -u
+            awk '{gsub(old,new); print}' old="$1" new="$2"
+        }
+
+        patch_pkgbuild_add_shsh_archpkg_root_variable() {
+            _old_pattern='^pkgname=.*$'
+            _new_pattern="SHSH_ARCKPKG_ROOT=\"$SHSH_ARCKPKG_ROOT\"\n&"
+
+            _patch_awk_pattern "$_old_pattern" "$_new_pattern"
+        }
+
+        patch_pkgbuild_cmake_install_prefix() {
+            _old_pattern='-D[ ]*CMAKE_INSTALL_PREFIX[ ]*=[ ]*/usr'
+            # shellcheck disable=SC2016
+            _new_pattern='-DCMAKE_INSTALL_PREFIX="${SHSH_ARCKPKG_ROOT}"/usr'
+
+            _patch_awk_pattern "$_old_pattern" "$_new_pattern"
+        }
+
+        patch_pkgbuild_configure_prefix() {
+            _old_pattern='--prefix=/usr'
+            # shellcheck disable=SC2016
+            _new_pattern='--prefix="${SHSH_ARCKPKG_ROOT}"/usr'
+
+            awk '/.\/configure/{gsub(old,new)}1' old="$_old_pattern" new="$_new_pattern"
+        }
+
+        patch_pkgbuild_make_install() {
+            # search for make install line
+            _old_pattern='(^.*[ ]+make.*install([ ].*)?$)'
+            # and append a mv command right after, to move files back into staging location.
+            # shellcheck disable=SC2016
+            _new_pattern='&\nmv "${pkgdir}/$SHSH_ARCKPKG_ROOT/usr" "${pkgdir}"  #<<patched'
+
+            _patch_awk_pattern "$_old_pattern" "$_new_pattern"
+        }
+
+        ##### Check for PKGBUILD
+        file="PKGBUILD"
+        # enable auto-patching cmake for install prefix (which alter the pkg-config prefix correctly)
+
+        if [ -n "$(awk '/CMAKE_INSTALL_PREFIX/' "$file" )" ]; then
+            PKGBUILD_AUTO_PATCHED="cmake_install_prefix"
+        elif [ -n "$(awk '/.\/configure/' "$file" )" ]; then
+            PKGBUILD_AUTO_PATCHED="configure_prefix"
+        fi
+
+        if [ -n "$PKGBUILD_AUTO_PATCHED" ]; then
+            echo "> Pattern of '$PKGBUILD_AUTO_PATCHED' found."
+            if [ -n "$SHSH_ARCHPKG_NOCONFIRM" ] || prompt "> Auto-patch PKGBUILD?"; then
+                echo "> Patching the $file file."
+
+                patch_pkgbuild_add_shsh_archpkg_root_variable < "${file}" | \
+                    patch_pkgbuild_$PKGBUILD_AUTO_PATCHED | \
+                    patch_pkgbuild_make_install \
+                    > "${file}.tmp" && mv "${file}.tmp" "${file}"
+            fi
+        fi
+
+        if [ -z "$SHSH_ARCHPKG_NOCONFIRM" ] && prompt "Manually Edit PKGBUILD?"; then
+          ${EDITOR:+vim} PKGBUILD
+        fi
         #shellcheck disable=SC2086
         makepkg ${SHSH_ARCHPKG_CHECK:-"--nocheck"} ${SHSH_ARCHPKG_PGPCHECK:-"--skippgpcheck"}
+
+        if [ -n "$PKGBUILD_AUTO_PATCHED" ]; then
+            # after patching pkgbuild, the cmake/make sometimes install things into $prefix/urs/local instead
+            # of $prefix/usr/
+            :
+        fi
 
         echo "> Linking archpkg"
         mkdir -p "$SHSH_INSTALL_ARCHPKG_ROOT"

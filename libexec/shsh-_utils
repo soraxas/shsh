@@ -188,7 +188,7 @@ requote_args() {
   C=''
   for i in "$@"; do
     case "$i" in
-      -f|--force)
+      -f|--force|--nocleanup)
         # skip
         continue
         ;;

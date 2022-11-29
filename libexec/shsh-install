@@ -95,6 +95,11 @@ if [ "$#" != 0 ]; then
         ;;
       --nocleanup)
         no_cleanup="true"
+        export no_cleanup
+        ;;
+      --noconfirm)
+        SHSH_ARCHPKG_NOCONFIRM="true"
+        export SHSH_ARCHPKG_NOCONFIRM
         ;;
       -f|--force)
         force_install="true"
