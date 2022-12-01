@@ -98,6 +98,7 @@ echo "> Downloading PKGBUILD"
         }
 
         patch_pkgbuild_cmake_install_prefix() {
+            # TODO: deal with DCMAKE_INSTALL_SYSCONFDIR ?
             _old_pattern='-D[ ]*CMAKE_INSTALL_PREFIX[ ]*=[ ]*/usr'
             # shellcheck disable=SC2016
             _new_pattern='-DCMAKE_INSTALL_PREFIX="${SHSH_ARCKPKG_ROOT}"/usr'
@@ -115,7 +116,7 @@ echo "> Downloading PKGBUILD"
 
         patch_pkgbuild_make_install() {
             # search for make install line
-            _old_pattern='(^.*[ ]+make.*install([ ].*)?$)'
+            _old_pattern='(^.*[ ]+(make|ninja).*install([ ].*)?$)'
             # and append a mv command right after, to move files back into staging location.
             # shellcheck disable=SC2016
             _new_pattern='&\nmv "${pkgdir}/$SHSH_ARCKPKG_ROOT/usr" "${pkgdir}"  #<<patched'
