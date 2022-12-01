@@ -8,18 +8,19 @@ set -e
 archpkgname="$1"
 package="$2"
 
+_makepkg_path="$(get_archlinux_makepkg)"
 
 on_exit() {
   # non-zero exit status
   [ -n "$no_cleanup" ] && exit
-  echo "> Error occured. Cleaning up..."
+  info_echo "> Error occured. Cleaning up..."
   export hook_uninstall
   shsh uninstall "$package"
 }
 trap on_exit EXIT
 
 
-echo "> Checking official Arch and AUR repos"
+info_echo "> Checking official Arch and AUR repos"
 # Check official repo - core
 (
     set -e
@@ -61,7 +62,7 @@ elif [ "$status_comm" = 0 ]; then
     svntogit_dest="svntogit-community"
 fi
 
-echo "> Downloading PKGBUILD"
+info_echo "> Downloading PKGBUILD"
 (
     set -e
     cd "$SHSH_PACKAGES_PATH/$package"
@@ -77,7 +78,7 @@ echo "> Downloading PKGBUILD"
         exit 1
     fi
 
-    echo "> Running makepkg"
+    info_echo "> Running makepkg"
     {
         # move nested files to one level up
         set -eu
@@ -135,9 +136,9 @@ echo "> Downloading PKGBUILD"
         fi
 
         if [ -n "$PKGBUILD_AUTO_PATCHED" ]; then
-            echo "> Pattern of '$PKGBUILD_AUTO_PATCHED' found."
+            info_echo "> Pattern of '$PKGBUILD_AUTO_PATCHED' found."
             if [ -n "$SHSH_ARCHPKG_NOCONFIRM" ] || prompt "> Auto-patch PKGBUILD?"; then
-                echo "> Patching the $file file."
+                info_echo "> Patching the $file file."
 
                 patch_pkgbuild_add_shsh_archpkg_root_variable < "${file}" | \
                     patch_pkgbuild_$PKGBUILD_AUTO_PATCHED | \
@@ -150,7 +151,7 @@ echo "> Downloading PKGBUILD"
           ${EDITOR:+vim} PKGBUILD
         fi
         #shellcheck disable=SC2086
-        makepkg ${SHSH_ARCHPKG_CHECK:-"--nocheck"} ${SHSH_ARCHPKG_PGPCHECK:-"--skippgpcheck"}
+        "$_makepkg_path" ${SHSH_ARCHPKG_CHECK:-"--nocheck"} ${SHSH_ARCHPKG_PGPCHECK:-"--skippgpcheck"}
 
         if [ -n "$PKGBUILD_AUTO_PATCHED" ]; then
             # after patching pkgbuild, the cmake/make sometimes install things into $prefix/urs/local instead
@@ -158,7 +159,7 @@ echo "> Downloading PKGBUILD"
             :
         fi
 
-        echo "> Linking archpkg"
+        info_echo "> Linking archpkg"
         mkdir -p "$SHSH_INSTALL_ARCHPKG_ROOT"
         cp -as "$(pwd)/pkg/$archpkgname/usr" "$SHSH_INSTALL_ARCHPKG_ROOT"
     }

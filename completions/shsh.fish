@@ -66,5 +66,6 @@ complete -f -c shsh -n "__fish_shsh_using_command install"      -l plain -d "bui
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l gh-release -d "download binary from github release assets"
 complete -f -c shsh -n "__fish_shsh_using_command install"      -l archpkg -d "install the package as an Arch/AUR package"
 
+complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l quiet -d "be quiet even if package does not exists"
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l use-rc -d "uninstall all packages not present in SHSHRC"
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l noconfirm -d "do not prompt to confirm"

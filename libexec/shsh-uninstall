@@ -20,6 +20,9 @@ for arg; do
   --noconfirm|--no-confirm)
     noconfirm="true"
     ;;
+  --quiet)
+    quiet="true"
+    ;;
   -*)
     shsh-help uninstall
     exit 1
@@ -63,8 +66,14 @@ if [ "$1" = "--complete" ]; then
 fi
 
 parse_install_folder "$1" && package="$_folder_full"
-package_exists "$package" || exit 1
-[ -z "$package" ] && exit 1
+
+unset status
+exist_msg="$(package_exists "$package" 2>&1)" || status="$?"
+if [ -n "$status" ]; then
+  [ -n "$quiet" ] && exit
+  echo "$exist_msg"
+  exit "$status"
+fi
 
 shsh-_unlink-man "$package"
 shsh-_unlink-bins "$package"

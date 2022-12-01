@@ -34,7 +34,7 @@ load test_helper
   run shsh-_clone false github.com username/package "" username/package
 
   assert_failure
-  assert_output "Package 'username/package' is already present"
+  assert_output --partial "Package 'username/package' is already present"
 }
 
 @test "using a different site" {

@@ -39,7 +39,11 @@ for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
         # is a git with remote upstream
         extra_info="$(git --git-dir="$package_path/".git config --get remote.origin.url)"
       elif [ -e "$package_path/.gh-release_info" ]; then
-        extra_info="gh-release: $(jq -r '.tag_name' < "$package_path/.gh-release_info")"
+        if has_jq; then
+          extra_info="gh-release: $(jq -r '.tag_name' < "$package_path/.gh-release_info")"
+        else
+          extra_info="gh-release: unknown (missing jq)"
+        fi
       elif [ "$username" = "_archpkg" ]; then
         extra_info="Arch-package: $package"
       else

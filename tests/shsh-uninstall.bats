@@ -17,7 +17,7 @@ load test_helper
 @test "fails if package is not installed" {
   run shsh-uninstall user/lol
   assert_failure
-  assert_output "Package 'user/lol' is not installed"
+  assert_output --partial "Package 'user/lol' is not installed"
 }
 
 @test "removes package directory" {

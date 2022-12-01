@@ -230,7 +230,7 @@ on_exit() {
   [ $? -eq 0 ] && exit
   # non-zero exit status
   [ -n "$no_cleanup" ] && exit
-  echo "> Error occured. Cleaning up..."
+  info_echo "> Error occured. Cleaning up..."
   export hook_uninstall
   shsh uninstall "$package"
 }
@@ -276,7 +276,7 @@ if [ -e "$SHSHRC" ]; then
 
   if [ -z "$existing" ]; then
     # append the file with new package
-    echo "> Appending statement to \$SHSHRC: \"$new_statement\""
+    info_echo "> Appending statement to \$SHSHRC: \"$new_statement\""
     echo "$new_statement" >> "$SHSHRC"
 
   # check if existings are the same (e.g. with same flags etc.)
@@ -288,9 +288,9 @@ if [ -e "$SHSHRC" ]; then
     new_statement="$(echo "$new_statement" | \
       sed 's/&/\\&/g; s/\\/\\\\/g')"
 
-    echo "> Updating existing statement in \$SHSHRC"
-    echo ">>>> -was: \"$existing\""
-    echo ">>>> +new: \"$new_statement\""
+    info_echo "> Updating existing statement in \$SHSHRC"
+    info_echo ">>>> -was: \"$existing\""
+    info_echo ">>>> +new: \"$new_statement\""
     awk '{gsub(old,new); print}' old="^[[:space:]]*shsh[[:space:]]+install[[:space:]](.*[[:space:]])?$1([[:space:]].*)?$" \
       new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
   fi

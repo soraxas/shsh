@@ -15,6 +15,12 @@ ref="$4"
 if [ -n "$gh_release" ]; then
 
   _response="$(request_gh_release_info "$package" "$ref")"
+
+  if [ "$(jq -r -n --argjson data "$_response" '$data.message')" = "Not Found" ]; then
+    error_echo "> The given github repo '$package' was not found"
+    exit 1
+  fi
+
   # save the release tag to file
   jq -n --argjson data "$_response" '$data' > "$target_folder/.gh-release_info"
 
