@@ -34,7 +34,7 @@ if [ -n "$gh_release" ]; then
 
   auto_determine_assets() {
     available_assets="$1"
-    for pref in $gh_release_asset x86_64 amd64 linux64; do
+    for pref in $gh_release_asset x86_64 x86-64 amd64 linux64; do
       item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$pref"'"))')"
       if [ -n "$item" ]; then
         echo "$item"

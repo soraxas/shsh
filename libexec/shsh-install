@@ -271,7 +271,12 @@ fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  shshrc_get_existing_install_cmd "$1"
+  if [ operation = "archpkg" ]; then
+    _target_package="$1"
+  else
+    _target_package="$package"
+  fi
+  shshrc_get_existing_install_cmd "$_target_package"
   new_statement="shsh install $original_args"
 
   if [ -z "$existing" ]; then
@@ -291,7 +296,7 @@ if [ -e "$SHSHRC" ]; then
     info_echo "> Updating existing statement in \$SHSHRC"
     info_echo ">>>> -was: \"$existing\""
     info_echo ">>>> +new: \"$new_statement\""
-    awk '{gsub(old,new); print}' old="^[[:space:]]*shsh[[:space:]]+install[[:space:]](.*[[:space:]])?$1([[:space:]].*)?$" \
+    awk '{gsub(old,new); print}' old="^[[:space:]]*shsh[[:space:]]+install[[:space:]](.*[[:space:]])?$_target_package([[:space:]].*)?$" \
       new="$new_statement" "$SHSHRC" > "${SHSHRC}.tmp" && mv "${SHSHRC}.tmp" "${SHSHRC}"
   fi
   set -e
