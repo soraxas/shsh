@@ -256,7 +256,7 @@ restore_line_wrapping() {
 
 prompt ()  {
   while true; do
-    >&2 printf "$Color_Green%s $Color_Blue[y/N]?$Color_Off " "$1"
+    >&2 printf "${Color_Green}%s ${Color_Blue}[y/N]?${Color_Off} " "$1"
     read -r answer
     case $answer in
       y|Y|yes|YES) return 0;;

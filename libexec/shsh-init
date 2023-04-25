@@ -32,21 +32,6 @@ print_fish_commands() {
   # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
   # echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
 
-  if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
-    echo "set -gx SHSH_ARCKPKG_ROOT $SHSH_INSTALL_ARCHPKG_ROOT"
-    # echo 'not contains $SHSH_ROOT/cellar/archpkg_root/usr/bin $fish_user_paths'
-    echo 'and set -p fish_user_paths $SHSH_ARCKPKG_ROOT/usr/bin'
-
-    # echo 'not contains $SHSH_ARCKPKG_ROOT/usr/lib $LD_LIBRARY_PATH'
-    echo 'set -px LD_LIBRARY_PATH $SHSH_ARCKPKG_ROOT/usr/lib'
-
-    # echo 'not contains $SHSH_ARCKPKG_ROOT/usr/share $XDG_DATA_DIRS'
-    echo 'set -px XDG_DATA_DIRS $SHSH_ARCKPKG_ROOT/usr/share'
-
-    echo 'set -gx LDFLAGS "-L$SHSH_ARCKPKG_ROOT/usr/lib $LDFLAGS"'
-    echo 'set -gx CFLAGS "-I$SHSH_ARCKPKG_ROOT/usr/include $CFLAGS"'
-    echo 'set -px PKG_CONFIG_PATH "$SHSH_ARCKPKG_ROOT/usr/lib/pkgconfig"'
-  fi
 }
 
 print_sh_commands(){
@@ -56,25 +41,12 @@ print_sh_commands(){
 
   echo 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
 
-  if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
-    echo 'export PATH="$SHSH_ROOT/cellar/archpkg_root/usr/bin:$PATH"'
-    echo 'export LD_LIBRARY_PATH="$SHSH_ROOT/cellar/archpkg_root/usr/lib:$LD_LIBRARY_PATH"'
-    echo 'export XDG_DATA_DIRS="$SHSH_ROOT/cellar/archpkg_root/usr/share:$XDG_DATA_DIRS"'
-
-    echo 'export LDFLAGS="-L$SHSH_ARCKPKG_ROOT/usr/lib $LDFLAGS"'
-    echo 'export CFLAGS="-I$SHSH_ARCKPKG_ROOT/usr/include $CFLAGS"'
-    echo 'export PKG_CONFIG_PATH="$SHSH_ROOT/cellar/archpkg_root/usr/share:$PKG_CONFIG_PATH"'
-  fi
 }
 
 load_bash_package_completions() {
   _folder="$SHSH_ROOT/cellar/completions"
   echo 'for f in $(command ls "'"$_folder"'/bash"); do source "'"$_folder"'/bash/$f"; done'
 
-  _folder="$SHSH_INSTALL_ARCHPKG_ROOT/usr/share/bash-completion/completions"
-  if [ -d "$_folder" ]; then
-    echo 'for f in $(command ls "'"$_folder"'"); do source "'"$_folder"'/$f"; done'
-  fi
 }
 
 load_zsh_package_completions() {
@@ -114,8 +86,5 @@ case "$shell" in
     ;;
   fish )
     echo "set -p fish_complete_path $SHSH_PREFIX/completions/fish"
-    if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
-      echo "set -p fish_complete_path $SHSH_INSTALL_ARCHPKG_ROOT/usr/share/fish/completions"
-    fi
     ;;
 esac

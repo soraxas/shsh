@@ -284,7 +284,7 @@ fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  if [ operation = "archpkg" ]; then
+  if [ "$operation" = "archpkg" ]; then
     _target_package="$1"
   else
     _target_package="$package"
