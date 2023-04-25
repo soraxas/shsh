@@ -242,6 +242,14 @@ command_exists() {
   fi
 }
 
+command_exists_excluding_shell_funcs() {
+  if which "$1" >/dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 turn_off_line_wrapping() {
   # tput requires $TERM to functions properly
   [ -z "$TERM" ] && return
@@ -340,7 +348,7 @@ package_not_exists() {
 }
 
 has_jq() {
-  command_exists jq && return
+  command_exists_excluding_shell_funcs jq && return
   [ -d "$SHSH_PACKAGES_PATH/_bootstrap/jq" ] && return
   return 1
 }

@@ -146,6 +146,7 @@ $ shsh self-upgrade
 
       which would sort the asset by prioritising asset with the substring `diff-pdf-0.5.tar.gz`.
 
+  **NOTE:** Downloading gh-release has an optional dependency on `jq` (to parse json). If your system does not has `jq`, `shsh` can also attempt to automatically bootstrap `jq` by itself.
 
 
 - **Sourcing files from a package into current shell**
