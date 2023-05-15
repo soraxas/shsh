@@ -242,6 +242,14 @@ command_exists() {
   fi
 }
 
+command_exists_excluding_shell_funcs() {
+  if which "$1" >/dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 turn_off_line_wrapping() {
   # tput requires $TERM to functions properly
   [ -z "$TERM" ] && return
@@ -256,7 +264,7 @@ restore_line_wrapping() {
 
 prompt ()  {
   while true; do
-    >&2 printf "$Color_Green%s $Color_Blue[y/N]?$Color_Off " "$1"
+    >&2 printf "${Color_Green}%s ${Color_Blue}[y/N]?${Color_Off} " "$1"
     read -r answer
     case $answer in
       y|Y|yes|YES) return 0;;
@@ -340,7 +348,7 @@ package_not_exists() {
 }
 
 has_jq() {
-  command_exists jq && return
+  command_exists_excluding_shell_funcs jq && return
   [ -d "$SHSH_PACKAGES_PATH/_bootstrap/jq" ] && return
   return 1
 }

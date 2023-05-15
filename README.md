@@ -39,7 +39,7 @@ shsh install ranger/ranger -v REMOVE_EXTENSION=true -v BINS=ranger.py -h pre='se
 ## Installation
 
 1. **Manual:** Checkout shsh inside `$XDG_DATA_HOME`, e.g., at `~/.local/share/shsh`
-   
+
    ```sh
     # clone shsh and add shsh to $PATH variable
     $ git clone https://github.com/soraxas/shsh ~/.local/share/shsh
@@ -49,21 +49,21 @@ shsh install ranger/ranger -v REMOVE_EXTENSION=true -v BINS=ranger.py -h pre='se
    ```
 
     **Or with AUR (Arch):** Install `shsh` or `shsh-git` pacakage in AUR, e.g.
-   
+
    ```sh
     $ yay -S shsh
    ```
 
 2. Initialise shsh in your shell init file, e.g.
-   
+
    ```sh
     # in ~/.bashrc, ~/.zshrc, etc.
     eval "$(shsh init SHELL)"
     # SHELL: sh, bash, zsh, fish
    ```
-   
+
     **Fish**: Use the following commands instead:
-   
+
    ```fish
     $ shsh init fish | source
    ```
@@ -80,46 +80,74 @@ $ shsh self-upgrade
 
 ### Examples
 
-- **Installing packages from Github**
+- **Installing remote packages**
 
   ```sh
   $ shsh install sstephenson/bats
   ```
 
+  By default, `shsh` will install package from Github.
   This will install [bats](https://github.com/sstephenson/bats) and add `bin/bats` to `$PATH`.
 
-- **Installing packages from other sites**
+  - Installing packages from other sites
 
-  ```sh
-  $ shsh install bitbucket.org/user/repo_name
-  ```
+    ```sh
+    $ shsh install bitbucket.org/user/repo_name
+    ```
 
-  This will install `repo_name` from https://bitbucket.org/user/repo_name
+    This will install `repo_name` from https://bitbucket.org/user/repo_name
 
-- **Using ssh instead of https**
+  - Using ssh instead of https
 
-  If you want to do local development on installed packages and you have ssh
-  access to the site, use `--ssh` to override the protocol:
+    If you want to do local development on installed packages and you have ssh
+    access to the site, use `--ssh` to override the protocol:
 
-  ```sh
-  $ shsh install --ssh juanibiapina/gg
-  ```
+    ```sh
+    $ shsh install --ssh juanibiapina/gg
+    ```
 
 - **Installing a local package**
-
-  If you develop a package locally and want to try it through shsh,
-  use the `link` command:
 
   ```sh
   $ shsh link directory my_namespace/my_package
   ```
 
-  The `link` command will install the dependencies of the local package.
+  The `link` command allows you to directly link it to shsh (similar to `pip install -e .`) and any modification to your directory will have an immediate effect.
+
+
+  - The `link` command will install the dependencies of the local package.
   You can prevent that with the `--no-deps` option:
 
+    ```sh
+    $ shsh link --no-deps directory my_namespace/my_package
+    ```
+
+- **Installing a github release directly (e.g. pre-compiled binary)**
+
   ```sh
-  $ shsh link --no-deps directory my_namespace/my_package
+  $ shsh install --gh-release ajeetdsouza/zoxide FISH_COMPLETIONS=completions/zoxide.fish
   ```
+
+  The ` --gh-release` flag indicates that you want to directly download and link the binary within github release.
+
+    - You can also pin a release version with:
+
+      ```sh
+      $ shsh install --gh-release junegunn/fzf@0.38.0
+      ```
+
+      which would download from releases with the `0.38.0` tag.
+
+    - If `shsh` is unable to pick the correct asset for you (e.g., the release contains multiple files and it can't determines which to download), you can also specify the asset to download by
+
+      ```sh
+      $ shsh install vslavik/diff-pdf --gh-release=diff-pdf-0.5.tar.gz
+      ```
+
+      which would sort the asset by prioritising asset with the substring `diff-pdf-0.5.tar.gz`.
+
+  **NOTE:** Downloading gh-release has an optional dependency on `jq` (to parse json). If your system does not has `jq`, `shsh` can also attempt to automatically bootstrap `jq` by itself.
+
 
 - **Sourcing files from a package into current shell**
 
@@ -183,36 +211,36 @@ The following are a list of recipes that uses `shsh` plus some lightweight hooks
 I had defined some handy functions in the `shshrc` file:
 
 ```shell
-has_cmd() {    
-  command -v "$1" >/dev/null    
+has_cmd() {
+  command -v "$1" >/dev/null
 }
 is_hostname() {
-  [ $(cat /etc/hostname) = "$1" ] 
+  [ $(cat /etc/hostname) = "$1" ]
 }
-is_wsl() {    
-  cat /proc/version | grep -q '[Mm]icrosoft'    
+is_wsl() {
+  cat /proc/version | grep -q '[Mm]icrosoft'
 }
 ```
 
 ### Examples
 
 - The powerful [delta](https://github.com/dandavison/delta) for viewing diff or git-diff output:
-  
+
   ```shell
-  # if we have cargo, we can build delta directly    
-  has_cmd cargo && \    
+  # if we have cargo, we can build delta directly
+  has_cmd cargo && \
     shsh install dandavison/delta -h pre=make -v BINS=target/release/delta
   ```
 
 - High-level git workflow with [git-town](https://github.com/git-town/git-town)
-  
+
   ```shell
   has_cmd go && \
       shsh install git-town/git-town -h pre='go build && ./git-town completions fish > git-town.fish' -v FISH_COMPLETIONS=git-town.fish
   ```
 
 - Install scripts only on some certain machine
-  
+
   ```shell
   # for running bash tests
   is_hostname Arch && \
@@ -220,14 +248,14 @@ is_wsl() {
   ```
 
 - Make sure files has executable bits in **gist**
-  
+
   ```shell
   # for opening reverse port
   shsh install gist.github.com/soraxas/0ef22338ad01e470cd62595d2e5623dd soraxas/open-rev-ports -h a+x
   ```
 
 - Running post hook for `wsl-open` in **wsl**
-  
+
   ```shell
   # script to simulate xdg-open in wsl
   is_wsl && \
@@ -235,7 +263,7 @@ is_wsl() {
   ```
 
 - Scripts for installing pre-compiled binary for **wsl**
-  
+
   ```shell
   is_wsl && \
     shsh install --plain wsl-tools/win32yank -v _ARCH=x64 -v _VERSION=v0.0.4 -h pre='curl -sLo out.zip https://github.com/equalsraf/win32yank/releases/download/$_VERSION/win32yank-$_ARCH.zip && unzip out.zip' -h +x=win32yank.exe

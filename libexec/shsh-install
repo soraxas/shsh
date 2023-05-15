@@ -168,7 +168,20 @@ case "$operation" in
   #########
   plain|archpkg)
     if [ -z "$package" ]; then
-      if parse_install_folder "$1" "$operation"; then
+      # extract ref if it exists
+      ref=""
+      case "$1" in
+      */*@*)
+        IFS=@ read -r _clean_input_1 ref <<EOF
+$1
+EOF
+        ;;
+      *)
+        _clean_input_1="$1"
+        ;;
+      esac
+      ####
+      if parse_install_folder "$_clean_input_1" "$operation"; then
         package="$_folder_full"
       else
         error_echo "Cannot parse folder from argunment."
@@ -271,7 +284,7 @@ fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  if [ operation = "archpkg" ]; then
+  if [ "$operation" = "archpkg" ]; then
     _target_package="$1"
   else
     _target_package="$package"
