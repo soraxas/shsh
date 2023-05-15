@@ -27,7 +27,7 @@ print_fish_commands() {
 
   # add to fish_user_path instead for better management
   # echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
-  echo 'and set -p fish_user_paths $SHSH_ROOT/cellar/bin'
+  echo 'set -px fish_user_paths $SHSH_ROOT/cellar/bin'
 
   # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
   # echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
@@ -113,7 +113,7 @@ case "$shell" in
     load_zsh_package_completions
     ;;
   fish )
-    echo "set -p fish_complete_path $SHSH_PREFIX/completions/fish"
+    echo "set -px fish_complete_path $SHSH_PREFIX/completions/fish"
     if [ -d "$SHSH_INSTALL_ARCHPKG_ROOT" ]; then
       echo "set -p fish_complete_path $SHSH_INSTALL_ARCHPKG_ROOT/usr/share/fish/completions"
     fi
