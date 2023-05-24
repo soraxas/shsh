@@ -11,7 +11,7 @@ echo_if_verbose "> Starting to link man..."
 
 link_mans() {
   file="$1"
-  [ -e "$file" ] || [ -L "$file" ] || return 0
+  is_file_or_link "$file" || return 0
 
   case "$file" in
     *.[1-9])

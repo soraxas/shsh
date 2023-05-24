@@ -21,12 +21,16 @@ fi
 shell="$1"
 
 print_fish_commands() {
-  echo "set -gx SHSH_ROOT $SHSH_ROOT"
-  echo "set -gx SHSH_PREFIX $SHSH_PREFIX"
-  echo "set -gx SHSH_PACKAGES_PATH $SHSH_PACKAGES_PATH"
+  echo 'set -gx SHSH_ROOT "'"$SHSH_ROOT"'"'
+  echo 'set -gx SHSH_PREFIX "'"$SHSH_PREFIX"'"'
+  echo 'set -gx SHSH_PACKAGES_PATH "'"$SHSH_PACKAGES_PATH"'"'
 
   # add to fish_user_path instead for better management
   # echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
+  if [ -d "$SHSH_JUNEST_BIN" ]; then
+    echo 'set -gx SHSH_JUNEST_BIN "'"$SHSH_JUNEST_BIN"'"'
+    echo 'set -ax PATH $SHSH_JUNEST_BIN'
+  fi
   echo 'set -px fish_user_paths $SHSH_ROOT/cellar/bin'
 
   # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
@@ -35,12 +39,15 @@ print_fish_commands() {
 }
 
 print_sh_commands(){
-  echo "export SHSH_ROOT=$SHSH_ROOT"
-  echo "export SHSH_PREFIX=$SHSH_PREFIX"
-  echo "export SHSH_PACKAGES_PATH=$SHSH_PACKAGES_PATH"
+  echo 'export SHSH_ROOT="'"$SHSH_ROOT"'"'
+  echo 'export SHSH_PREFIX="'"$SHSH_PREFIX"'"'
+  echo 'export SHSH_PACKAGES_PATH="'"$SHSH_PACKAGES_PATH"'"'
 
+  if [ -d "$SHSH_JUNEST_BIN" ]; then
+    echo 'export SHSH_JUNEST_BIN="'"$SHSH_JUNEST_BIN"'"'
+    echo 'export PATH="$PATH:$SHSH_JUNEST_BIN"'
+  fi
   echo 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
-
 }
 
 load_bash_package_completions() {
@@ -85,6 +92,6 @@ case "$shell" in
     load_zsh_package_completions
     ;;
   fish )
-    echo "set -px fish_complete_path $SHSH_PREFIX/completions/fish"
+    echo 'set -px fish_complete_path $SHSH_PREFIX/completions/fish'
     ;;
 esac

@@ -39,6 +39,10 @@ resolve_link() {
   fi
 }
 
+is_file_or_link() {
+  [ -e "$1" ] || [ -L "$1" ]
+}
+
 readlink_canonicalise() (  # we are using subshell to prevent messing up cd
   # This is poor man's GNU `readlink -f`
   # useful for mac without GNU readlink
@@ -73,7 +77,7 @@ remove_linked() {
   shift
   for _link; do
     # do nothing if the arugnment is not an actual file
-    [ -e "$_link" ] || [ -L "$_link" ] || continue
+    is_file_or_link "$_link" || continue
     case "$(resolve_link "$_link")" in
       "$_package/"*)
         echo_if_verbose "Unlinking $_link"
@@ -83,9 +87,29 @@ remove_linked() {
   done
 }
 
+remove_linked_without_resolve_link() {
+  # Given a folder as first arg, if anything that follows it
+  # is a link resides within the folder, delete it
+  _folder="$1"
+  shift
+  for _link; do
+    # do nothing if the arugnment is not an actual file
+    is_file_or_link "$_link" || continue
+    case "$_link" in
+      "$_folder/"*)
+        echo_if_verbose "Unlinking $_link"
+        rm -f "$_link"
+        ;;
+    esac
+  done
+}
+
 add_link() {
+  exit_status=0
+  [ -n "$shsh_add_link_show_error" ] && exit_status=1
   # argunments: src=$1; target=$2
-  [ -e "$1" ] || [ -L "$1" ] || return 0
+  is_file_or_link "$1" || return "$exit_status"
+  is_file_or_link "$2" && return "$exit_status"
 
   echo_if_verbose "Linking '$1' to '$2'"
   ln -s "$1" "$2"
@@ -397,7 +421,7 @@ get_archlinux_makepkg() {
 
 parse_hooks_and_setvar() {
   echo_if_verbose ">> parsing install command: '$*'"
-  # shellcheck disable=SC2116
+  # shellcheck disable=SC2116,SC2028
   EOL=$(echo '\00\07\01\00')
   if [ "$#" != 0 ]; then
     set -- "$@" "$EOL"

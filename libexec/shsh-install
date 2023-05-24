@@ -80,7 +80,7 @@ parse_hooks_and_setvar "$@"
 set -- $SHSH_ARGV
 
 use_ssh="false"
-# shellcheck disable=SC2116
+# shellcheck disable=SC2116,SC2028
 EOL=$(echo '\00\07\01\00')
 if [ "$#" != 0 ]; then
   set -- "$@" "$EOL"

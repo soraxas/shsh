@@ -23,7 +23,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
-  [ -e "$package_path" ] || [ -L "$package_path" ] || continue
+  is_file_or_link "$package_path" || continue
 
   username="$(dirname "$package_path")"
   username="${username##*/}"
