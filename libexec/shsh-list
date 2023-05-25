@@ -44,8 +44,6 @@ for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
         else
           extra_info="gh-release: unknown (missing jq)"
         fi
-      elif [ "$username" = "_archpkg" ]; then
-        extra_info="Arch-package: $package"
       else
         # is a plain package
         extra_info="plain package"

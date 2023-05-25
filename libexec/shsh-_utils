@@ -340,14 +340,9 @@ EOF
       # fi
       _folder_namespace="$1"
       _folder_target="$1"
-      [ "$operation" = "archpkg" ] && _folder_namespace="_archpkg"
       info_echo "> Going to use '$_folder_namespace/$_folder_target' as the install folder"
       ;;
   esac
-  if [ -n "$operation" ] && [ "$operation" != "archpkg" ] && [ "$_folder_namespace" = "_archpkg" ]; then
-    error_echo "> The '_archpkg' namespace is reserved and cannot be used."
-    exit 1
-  fi
   _folder_full="$_folder_namespace/$_folder_target"
   export _folder_namespace
   export _folder_target
@@ -400,24 +395,6 @@ if ! command_exists jq; then
     exit $?
   }
 fi
-
-get_archlinux_makepkg() {
-  _makepkg_path="$(shsh package-path _bootstrap/archmakepkg)" || true
-
-  if [ -z "$_makepkg_path" ]; then
-    # bootstrap custom makepkg
-    info_echo "> Installing custom arch makepkg"
-
-    # no linking
-    shsh install soraxas/archlinux-makepkg-stripped _bootstrap/archmakepkg -v BINS='' >/dev/null 2>&1
-    _makepkg_path="$(shsh package-path _bootstrap/archmakepkg)" || true
-    if [ -z "$_makepkg_path" ]; then
-      error_echo "> error in bootstrapping makepkg"
-      exit 1
-    fi
-  fi
-  echo "$_makepkg_path/makepkg"
-}
 
 parse_hooks_and_setvar() {
   echo_if_verbose ">> parsing install command: '$*'"
