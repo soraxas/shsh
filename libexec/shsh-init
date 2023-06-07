@@ -29,13 +29,10 @@ print_fish_commands() {
   # echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
   if [ -d "$SHSH_JUNEST_BIN" ]; then
     echo 'set -gx SHSH_JUNEST_BIN "'"$SHSH_JUNEST_BIN"'"'
-    echo 'set -ax PATH $SHSH_JUNEST_BIN'
+    echo 'set -ax fish_user_paths $SHSH_JUNEST_BIN'
   fi
-  echo 'set -px fish_user_paths $SHSH_ROOT/cellar/bin'
-
-  # echo 'not contains $SHSH_ROOT/cellar/bin $PATH'
-  # echo 'and set -gx PATH $SHSH_ROOT/cellar/bin $PATH'
-
+  echo 'contains $SHSH_ROOT/cellar/bin $fish_user_paths'
+  echo 'or set -p fish_user_paths $SHSH_ROOT/cellar/bin'
 }
 
 print_sh_commands(){
@@ -92,6 +89,7 @@ case "$shell" in
     load_zsh_package_completions
     ;;
   fish )
-    echo 'set -px fish_complete_path $SHSH_PREFIX/completions/fish'
+    echo 'contains $SHSH_PREFIX/completions/fish $fish_complete_path'
+    echo 'or set -p fish_complete_path $SHSH_PREFIX/completions/fish'
     ;;
 esac
