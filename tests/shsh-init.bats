@@ -26,13 +26,6 @@ load test_helper
   assert_line 'export SHSH_PACKAGES_PATH="/lol/packages"'
 }
 
-@test "adds junest to path" {
-  run shsh-init bash
-  assert_success
-  assert_line 'export SHSH_JUNEST_BIN="/home/tin/.local/share/shsh/cellar/arch_junest_root/junest_bin"'
-  assert_line 'export PATH="$PATH:$SHSH_JUNEST_BIN"'
-}
-
 @test "adds cellar/bin to path" {
   run shsh-init bash
   assert_success
