@@ -305,7 +305,7 @@ parse_install_folder() {
   # if a second argunment is given (and non-empty),
   # if will be perform error check
   unset _folder_namespace _folder_target _folder_full
-  operation="$2"
+  # operation="$2"
   # error_check="$2"
   if [ -z "$1" ]; then
     # if [ -n "$error_check" ]; then
