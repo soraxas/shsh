@@ -392,7 +392,7 @@ if ! command_exists jq; then
     fi
 
     "$SHSH_PACKAGES_PATH/_bootstrap/jq/$bin_name" "$@"
-    exit $?
+    return $?
   }
 fi
 

@@ -2,10 +2,11 @@
 #
 # Summary: A transparently wrapper of junest with custom ignoring bins
 # Usage: shsh junest [-h|--help] <sub_command>
+#        shsh junest enter [argunments for junest...]
 #        shsh junest link <executable_name>
 #        shsh junest unlink <executable_name>
-#        shsh junest linkable [package]
-#        shsh junest linked
+#        shsh junest linkable [package] [-d|--details]
+#        shsh junest linked [-d|--details]
 #        shsh junest packages [-d|--details]
 #        shsh junest lookup <executable_name>
 #
@@ -13,44 +14,40 @@
 # packages from the arch linux community AUR via yay.
 # After bootstrapping, you can directly install packages via yay.
 
+
 set -e
 
-# TAG completions
-if [ "$1" = "--complete" ]; then
-  printf '%s\n' link unlink linked linkable lookup packages
+export JUNEST_HOME="${SHSH_ROOT:?Root directory for shsh has not been defined.}/cellar/arch_junest_root/junest"
+junest_bin_root="$JUNEST_HOME/usr/bin_wrappers"
+
+shsh_junest_pkg_name=_bootstrap/junest
+real_junest_bin="$SHSH_ROOT/cellar/packages/$shsh_junest_pkg_name/bin/junest"
+
+if [ "$(basename "$0")" = junest ]; then
+  # wrapper mode
+  exec "$real_junest_bin" "$@"
   exit
 fi
-
-resolve_link() {
-  if type greadlink >/dev/null 2>&1; then
-    greadlink -f "$1"
-  else
-    if ! readlink -f "$1" 2>/dev/null; then
-      # use self-implemented `readlink -f`
-      readlink_canonicalise "$1"
-    fi
-  fi
-}
-
-bin_path="$(dirname "$(resolve_link "$0")")"
-# shellcheck source=libexec/shsh-_env-var
-. "$bin_path/shsh-_env-var"
 
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
-set -e
-
-export JUNEST_HOME="$SHSH_JUNEST_ROOT/junest"
-junest_bin_root="$JUNEST_HOME/usr/bin_wrappers"
+# TAG completions
+if [ "$1" = "--complete" ]; then
+  printf '%s\n' link unlink linked linkable lookup packages enter
+  exit
+fi
 
 ##########################################################
 # bootstrap
 
+if [ ! -e "$SHSH_INSTALL_BIN/junest" ] && [ -e "$SHSH_ROOT/libexec/shsh-junest" ]; then
+  ln -s "$SHSH_ROOT/libexec/shsh-junest" "$SHSH_INSTALL_BIN/junest"
+fi
 if ! command_exists junest_real || [ ! -d "$JUNEST_HOME" ]; then
     prompt "> Junest not found. Install now?" || exit
 
-    shsh install fsquillace/junest _bootstrap/junest -v BINS=bin/junest@junest_real:bin/sudoj@sudoj -f
+    shsh install fsquillace/junest "$shsh_junest_pkg_name" -v BINS=bin/junest@junest_real -f
 
     junest_real setup
 
@@ -59,29 +56,25 @@ if ! command_exists junest_real || [ ! -d "$JUNEST_HOME" ]; then
         exit 1
     fi
     mkdir -p "$SHSH_JUNEST_BIN"
+    shsh junest link yay
 fi
-[ ! -e "$SHSH_JUNEST_BIN/junest" ] && ln -s "$SHSH_ROOT/libexec/shsh-junest" "$SHSH_JUNEST_BIN/junest"
 
 ##########################################################
-
-
-
-set -e
 
 is_exectuable_file () {
   [ -f "$1" ] && [ -x "$1" ]
 }
 
 list_all_packages_and_executables () {
-  "$(shsh package-path _bootstrap/junest)/bin/junest" -- pacman -Ql | grep ' /usr/bin/' | while read -r package file; do
-    if is_exectuable_file "$file"; then
+  "$real_junest_bin" -- pacman -Ql | grep ' /usr/bin/' | while read -r package file; do
+    if is_exectuable_file "$JUNEST_HOME/$file"; then
       printf '%s\t%s\n' "${file##*/}" "pkg: $package"
     fi
   done
 }
 
 list_all_packages () {
-  "$(shsh package-path _bootstrap/junest)/bin/junest" -- pacman -Q | while read -r package version; do
+  "$real_junest_bin" -- pacman -Q | while read -r package version; do
     if [ -n "$OPT_DETAILS" ]; then
         printf '%s\t%s\n' "$package" "$version"
     else
@@ -91,19 +84,28 @@ list_all_packages () {
 }
 
 get_package_executables () {
-  "$(shsh package-path _bootstrap/junest)/bin/junest" -- pacman -Qql "$1" | while read -r file; do
+  "$real_junest_bin" -- pacman -Qql "$1" | while read -r file; do
     is_exectuable_file "$file" && echo "$file"
   done
 }
 
 get_package_name_from_file () {
-  "$(shsh package-path _bootstrap/junest)/bin/junest" -- pacman -Qo "$1"
+  "$real_junest_bin" -- pacman -Qo "$1"
 }
 
 show_help_and_exit () {
     shsh-help junest
     exit 1
 }
+
+# super case
+case "$1" in
+  enter)
+    shift
+    exec "$real_junest_bin" "$@"
+    exit
+    ;;
+esac
 
 # process flag
 
@@ -153,7 +155,9 @@ if [ "$#" != 0 ]; then
             if [ -n "$OPT_DETAILS" ]; then
                 list_all_packages_and_executables
             else
-                command ls "$junest_bin_root"
+                for file in "$junest_bin_root"/*; do
+                  is_file_or_link "$file" && echo "${file##*/}"
+                done
             fi
         else
             show_help_and_exit
@@ -163,7 +167,6 @@ if [ "$#" != 0 ]; then
       linked)
         [ "$#" = 1 ] || show_help_and_exit
         linked_bins="$(command ls "$SHSH_JUNEST_BIN")"
-        linked_bins="$(echo "$linked_bins" | tr '\n' ' ')"
 
         if [ -n "$OPT_DETAILS" ]; then
             # FIXME The following might be very slow, it's O(mn) complexity

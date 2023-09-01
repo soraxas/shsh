@@ -4,13 +4,21 @@
 shsh \- manual page for shsh v3.0.2
 .SH SYNOPSIS
 .B shsh
-\fI\,list \/\fR[\fI\,-d|--details\/\fR]
+\fI\,junest \/\fR[\fI\,-h|--help\/\fR] \fI\,<sub_command>\/\fR
 .SH DESCRIPTION
-List installed packages
-.SH OPTIONS
-.TP
-\fB\-d\fR, \fB\-\-details\fR
-display the URL of the repository
+A transparently wrapper of junest with custom ignoring bins
+.IP
+shsh junest enter [argunments for junest...]
+shsh junest link <executable_name>
+shsh junest unlink <executable_name>
+shsh junest linkable [package] [\-d|\-\-details]
+shsh junest linked [\-d|\-\-details]
+shsh junest packages [\-d|\-\-details]
+shsh junest lookup <executable_name>
+.PP
+This can automatically bootstrap junest, which brings a lot of
+packages from the arch linux community AUR via yay.
+After bootstrapping, you can directly install packages via yay.
 .SH AUTHOR
 Written by Tin Lai (@soraxas)
 .SH COPYRIGHT

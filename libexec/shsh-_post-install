@@ -14,6 +14,7 @@ ref="$4"
 # script for gh release
 if [ -n "$gh_release" ]; then
 
+  echo_if_verbose ">> Requesting github release info"
   _response="$(request_gh_release_info "$package" "$ref")"
 
   if [ "$(jq -r -n --argjson data "$_response" '$data.message')" = "Not Found" ]; then
@@ -21,10 +22,11 @@ if [ -n "$gh_release" ]; then
     exit 1
   fi
 
-  # save the release tag to file
+  echo_if_verbose ">> Saving release tag to file"
   jq -n --argjson data "$_response" '$data' > "$target_folder/.gh-release_info"
 
   # using EOF method as the original json might contain invalid characters
+  echo_if_verbose ">> Parsing json result"
   all_available_assets="$(jq -n --argjson data "$_response" '$data.assets')"
   available_assets="$all_available_assets"
 
@@ -74,7 +76,7 @@ if [ -n "$gh_release" ]; then
   # archives
   available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$")))')"
   # prefer statically linked assets
-  available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(linux-musl)|(linux)")))')"
+  available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(linux-musl)|(linux)|(Linux)")))')"
 
   # get first item
   item="$(echo "$available_assets" | jq -r '.[0]')"

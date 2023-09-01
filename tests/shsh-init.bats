@@ -11,41 +11,41 @@ load test_helper
 @test "exports SHSH_ROOT" {
   SHSH_ROOT=/lol run shsh-init bash
   assert_success
-  assert_line -n 0 'export SHSH_ROOT=/lol'
+  assert_line -n 0 'export SHSH_ROOT="/lol"'
 }
 
 @test "exports SHSH_PREFIX" {
   SHSH_PREFIX=/lol run shsh-init bash
   assert_success
-  assert_line -n 1 'export SHSH_PREFIX=/lol'
+  assert_line 'export SHSH_PREFIX="/lol"'
 }
 
 @test "exports SHSH_PACKAGES_PATH" {
   SHSH_PACKAGES_PATH=/lol/packages run shsh-init bash
   assert_success
-  assert_line -n 2 'export SHSH_PACKAGES_PATH=/lol/packages'
+  assert_line 'export SHSH_PACKAGES_PATH="/lol/packages"'
 }
 
 @test "adds cellar/bin to path" {
   run shsh-init bash
   assert_success
-  assert_line -n 3 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
+  assert_line 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
 }
 
 @test "setup include function if it exists" {
   run shsh-init bash
-  assert_line -n 4 '. "$SHSH_ROOT/lib/include.bash"'
-}
-
-@test "doesn't setup include function if it doesn't exist" {
-  run shsh-init fakesh
-  refute_line 'source "$SHSH_ROOT/lib/include.fakesh"'
+  assert_line '. "$SHSH_ROOT/lib/include.bash"'
 }
 
 @test "setup shsh completions if available" {
   run shsh-init bash
   assert_success
-  assert_line -n 5 '. "$SHSH_ROOT/completions/shsh.bash"'
+  assert_line '. "$SHSH_ROOT/completions/shsh.bash"'
+}
+
+@test "doesn't setup include function if it doesn't exist" {
+  run shsh-init fakesh
+  refute_line 'source "$SHSH_ROOT/lib/include.fakesh"'
 }
 
 @test "does not setup shsh completions if not available" {
