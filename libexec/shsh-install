@@ -24,7 +24,6 @@
 #                    flag implies --plain
 #                    TODO: currently it is bias towards linux and amd64;
 #                          to-be generalised towards detecting current arch.
-#       --arch[pkg] install the <package> as Arch package (or AUR)
 #       -f, --force  force the installation even if the package exists
 #       --ssh        use ssh protocal instead of https
 #
@@ -90,16 +89,9 @@ if [ "$#" != 0 ]; then
       --ssh)
         use_ssh="true"
         ;;
-      --arch|--archpkg)
-        archpkg="true"
-        ;;
       --nocleanup)
         no_cleanup="true"
         export no_cleanup
-        ;;
-      --noconfirm)
-        SHSH_ARCHPKG_NOCONFIRM="true"
-        export SHSH_ARCHPKG_NOCONFIRM
         ;;
       -f|--force)
         force_install="true"
@@ -146,11 +138,6 @@ fi
 
 ############################################################
 
-if [ -n "$2" ] && [ -n "$archpkg" ]; then
-  error_echo "> Arch/AUR package cannot use custom folder name."
-  exit 1
-fi
-
 # custom folder name
 parse_install_folder "$2" "$operation" && package="$_folder_full"
 
@@ -158,15 +145,13 @@ parse_install_folder "$2" "$operation" && package="$_folder_full"
 ##########################################
 if [ -n "$plain_package" ]; then
   operation="plain"
-elif [ -n "$archpkg" ]; then
-  operation="archpkg"
 else
   operation="gitclone"
 fi
 
 case "$operation" in
   #########
-  plain|archpkg)
+  plain)
     if [ -z "$package" ]; then
       # extract ref if it exists
       ref=""
@@ -255,10 +240,6 @@ case "$operation" in
     # plain package or github-release
     mkdir -p "${SHSH_PACKAGES_PATH}/$package"
     ;;
-  archpkg)
-    mkdir -p "${SHSH_PACKAGES_PATH}/$package"
-    shsh-_install-archpkg "$1" "$package"
-    ;;
   gitclone)
     # only perform link if clone is successful (and package not exists before)
     if ! shsh-_clone "$use_ssh" "$site" "$gitrepo" "$ref" "$package"; then
@@ -284,11 +265,7 @@ fi
 # add successfully installed package to shshrc
 if [ -e "$SHSHRC" ]; then
   set +e  # allow non-zero exit status in pattern matching
-  if [ "$operation" = "archpkg" ]; then
-    _target_package="$1"
-  else
-    _target_package="$package"
-  fi
+  _target_package="$package"
   shshrc_get_existing_install_cmd "$_target_package"
   new_statement="shsh install $original_args"
 

@@ -73,7 +73,6 @@ complete -f -c shsh -n "__fish_shsh_using_command install" -l noconfirm -d "do n
 complete -f -c shsh -n "__fish_shsh_using_command install" -l ssh -d "use ssh protocal instead of https"
 complete -f -c shsh -n "__fish_shsh_using_command install" -l plain -d "build a plain package from the ground up"
 complete -f -c shsh -n "__fish_shsh_using_command install" -l gh-release -d "download binary from github release assets"
-complete -f -c shsh -n "__fish_shsh_using_command install" -l archpkg -d "install the package as an Arch/AUR package"
 
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l quiet -d "be quiet even if package does not exists"
 complete -f -c shsh -n "__fish_shsh_using_command uninstall" -l use-rc -d "uninstall all packages not present in SHSHRC"
