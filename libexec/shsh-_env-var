@@ -45,4 +45,5 @@ bin_path="$(dirname "$(resolve_link "$0")")"
 export PATH="${bin_path}:${PATH}"
 export UTILS_FUNC="$bin_path/shsh-_utils"
 
+export SHSH_JUNEST_ROOT="$SHSH_ROOT/cellar/arch_junest_root"
 export SHSH_JUNEST_BIN="$SHSH_JUNEST_ROOT/junest_bin"
