@@ -29,12 +29,25 @@ Automatically bootstrap and install `shsh` (which would also modify your shell's
 curl -s https://raw.githubusercontent.com/soraxas/shsh/master/bootstrap/install.sh | sh
 ```
 
-### Recipes
+### Pre-made Recipes
+
+`shsh` can retrive pre-made recipes hosted in my [repo](https://github.com/soraxas/shsh-recipes).
+For example:
+
+```sh
+shsh install -r mamba
+```
+```sh
+shsh install -r git-annex
+```
+
+### Custom Recipes
 
 [Ranger](https://github.com/ranger/ranger): A powerful terminal file manger
  ```sh
 shsh install ranger/ranger -v REMOVE_EXTENSION=true -v BINS=ranger.py -h pre='sed -i "1d;2i#!/usr/bin/python3 -O" ranger.py'
 ```
+
 
 ## Installation
 
