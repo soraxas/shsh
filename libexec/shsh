@@ -44,6 +44,10 @@
 #   MANS                list of man pages to link
 #                       [default: all files in man/*.[0-9] and
 #                       man/man.[0-9]/*.[0-9]]
+#   MANS_ROOT           directory to search for mans. This has higher
+#                       priority than MANS.
+#                       [default: all files in man/*.[0-9] and
+#                       man/man.[0-9]/*.[0-9]]
 #   BASH_COMPLETIONS    list of bash shell completion files to link
 #   ZSH_COMPLETIONS     list of zsh shell completion files to link
 #   FISH_COMPLETIONS    list of fish shell completion files to link

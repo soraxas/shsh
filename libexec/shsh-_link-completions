@@ -41,7 +41,7 @@ link_fish_completion_file() {
   target="$SHSH_PREFIX/completions/fish/"
   mkdir -p "$target"
 
-  add_link "$src" "$target"
+  add_link "$src" "$target/${src##*/}"
 }
 # shellcheck disable=SC2153  # no misspelling
 if [ -z "${FISH_COMPLETIONS+x}" ]; then

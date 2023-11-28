@@ -17,18 +17,30 @@ link_mans() {
     *.[1-9])
       # get the last digit
       n="${file##*[!0-9]}"
-      manfile=$(basename "$file")
-      mkdir -p "${SHSH_INSTALL_MAN}/man${n}"
-
-      src="$file"
-      target="$SHSH_INSTALL_MAN/man${n}/$manfile"
-
-      add_link "$src" "$target"
+      ;;
+    *.[1-9].gz)
+      # remove suffix with dot (i.e. gz)
+      _file="${file%.*}"
+      # get the last digit
+      n="${_file##*[!0-9]}"
+      ;;
+    *)
+      return
       ;;
   esac
+  manfile=$(basename "$file")
+  mkdir -p "${SHSH_INSTALL_MAN}/man${n}"
+
+  src="$file"
+  target="$SHSH_INSTALL_MAN/man${n}/$manfile"
+  add_link "$src" "$target"
 }
 
-if [ -z "${MANS+x}" ]; then
+if [ -n "${MANS_ROOT}" ]; then
+  for file in "$target_folder/$MANS_ROOT"/* "$target_folder/$MANS_ROOT"/*/*; do
+    link_mans "$file"
+  done
+elif [ -z "${MANS+x}" ]; then
   # man can be in package root or in a subdir named 'man'
   ##### the following brace expansion is not supported in POSIX
   # "$target_folder"/{,auto}{complete,completion}{,s}{,/fish}/*.fish

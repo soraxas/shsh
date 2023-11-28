@@ -3,7 +3,8 @@
 load test_helper
 
 @test "default SHSH_ROOT" {
-  SHSH_ROOT= run shsh echo SHSH_ROOT
+  unset SHSH_ROOT
+  run shsh echo SHSH_ROOT
   assert_output "$HOME/.local/share/shsh"
 }
 
@@ -13,12 +14,15 @@ load test_helper
 }
 
 @test "inherited SHSH_ROOT with XDG_DATA_HOME" {
-  SHSH_ROOT= XDG_DATA_HOME=/local/share run shsh echo SHSH_ROOT
+  unset SHSH_ROOT
+  XDG_DATA_HOME=/local/share run shsh echo SHSH_ROOT
   assert_output "/local/share/shsh"
 }
 
 @test "default SHSH_PREFIX" {
-  SHSH_ROOT= SHSH_PREFIX= run shsh echo SHSH_PREFIX
+  unset SHSH_ROOT
+  unset SHSH_PREFIX
+  run shsh echo SHSH_PREFIX
   assert_output "$HOME/.local/share/shsh/cellar"
 }
 
@@ -28,7 +32,9 @@ load test_helper
 }
 
 @test "SHSH_PREFIX based on SHSH_ROOT" {
-  SHSH_ROOT=/tmp/shsh SHSH_PREFIX= run shsh echo SHSH_PREFIX
+  unset SHSH_PREFIX
+  SHSH_ROOT=/tmp/shsh
+  run shsh echo SHSH_PREFIX
   assert_output "/tmp/shsh/cellar"
 }
 
@@ -38,12 +44,17 @@ load test_helper
 }
 
 @test "SHSH_PACKAGES_PATH based on SHSH_PREFIX" {
-  SHSH_PREFIX=/tmp/shsh SHSH_PACKAGES_PATH= run shsh echo SHSH_PACKAGES_PATH
+  unset SHSH_PACKAGES_PATH
+  SHSH_PREFIX=/tmp/shsh
+  run shsh echo SHSH_PACKAGES_PATH
   assert_output "/tmp/shsh/packages"
 }
 
 @test "default SHSH_INSTALL_BIN" {
-  SHSH_ROOT= SHSH_PREFIX= SHSH_INSTALL_BIN= run shsh echo SHSH_INSTALL_BIN
+  unset SHSH_ROOT
+  unset SHSH_PREFIX
+  unset SHSH_INSTALL_BIN
+  run shsh echo SHSH_INSTALL_BIN
   assert_output "$HOME/.local/share/shsh/cellar/bin"
 }
 
@@ -53,12 +64,16 @@ load test_helper
 }
 
 @test "SHSH_INSTALL_BIN based on SHSH_PREFIX" {
-  SHSH_INSTALL_BIN= SHSH_ROOT=/tmp/shsh SHSH_PREFIX=/usr/local run shsh echo SHSH_INSTALL_BIN
+  unset SHSH_INSTALL_BIN
+  SHSH_ROOT=/tmp/shsh SHSH_PREFIX=/usr/local run shsh echo SHSH_INSTALL_BIN
   assert_output "/usr/local/bin"
 }
 
 @test "default SHSH_INSTALL_MAN" {
-  SHSH_ROOT= SHSH_PREFIX= SHSH_INSTALL_MAN= run shsh echo SHSH_INSTALL_MAN
+  unset SHSH_ROOT
+  unset SHSH_PREFIX
+  unset SHSH_INSTALL_MAN
+  run shsh echo SHSH_INSTALL_MAN
   assert_output "$HOME/.local/share/shsh/cellar/man"
 }
 
@@ -68,6 +83,7 @@ load test_helper
 }
 
 @test "SHSH_INSTALL_MAN based on SHSH_PREFIX" {
-  SHSH_INSTALL_MAN= SHSH_PREFIX=/usr/local run shsh echo SHSH_INSTALL_MAN
+  unset SHSH_INSTALL_MAN
+  SHSH_PREFIX=/usr/local run shsh echo SHSH_INSTALL_MAN
   assert_output "/usr/local/man"
 }
