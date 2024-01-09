@@ -32,6 +32,10 @@ function __fish_shsh_get_package_with_desc
         | string replace --all -r '(http[s]?://|[.]git$)' ''
 end
 
+function __fish_shsh_get_package_inside_shshrc
+    shsh list --saved
+end
+
 # only have commands completions
 #complete -f -c shsh -n '__fish_shsh_needs_command' -a '(shsh commands)'
 
@@ -44,8 +48,11 @@ set -l shsh_cmds_with_desc (shsh help | awk -F '[[:space:]][[:space:]]+' '/^Some
 complete -f -c shsh -n __fish_shsh_needs_command -a "$shsh_cmds_with_desc"
 
 for cmd in (shsh commands)
-    if string match -q $cmd uninstall upgrade package-path refresh get
+    if string match -q $cmd uninstall upgrade package-path refresh
         complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a '(__fish_shsh_get_package_with_desc)'
+    else if string match -q $cmd get
+        # the following version retrieve all command inside shshrc
+        complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a '(__fish_shsh_get_package_inside_shshrc)'
     else
         complete -f -c shsh -n "__fish_shsh_using_command $cmd" -a "(shsh completions $cmd)"
     end
@@ -59,6 +66,9 @@ complete -f -c shsh -l verbose -d "verbose on some commands, e.g. (un)linking"
 complete -f -c shsh -n __fish_shsh_needs_command -l version -d "Show version number"
 complete -f -c shsh -n "__fish_shsh_using_command get" -s f -l full -d 'show the full entry in $SHSHRC'
 complete -f -c shsh -n "__fish_shsh_using_command list" -s d -l details -d "display more details of packages"
+complete -f -c shsh -n "__fish_shsh_using_command list" -s a -l all -d "display more details of packages"
+complete -f -c shsh -n "__fish_shsh_using_command list" -s i -l installed -d "display more details of packages"
+complete -f -c shsh -n "__fish_shsh_using_command list" -s s -l saved -d "display more details of packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s a -l all -d "performs on all packages"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -s f -l force -d "force upgrade a package even if up-to-date"
 complete -f -c shsh -n "__fish_shsh_using_command upgrade" -l nohooks -d "do not execute saved hooks in SHSHRC"

@@ -1,54 +1,114 @@
 #!/usr/bin/env sh
 #
 # Summary: List installed packages
-# Usage: shsh list [-d|--details]
+# Usage: shsh list [-d|--details] [-a|--all] [-i|--installed]
+#                  [-s|--saved]
 #
 # Options:
 #   -d, --details    display the URL of the repository
+#   -i, --installed  display only the installed packages (default: true)
+#   -s, --saved      display only the saved packages inside $SHSHRC
+#   -a, --all        display both of the above
 
 set -e
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
-case $1 in
-  -d|--details)
-    show_details="true"
-    shift
-  ;;
-esac
+show_installed="true"
+show_saved=""
+
+# shellcheck disable=SC2116,SC2028
+EOL=$(echo '\00\07\01\00')
+if [ "$#" != 0 ]; then
+set -- "$@" "$EOL"
+while [ "$1" != "$EOL" ]; do
+    opt="$1"; shift
+    case "$opt" in
+      -d|--details)
+        show_details="true"
+        ;;
+      -a|--all)
+        show_installed="true"
+        show_saved="true"
+        ;;
+      -i|--installed)
+        show_installed="true"
+        ;;
+      -s|--saved)
+        show_installed=""
+        show_saved="true"
+        ;;
+    *)
+        # set back any unused args
+        set -- "$@" "$opt"
+    esac
+done
+shift # remove the EOL token
+fi
 
 if [ "$#" -gt 0 ]; then
   shsh-help list
   exit 1
 fi
 
-for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
-  is_file_or_link "$package_path" || continue
+if [ -n "$show_installed" ]; then
+  for package_path in "${SHSH_PACKAGES_PATH}"/*/*; do
+    is_file_or_link "$package_path" || continue
 
-  username="$(dirname "$package_path")"
-  username="${username##*/}"
-  package="${package_path##*/}"
-  if [ -z "$show_details" ]; then
-    echo "$username/$package"
-  else
-    if [ -L "$package_path" ]; then
-      # is a locally linked folder
-      extra_info="linked: $(resolve_link "$package_path")"
+    username="$(dirname "$package_path")"
+    username="${username##*/}"
+    package="${package_path##*/}"
+    if [ -z "$show_details" ]; then
+      echo "$username/$package"
     else
-      if [ -d "$package_path/".git ]; then
-        # is a git with remote upstream
-        extra_info="$(git --git-dir="$package_path/".git config --get remote.origin.url)"
-      elif [ -e "$package_path/.gh-release_info" ]; then
-        if has_jq; then
-          extra_info="gh-release: $(jq -r '.tag_name' < "$package_path/.gh-release_info")"
-        else
-          extra_info="gh-release: unknown (missing jq)"
-        fi
+      if [ -L "$package_path" ]; then
+        # is a locally linked folder
+        extra_info="linked: $(resolve_link "$package_path")"
       else
-        # is a plain package
-        extra_info="plain package"
+        if [ -d "$package_path/".git ]; then
+          # is a git with remote upstream
+          extra_info="$(git --git-dir="$package_path/".git config --get remote.origin.url)"
+        elif [ -e "$package_path/.gh-release_info" ]; then
+          if has_jq; then
+            extra_info="gh-release: $(jq -r '.tag_name' < "$package_path/.gh-release_info")"
+          else
+            extra_info="gh-release: unknown (missing jq)"
+          fi
+        else
+          # is a plain package
+          extra_info="plain package"
+        fi
       fi
+      printf "%-35s %-30s\n" "$username/$package" "($extra_info)"
     fi
-    printf "%-35s %-30s\n" "$username/$package" "($extra_info)"
-  fi
-done
+  done
+fi
+
+re_echo() {
+  # xargs help to turn a pure string into one that respect quotes
+  printf "%s" "$@" | xargs -n 1 printf "%s\n"
+}
+
+if [ -n "$show_saved" ]; then
+  IFS="$(printf '\n ')" && IFS="${IFS% }"
+  for command_string in $(shshrc_get_all_existing_install_cmd); do
+    # use built-in array to reconstruct multiple argument
+    set --
+    for argument in $(re_echo "$command_string"); do
+        set -- "$@" "$argument"
+    done
+    unset error
+    parse_shsh_install_cmd "$@" >/dev/null 2>&1 || error="$?"
+    if [ -n "$error" ]; then
+        error_echo "> error occured when parsing shsh install command: '$command_string'"
+        continue
+    fi
+
+    if [ -z "$show_details" ]; then
+      echo "$package"
+    else
+      printf "%-35s %-30s\n" "$package" "(in $SHSHRC)"
+    fi
+
+  done
+fi
