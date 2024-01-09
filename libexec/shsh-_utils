@@ -385,6 +385,8 @@ parse_shsh_install_cmd() {
   unset plain_package
   unset as_recipe
 
+  use_ssh="false"
+
   parse_hooks_and_setvar "$@" || return "$?"
   # set back $@ from leftovers
   # shellcheck disable=SC2086
