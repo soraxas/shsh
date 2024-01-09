@@ -6,7 +6,7 @@ set -e
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
-parse_hooks_and_setvar "$@"
+parse_hooks_and_setvar "$@" || exit "$?"
 # set back $@ from leftovers
 # shellcheck disable=SC2086
 set -- $SHSH_ARGV

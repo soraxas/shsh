@@ -299,6 +299,178 @@ prompt ()  {
   done
 }
 
+_parse_shsh_install_remote_and_pkg_name() {
+  ############################################################
+  plain_package="$3"
+
+  ##########################################
+  if [ -n "$plain_package" ]; then
+    operation="plain"
+  else
+    operation="gitclone"
+  fi
+
+  # custom folder name
+  parse_install_folder "$2" "$operation" && package="$_folder_full"
+
+  case "$operation" in
+    #########
+    plain)
+      if [ -z "$package" ]; then
+        if parse_install_folder "$1" "$operation"; then
+          package="$_folder_full"
+        else
+          error_echo "Cannot parse folder from argunment."
+          return 1
+        fi
+      fi
+      ;;
+    #########
+    gitclone)
+      case "${1%%@*}" in
+      */*/*)
+        IFS=/ read -r site user name <<EOF
+$1
+EOF
+        ;;
+      */*)
+        IFS=/ read -r user name <<EOF
+$1
+EOF
+        site="github.com"
+        ;;
+      *)
+        shsh-help install
+        return 1
+        ;;
+      esac
+      gitrepo="${user}/${name}"
+
+      # defaults to package's name
+      [ -z "$package" ] && package="${gitrepo%%@*}"
+
+      # extract ref if it exists
+      ref=""
+      case "$gitrepo" in
+      */*@*)
+        IFS=@ read -r gitrepo ref <<EOF
+$gitrepo
+EOF
+      ;;
+    esac
+      ;;
+    #########
+    *)
+      error_echo "> Unknown error in selecting operation for parsing: '$operation'"
+      return 1
+      ;;
+  esac
+  export package
+  export gitrepo
+  export ref
+}
+
+parse_shsh_install_cmd() {
+  unset package
+  unset gitrepo
+  unset ref
+  unset pkg
+  unset SHSH_ARGV
+  unset use_ssh
+  unset no_cleanup
+  unset force_install
+  unset gh_release
+  unset plain_package
+  unset gh_release_asset
+  unset plain_package
+  unset as_recipe
+
+  parse_hooks_and_setvar "$@" || return "$?"
+  # set back $@ from leftovers
+  # shellcheck disable=SC2086
+  set -- $SHSH_ARGV
+
+  # shellcheck disable=SC2116,SC2028
+  EOL=$(echo '\00\07\01\00')
+  if [ "$#" != 0 ]; then
+    set -- "$@" "$EOL"
+    while [ "$1" != "$EOL" ]; do
+        opt="$1"; shift
+        case "$opt" in
+        --ssh)
+            export use_ssh="true"
+            ;;
+        --nocleanup)
+            no_cleanup="true"
+            export no_cleanup
+            ;;
+        -f|--force)
+            export force_install="true"
+            ;;
+        --gh-release|--gh-release=*)
+            export gh_release="true"
+            export plain_package="true"
+            case "$gh_release_asset" in
+            *=*)
+                gh_release_asset="${opt#*=}"
+                export gh_release_asset
+            ;;
+            esac
+            ;;
+        --plain)
+            # set a dummy remote package name
+            # set -- "PLACE/HOLDER" "$@"
+            export plain_package="true"
+            ;;
+        -r|--recipe)
+            export as_recipe="true"
+            ;;
+        --*=*)  # convert '--name=arg' to '--name' 'arg'
+            set -- "${opt%%=*}" "${opt#*=}" "$@";;
+        -[!-]?*)  # convert '-abc' to '-a' '-b' '-c'
+            # shellcheck disable=SC2046  # we want word splitting
+            set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;
+        --)  # process remaining arguments as positional
+            while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;
+        -*)
+            error_echo "Error: Unsupported flag '$opt'" >&2
+            return 1
+            ;;
+        *)
+            # set back any unused args
+            set -- "$@" "$opt"
+        esac
+    done
+    shift # remove the EOL token
+  fi
+
+  # error check
+  if [ -n "$as_recipe" ]; then
+    if [ "$#" -ne 1 ]; then
+      error_echo "> Using recipe requires exactly 1 argument, and does not supports custom install folder."
+      return 1
+    fi
+    package="$1"
+  else
+    # v normal install
+    if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+      shsh-help install
+      return 1
+    fi
+
+    _parse_shsh_install_remote_and_pkg_name "$1" "$2" "$plain_package" || return "$?"
+  fi
+
+  export package
+  export gitrepo
+  export site
+  export ref
+  export pkg="$package"
+
+  SHSH_ARGV="$*"
+  export SHSH_ARGV
+}
+
 parse_install_folder() {
   # given a string in the format of <...>/<...>
   # > extract export the relevant variable
@@ -310,7 +482,7 @@ parse_install_folder() {
   if [ -z "$1" ]; then
     # if [ -n "$error_check" ]; then
     #   error_echo "Given string is empty"
-    #   exit 2
+    #   return 2
     # fi
     # skip processing
     return 1
@@ -318,7 +490,7 @@ parse_install_folder() {
   case "$1" in
     */*/*)
         error_echo "> Given string '$1' cannot has more than 2 subfolders."
-        exit 1
+        return 1
       ;;
     */*)
       IFS=/ read -r _folder_namespace _folder_target <<EOF
@@ -326,17 +498,17 @@ $1
 EOF
       if [ -z "$_folder_namespace" ]; then
         error_echo "> folder namespace cannot be empty"
-        exit 1
+        return 1
       fi
       if [ -z "$_folder_target" ]; then
         error_echo "> folder target cannot be empty"
-        exit 1
+        return 1
       fi
       ;;
     *)
       # if [ -n "$error_check" ]; then
       #   error_echo "> Given string '$1' must be in the format <...>/<...>."
-      #   exit 1
+      #   return 1
       # fi
       _folder_namespace="$1"
       _folder_target="$1"
@@ -439,7 +611,7 @@ parse_hooks_and_setvar() {
               ;;
             *)
               error_echo "Unrecognized hook type '$1'"
-              exit 1
+              return 1
               ;;
           esac
           shift
@@ -448,7 +620,7 @@ parse_hooks_and_setvar() {
           check_key_val_pair "$1" "$opt"
           _var="${1%%=*}"
           _val="${1#*=}"
-          [ -z "$_var" ] && error_echo "Invalid argunment for '--variable' with '$1'" && exit 1
+          [ -z "$_var" ] && error_echo "Invalid argunment for '--variable' with '$1'" && return 1
           eval "$_var='$_val'"
           export "${_var?}"
           shift ;;
@@ -463,6 +635,14 @@ parse_hooks_and_setvar() {
   fi
   SHSH_ARGV="$*"
   export SHSH_ARGV
+}
+
+shshrc_get_all_existing_install_cmd() {
+  set +e
+  if [ -e "$SHSHRC" ]; then
+    existing="$(sed -n 's/^\s*shsh install \(.*\)$/\1/p' "$SHSHRC")"
+    echo "$existing"
+  fi
 }
 
 shshrc_get_existing_install_cmd() {

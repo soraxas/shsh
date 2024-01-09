@@ -75,87 +75,27 @@ set -e
 
 original_args="$(requote_args "$@")"
 
-parse_hooks_and_setvar "$@"
+parse_shsh_install_cmd "$@" || exit "$?"
 # set back $@ from leftovers
 # shellcheck disable=SC2086
 set -- $SHSH_ARGV
 
-use_ssh="false"
-# shellcheck disable=SC2116,SC2028
-EOL=$(echo '\00\07\01\00')
-if [ "$#" != 0 ]; then
-  set -- "$@" "$EOL"
-  while [ "$1" != "$EOL" ]; do
-    opt="$1"; shift
-    case "$opt" in
-      --ssh)
-        use_ssh="true"
-        ;;
-      --nocleanup)
-        no_cleanup="true"
-        export no_cleanup
-        ;;
-      -f|--force)
-        force_install="true"
-        ;;
-      --gh-release|--gh-release=*)
-        gh_release="true"
-        plain_package="true"
-        case "$gh_release_asset" in
-          *=*)
-            gh_release_asset="${opt#*=}"
-            export gh_release_asset
-          ;;
-        esac
-        ;;
-      --plain)
-        # set a dummy remote package name
-        # set -- "PLACE/HOLDER" "$@"
-        plain_package="true"
-        ;;
-      -r|--recipe)
-        as_recipe="true"
-        ;;
-      --*=*)  # convert '--name=arg' to '--name' 'arg'
-        set -- "${opt%%=*}" "${opt#*=}" "$@";;
-      -[!-]?*)  # convert '-abc' to '-a' '-b' '-c'
-        # shellcheck disable=SC2046  # we want word splitting
-        set -- $(echo "${opt#-}" | sed 's/\(.\)/ -\1/g') "$@";;
-      --)  # process remaining arguments as positional
-        while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;
-      -*)
-        echo "Error: Unsupported flag '$opt'" >&2
-        exit 1
-        ;;
-      *)
-        # set back any unused args
-        set -- "$@" "$opt"
-    esac
-  done
-  shift # remove the EOL token
-fi
-
 if [ -n "$as_recipe" ]; then
-  if [ "$#" -ne 1 ]; then
-    error_echo "> Using recipe requires exactly 1 argument, and does not supports custom install folder."
-    exit 1
-  fi
   # get status code and content at the same time.
   # content="$( 2>/tmp/)"
-  export pkg="$1"
   contentfile="$(mktemp)"
   # we first output http_code to stderr (and actual content to stdout)
   # Then, the 3>&2 2>&1 1>&3 swap stdout and stderr, and we redirect http status to a file.
   http_status="$({
-    curl -Lsk -w '%{stderr}%{http_code}\n%{stdout}\n' https://raw.githubusercontent.com/soraxas/shsh-recipes/main/pkgs/"${pkg}"/latest >"$contentfile"
+    curl -Lsk -w '%{stderr}%{http_code}\n%{stdout}\n' https://raw.githubusercontent.com/soraxas/shsh-recipes/main/pkgs/"${package}"/latest >"$contentfile"
    } 2>&1 )"
 
   if [ "$http_status" = "404" ]; then
-    error_echo "> Package '$pkg' does not exists"
+    error_echo "> Package recipe for '$package' does not exists"
     exit 1
   fi
   if [ "$http_status" != "200" ]; then
-    error_echo "> Error occurs when retrieving '$pkg' recipe"
+    error_echo "> Error occurs when retrieving '$package' recipe"
     exit 1
   fi
 
@@ -181,91 +121,6 @@ if [ -n "$as_recipe" ]; then
 #############################################
 else
 #############################################
-# v normal install
-
-  if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
-    shsh-help install
-    exit 1
-  fi
-
-  ############################################################
-
-  # custom folder name
-  parse_install_folder "$2" "$operation" && package="$_folder_full"
-
-  ##########################################
-  if [ -n "$plain_package" ]; then
-    operation="plain"
-  else
-    operation="gitclone"
-  fi
-
-  case "$operation" in
-    #########
-    plain)
-      if [ -z "$package" ]; then
-        # extract ref if it exists
-        ref=""
-        case "$1" in
-        */*@*)
-          IFS=@ read -r _clean_input_1 ref <<EOF
-$1
-EOF
-          ;;
-        *)
-          _clean_input_1="$1"
-          ;;
-        esac
-        ####
-        if parse_install_folder "$_clean_input_1" "$operation"; then
-          package="$_folder_full"
-        else
-          error_echo "Cannot parse folder from argunment."
-          exit 1
-        fi
-      fi
-      ;;
-    #########
-    gitclone)
-      case "${1%%@*}" in
-      */*/*)
-        IFS=/ read -r site user name <<EOF
-$1
-EOF
-        ;;
-      */*)
-        IFS=/ read -r user name <<EOF
-$1
-EOF
-        site="github.com"
-        ;;
-      *)
-        shsh-help install
-        exit 1
-        ;;
-      esac
-      gitrepo="${user}/${name}"
-
-      # defaults to package's name
-      [ -z "$package" ] && package="${gitrepo%%@*}"
-
-      # extract ref if it exists
-      ref=""
-      case "$gitrepo" in
-      */*@*)
-        IFS=@ read -r gitrepo ref <<EOF
-$gitrepo
-EOF
-      ;;
-    esac
-      ;;
-    #########
-    *)
-      error_echo "> Unknown error in selecting operation for parsing: '$operation'"
-      exit 1
-      ;;
-  esac
-
 
   ## INSTALLING
   # shellcheck disable=SC2015
