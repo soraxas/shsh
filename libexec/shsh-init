@@ -22,29 +22,27 @@ shell="$1"
 
 print_fish_commands() {
   echo 'set -gx SHSH_ROOT "'"$SHSH_ROOT"'"'
-  echo 'set -gx SHSH_PREFIX "'"$SHSH_PREFIX"'"'
-  echo 'set -gx SHSH_PACKAGES_PATH "'"$SHSH_PACKAGES_PATH"'"'
+  # echo "$SHSH_PREFIX"
 
   # add to fish_user_path instead for better management
-  # echo 'not contains $SHSH_ROOT/cellar/bin $fish_user_paths'
+  # echo 'not contains $SHSH_INSTALL_BIN $fish_user_paths'
   if [ -d "$SHSH_JUNEST_BIN" ]; then
-    echo 'set -gx SHSH_JUNEST_BIN "'"$SHSH_JUNEST_BIN"'"'
-    echo 'set -ax fish_user_paths $SHSH_JUNEST_BIN'
+    # echo 'set -gx SHSH_JUNEST_BIN "'"$SHSH_JUNEST_BIN"'"'
+    echo 'set -ax PATH '"$SHSH_JUNEST_BIN"
   fi
-  echo 'contains $SHSH_ROOT/cellar/bin $fish_user_paths'
-  echo 'or set -p fish_user_paths $SHSH_ROOT/cellar/bin'
+  echo 'contains '"$SHSH_INSTALL_BIN"' $PATH'
+  echo 'or set -p PATH '"$SHSH_INSTALL_BIN"
+  # echo 'or set -p fish_user_paths '"$SHSH_INSTALL_BIN"
 }
 
 print_sh_commands(){
   echo 'export SHSH_ROOT="'"$SHSH_ROOT"'"'
-  echo 'export SHSH_PREFIX="'"$SHSH_PREFIX"'"'
-  echo 'export SHSH_PACKAGES_PATH="'"$SHSH_PACKAGES_PATH"'"'
 
   if [ -d "$SHSH_JUNEST_BIN" ]; then
-    echo 'export SHSH_JUNEST_BIN="'"$SHSH_JUNEST_BIN"'"'
-    echo 'export PATH="$PATH:$SHSH_JUNEST_BIN"'
+    # echo 'export SHSH_JUNEST_BIN="'"$SHSH_JUNEST_BIN"'"'
+    echo 'export PATH="$PATH:'"$SHSH_JUNEST_BIN"'"'
   fi
-  echo 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
+  echo 'export PATH="'"$SHSH_INSTALL_BIN"':$PATH"'
 }
 
 load_bash_package_completions() {
@@ -54,8 +52,8 @@ load_bash_package_completions() {
 }
 
 load_zsh_package_completions() {
-  echo 'fpath=("$SHSH_ROOT/cellar/completions/zsh/compsys" $fpath)'
-  echo 'for f in $(command ls "$SHSH_ROOT/cellar/completions/zsh/compctl"); do source "$SHSH_ROOT/cellar/completions/zsh/compctl/$f"; done'
+  echo 'fpath=("'"$SHSH_ROOT"'/cellar/completions/zsh/compsys" $fpath)'
+  echo 'for f in $(command ls "'"$SHSH_ROOT"'/cellar/completions/zsh/compctl"); do source "'"$SHSH_ROOT"'/cellar/completions/zsh/compctl/$f"; done'
 }
 
 # init variables and path for shsh
@@ -71,11 +69,11 @@ esac
 # init completions for shsh
 if [ "$shell" != fish ]; then
   if [ -e "$SHSH_ROOT/lib/include.$shell" ]; then
-    echo ". \"\$SHSH_ROOT/lib/include.$shell\""
+    echo '. '"$SHSH_ROOT"'/lib/include.'"$shell"
   fi
 
   if [ -e "$SHSH_ROOT/completions/shsh.$shell" ]; then
-    echo ". \"\$SHSH_ROOT/completions/shsh.$shell\""
+    echo '. '"$SHSH_ROOT"'/completions/shsh.'"$shell"
   fi
   # completions for fish is loaded on-demand by completions path
 fi
@@ -89,7 +87,7 @@ case "$shell" in
     load_zsh_package_completions
     ;;
   fish )
-    echo 'contains $SHSH_PREFIX/completions/fish $fish_complete_path'
-    echo 'or set -p fish_complete_path $SHSH_PREFIX/completions/fish'
+    echo 'contains '"$SHSH_PREFIX"'/completions/fish $fish_complete_path'
+    echo 'or set -p fish_complete_path '"$SHSH_PREFIX"'/completions/fish'
     ;;
 esac
