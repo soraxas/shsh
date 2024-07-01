@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Summary: Link shsh's completion and man files to shsh's own cellar
+#
+# Usage: shsh self-linking
+#
+
+set -e
+# shellcheck source=libexec/shsh-_utils
+. "${UTILS_FUNC:?}"
+
+(
+    cd "$SHSH_ROOT" && make self-linking
+)
+
