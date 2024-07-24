@@ -22,7 +22,6 @@ shell="$1"
 
 print_fish_commands() {
   echo 'set -gx SHSH_ROOT "'"$SHSH_ROOT"'"'
-  # echo "$SHSH_PREFIX"
 
   # add to fish_user_path instead for better management
   # echo 'not contains $SHSH_INSTALL_BIN $fish_user_paths'
@@ -46,7 +45,7 @@ print_sh_commands(){
 }
 
 load_bash_package_completions() {
-  _folder="$SHSH_ROOT/cellar/completions"
+  _folder="$SHSH_PREFIX/completions"
   echo 'for f in $(command ls "'"$_folder"'/bash"); do source "'"$_folder"'/bash/$f"; done'
 
 }

@@ -21,7 +21,7 @@ export JUNEST_HOME="${SHSH_ROOT:?Root directory for shsh has not been defined.}/
 junest_bin_root="$JUNEST_HOME/usr/bin_wrappers"
 
 shsh_junest_pkg_name=_bootstrap/junest
-real_junest_bin="$SHSH_ROOT/cellar/packages/$shsh_junest_pkg_name/bin/junest"
+real_junest_bin="$SHSH_PREFIX/packages/$shsh_junest_pkg_name/bin/junest"
 
 if [ "$(basename "$0")" = junest ]; then
   # wrapper mode
