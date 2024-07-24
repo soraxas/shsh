@@ -34,14 +34,14 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
 # the sign := will do substitute if parameter is null (i.e. empty)
 # but we'll use = instead, as we want to respect null string.
 _xdg_data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
-export SHSH_ROOT="${SHSH_ROOT="$_xdg_data_home/shsh"}"
+export SHSH_ROOT="${SHSH_ROOT:="$_xdg_data_home/shsh"}"
 
-export SHSH_PREFIX="${SHSH_PREFIX=$SHSH_ROOT/cellar}"
-export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH=$SHSH_PREFIX/packages}"
-export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN=$SHSH_PREFIX/bin}"
-export SHSH_INSTALL_MAN="${SHSH_INSTALL_MAN=$SHSH_PREFIX/man}"
-_xdg_config_home="${XDG_CONFIG_HOME=$HOME/.config}"
-export SHSHRC="${SHSHRC=$_xdg_config_home/shshrc}"
+export SHSH_PREFIX="${SHSH_PREFIX:=$SHSH_ROOT/cellar}"
+export SHSH_PACKAGES_PATH="${SHSH_PACKAGES_PATH:=$SHSH_PREFIX/packages}"
+export SHSH_INSTALL_BIN="${SHSH_INSTALL_BIN:=$SHSH_PREFIX/bin}"
+export SHSH_INSTALL_MAN="${SHSH_INSTALL_MAN:=$SHSH_PREFIX/man}"
+_xdg_config_home="${XDG_CONFIG_HOME:=$HOME/.config}"
+export SHSHRC="${SHSHRC:=$_xdg_config_home/shshrc}"
 
 bin_path="$(dirname "$(resolve_link "$0")")"
 export PATH="${bin_path}:${PATH}"
