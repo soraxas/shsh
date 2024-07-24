@@ -15,32 +15,52 @@ load test_helper
 }
 
 @test "exports SHSH_PREFIX" {
-  SHSH_PREFIX=/lol run shsh-init bash
+  SHSH_PREFIX=/lol run shsh echo SHSH_PREFIX
   assert_success
-  assert_line 'export SHSH_PREFIX="/lol"'
+  assert_line "/lol"
+
+  SHSH_PREFIX= run shsh echo SHSH_PREFIX
+  assert_success
+  assert_line "$SHSH_ROOT/cellar"
+
+  SHSH_ROOT=/tmp SHSH_PREFIX= run shsh echo SHSH_PREFIX
+  assert_success
+  assert_line "/tmp/cellar"
 }
 
 @test "exports SHSH_PACKAGES_PATH" {
-  SHSH_PACKAGES_PATH=/lol/packages run shsh-init bash
+  SHSH_PACKAGES_PATH=/lol/packages run shsh echo SHSH_PACKAGES_PATH
   assert_success
-  assert_line 'export SHSH_PACKAGES_PATH="/lol/packages"'
+  assert_line '/lol/packages'
+
+  SHSH_PACKAGES_PATH= run shsh echo SHSH_PACKAGES_PATH
+  assert_success
+  assert_line "$SHSH_PREFIX/packages"
+
+  SHSH_PREFIX= SHSH_PACKAGES_PATH= run shsh echo SHSH_PACKAGES_PATH
+  assert_success
+  assert_line "$SHSH_ROOT/cellar/packages"
+
+  SHSH_ROOT=/tmp SHSH_PREFIX= SHSH_PACKAGES_PATH= run shsh echo SHSH_PACKAGES_PATH
+  assert_success
+  assert_line "/tmp/cellar/packages"
 }
 
 @test "adds cellar/bin to path" {
   run shsh-init bash
   assert_success
-  assert_line 'export PATH="$SHSH_ROOT/cellar/bin:$PATH"'
+  assert_line 'export PATH="'$SHSH_PREFIX'/bin:$PATH"'
 }
 
 @test "setup include function if it exists" {
   run shsh-init bash
-  assert_line '. "$SHSH_ROOT/lib/include.bash"'
+  assert_line '. '$SHSH_ROOT'/lib/include.bash'
 }
 
 @test "setup shsh completions if available" {
   run shsh-init bash
   assert_success
-  assert_line '. "$SHSH_ROOT/completions/shsh.bash"'
+  assert_line '. '$SHSH_ROOT'/completions/shsh.bash'
 }
 
 @test "doesn't setup include function if it doesn't exist" {
