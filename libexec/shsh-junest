@@ -17,7 +17,7 @@
 
 set -e
 
-export JUNEST_HOME="${SHSH_ROOT:?Root directory for shsh has not been defined.}/cellar/arch_junest_root/junest"
+export JUNEST_HOME="${SHSH_PREFIX:?prefix for shsh has not been defined.}/arch_junest_root/junest"
 junest_bin_root="$JUNEST_HOME/usr/bin_wrappers"
 
 shsh_junest_pkg_name=_bootstrap/junest
