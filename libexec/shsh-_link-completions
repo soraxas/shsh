@@ -37,6 +37,7 @@ if [ -n "${ZSH_COMPLETIONS:=}" ]; then
 fi
 
 link_fish_completion_file() {
+  echo_if_verbose ">> Canidate: $1"
   src="$1"
   target="$SHSH_PREFIX/completions/fish/"
   mkdir -p "$target"
