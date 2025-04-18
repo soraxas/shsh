@@ -24,13 +24,19 @@ case "$shell_type" in
   zsh)   startup_type="simple" ; startup_script="$HOME/.zshrc"  ;;
   sh)    startup_type="simple" ; startup_script="$HOME/.profile";;
   fish)  startup_type="fish"   ; startup_script="$HOME/.config/fish/config.fish"  ;;
-  *)     startup_type="?"      ; startup_script="" ;   ;;
+  *)
+    echo "Unknown shell '$shell_type'." >&2
+    echo "Perhaps set the \$SHELL environment variable to your shell type before running this?" >&2
+    echo "e.g. export SHELL=bash" >&2
+    exit 1
+    ;;
 esac
 
+
 if [ ! -f "$startup_script" ]; then
-  echo "Startup script '$startup_script' does not exist"
-  exit 1
-fi
+  touch "$startup_script"
+if
+
 
 ## now add the basher initialisation lines to the user's startup script
 echo "Adding shsh initialisation"
