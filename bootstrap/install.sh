@@ -7,7 +7,8 @@ eval "$(curl -s https://raw.githubusercontent.com/soraxas/shsh/master/libexec/sh
 
 ## stop if basher is already installed
 if [ -d "$SHSH_ROOT" ]; then
-  echo "shsh already exists at '$SHSH_ROOT'" >&2
+  echo "shsh already exists at '$SHSH_ROOT'." >&2
+  echo "Delete it if you want to start this bootstrap process again." >&2
   exit 1
 fi
 
@@ -48,7 +49,9 @@ case "$startup_type" in
     printf '%s\n' 'status --is-interactive; and shsh init fish | source' >>"$startup_script"
     ;;
   *)
-    echo "Unknown shell '$shell_type'"
+    echo "Unknown shell '$shell_type'." >&2
+    echo "Perhaps set the \$SHELL environment variable to your shell type before running this?" >&2
+    echo "e.g. export SHELL=bash" >&2
     exit 1
     ;;
 esac
@@ -57,4 +60,7 @@ esac
 (
   cd "$SHSH_ROOT" && make self-linking
 )
+
+# restart shell
+exec "$SHELL" -l
 
