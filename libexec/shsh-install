@@ -159,7 +159,10 @@ else
       ;;
   esac
 
-  shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package" "$gh_release" "$ref"
+  if [ -n "$gh_release" ]; then
+    shsh-_post-gh-release "$package" "${SHSH_PACKAGES_PATH}/$package" "$ref"
+  fi
+  shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package"
 
 fi
 

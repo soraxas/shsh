@@ -135,7 +135,10 @@ else
   ls -A1 | xargs rm -rf
 fi
 
-shsh-_post-install "$_folder_full" "$target_folder" "$gh_release" "$ref"
+if [ -n "$gh_release" ]; then
+  shsh-_post-gh-release "$_folder_full" "$target_folder" "$ref"
+fi
+shsh-_post-install "$_folder_full" "$target_folder"
 
 # upgrade any dependencies it needs
 for dep in $(shsh-_deps --get "$_folder_full")
