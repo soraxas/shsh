@@ -29,7 +29,7 @@ directory="$1"
 parse_install_folder "$2" && package="$_folder_full"
 
 if [ ! -d "$directory" ]; then
-  echo "Directory '$directory' not found."
+  error_echo "Directory '$directory' not found."
   exit 1
 fi
 
@@ -41,7 +41,7 @@ fi
 package_not_exists "$package" || exit 1
 
 if [ -d "${SHSH_PACKAGES_PATH}/$package" ]; then
-  echo "Package '$package' is already present"
+  error_echo "Package '$package' is already present"
   exit 1
 fi
 

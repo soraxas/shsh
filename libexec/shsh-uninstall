@@ -52,7 +52,7 @@ if [ -n "$use_rc_file" ]; then
 
     if [ -z "$existing" ]; then
       if [ -n "$noconfirm" ] || prompt "Uninstall $_package?"; then
-        echo "> Uninstalling $_package"
+        info_echo "> Uninstalling $_package"
         shsh uninstall "$_package"
       fi
     fi
@@ -71,7 +71,7 @@ unset status
 exist_msg="$(package_exists "$package" 2>&1)" || status="$?"
 if [ -n "$status" ]; then
   [ -n "$quiet" ] && exit
-  echo "$exist_msg"
+  info_echo "$exist_msg"
   exit "$status"
 fi
 

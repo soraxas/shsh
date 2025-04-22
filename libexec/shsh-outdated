@@ -19,10 +19,10 @@ check_up_to_date() {
   # only perfrom it if it's actually a git package
   ret=0
   if [ ! -L "$dir" ] && [ -e "$dir/".git ]; then
-    git_check_up_to_date "$dir" || ret=$?
+    git_check_up_to_date "$dir" > /dev/null 2>&1 || ret=$?
     return $ret
   elif [ -e "$dir/.gh-release_info" ]; then
-    gh_release_check_up_to_date "$1" "$dir" || ret=$?
+    gh_release_check_up_to_date "$1" "$dir" > /dev/null 2>&1 || ret=$?
     return $ret
   fi
   # indicate this is a plain package

@@ -1,5 +1,24 @@
 #!/usr/bin/env sh
 
+export Color_Off='\033[0m'             # Text Reset
+# Regular Colors
+export Color_Black='\033[1;30m'        # Bold Black
+export Color_Red='\033[1;31m'          # Bold Red
+export Color_Green='\033[1;32m'        # Bold Green
+export Color_Yellow='\033[0;33m'       # Yellow
+export Color_Blue='\033[0;34m'         # Blue
+export Color_Purple='\033[1;35m'       # Bold Purple
+export Color_Cyan='\033[1;36m'         # Bold Cyan
+export Color_White='\033[1;37m'        # Bold White
+
+info_echo() {
+  >&2 printf "$Color_Yellow%s$Color_Off\n" "$@"
+}
+
+error_echo() {
+  >&2 printf "$Color_Red%s$Color_Off\n" "$@"
+}
+
 resolve_link() {
   if type greadlink >/dev/null 2>&1; then
     greadlink -f "$1"
@@ -25,7 +44,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
       _target="$(basename "$_target")"
       i=$((i+1))
       if [ "$i" -gt 1000 ]; then  # check for symlink loop
-        echo "Probably encountered symlink loops while resolving path" 1>&2 && exit 1
+        error_echo "Probably encountered symlink loops while resolving path" 1>&2 && exit 1
       fi
   done
   echo "$(pwd -P)"/"$_target"

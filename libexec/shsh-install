@@ -160,7 +160,12 @@ else
   esac
 
   if [ -n "$gh_release" ]; then
-    shsh-_post-gh-release "$package" "${SHSH_PACKAGES_PATH}/$package" "$ref"
+    # we will source the script to inherit the 'potential' exported variables
+    export package="$package"
+    export target_folder="${SHSH_PACKAGES_PATH}/$package"
+    export ref="$ref"
+    # shellcheck source=libexec/shsh-_post-gh-release
+    . shsh-_post-gh-release
   fi
   shsh-_post-install "$package" "${SHSH_PACKAGES_PATH}/$package"
 

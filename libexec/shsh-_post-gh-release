@@ -5,9 +5,10 @@ set -e
 # shellcheck source=libexec/shsh-_utils
 . "${UTILS_FUNC:?}"
 
-package="$1"
-target_folder="$2"
-ref="$3"
+# these variables are set by the caller
+package="${package:?}"
+target_folder="${target_folder:?}"
+ref="${ref:-}"  # optional
 
 echo_if_verbose ">> Requesting github release info"
 _response="$(request_gh_release_info "$package" "$ref")"
@@ -27,6 +28,9 @@ available_assets="$all_available_assets"
 
 ignored_file() {
   # This function will ignore the .gh-release_info file and the release asset's archive
+  # a gh-release will always have contains 2 entries:
+  # - the .gh-release_info file
+  # - the release asset's archive
   archive="$1"
   while IFS= read -r line; do
     case "$line" in
@@ -104,7 +108,7 @@ case "$gh_release_asset" in
     unarchive_cmd="echo"
     ;;
 esac
-echo ">> Going to download release asset '$gh_release_asset'"
+info_echo ">> Going to download release asset '$gh_release_asset'"
 
 # We don't want the nested variables to expand
 # shellcheck disable=SC2016
@@ -115,11 +119,6 @@ execute_hooks "downloading gh-release" "$target_folder" "$_script"
 # detect if the target folder contains exactly one entry and that entry is a directory
 entry_paths=$(find "$target_folder" -mindepth 1 -maxdepth 1 | ignored_file "$gh_release_asset")
 count=$(printf '%s\n' "$entry_paths" | wc -l)
-# a gh-release will always have contains 2 entries:
-# - the .gh-release_info file
-# - the release asset's archive
-# so we need to check for 3 => which means there's only 1 folder
-SINGLE_DIR_COUNT=3
 if [ "$count" -eq 1 ] && [ -d "$entry_paths" ]; then
   # only auto-set the root if the single directory isn't bin, completions, or man
   dir_name=$(basename "$entry_paths")
@@ -127,7 +126,7 @@ if [ "$count" -eq 1 ] && [ -d "$entry_paths" ]; then
     bin|completions|man)
       ;;
     *)
-      echo ">> Auto-setting root directory to '$dir_name'"
+      info_echo ">> Auto-setting root directory to '$dir_name'"
       export ROOT="$dir_name"
       ;;
   esac

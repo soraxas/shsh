@@ -49,7 +49,7 @@ if [ -n "$upgrade_all" ]; then
   turn_off_line_wrapping
 
   for package in $(shsh list); do
-    echo "⟳ Checking status of $package..." >> "$msgfile"
+    info_echo "⟳ Checking status of $package..." >> "$msgfile"
   done
   line_nums=$(wc -l < "$msgfile")
   cat "$msgfile"
@@ -136,7 +136,14 @@ else
 fi
 
 if [ -n "$gh_release" ]; then
-  shsh-_post-gh-release "$_folder_full" "$target_folder" "$ref"
+  # we will source the script to inherit the 'potential' exported variables
+  # shellcheck source=libexec/shsh-_post-gh-release
+
+  export package="$_folder_full"
+  export target_folder="$target_folder"
+  export ref="$ref"
+  # shellcheck source=libexec/shsh-_post-gh-release
+  . shsh-_post-gh-release
 fi
 shsh-_post-install "$_folder_full" "$target_folder"
 

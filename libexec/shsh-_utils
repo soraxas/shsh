@@ -9,16 +9,23 @@ if [ -n "$SHSH_UTILS_SOURCED" ]; then
 fi
 SHSH_UTILS_SOURCED="$(date)"
 
-export Color_Off='\033[0m'             # Text Reset
-# Regular Colors
-export Color_Black='\033[1;30m'        # Bold Black
-export Color_Red='\033[1;31m'          # Bold Red
-export Color_Green='\033[1;32m'        # Bold Green
-export Color_Yellow='\033[0;33m'       # Yellow
-export Color_Blue='\033[0;34m'         # Blue
-export Color_Purple='\033[1;35m'       # Bold Purple
-export Color_Cyan='\033[1;36m'         # Bold Cyan
-export Color_White='\033[1;37m'        # Bold White
+# Check if stdout is a terminal
+if [ -t 1 ]; then
+  # stdout is a terminal, enable color
+  export Color_Off='\033[0m'             # Text Reset
+  # Regular Colors
+  export Color_Black='\033[1;30m'        # Bold Black
+  export Color_Red='\033[1;31m'          # Bold Red
+  export Color_Green='\033[1;32m'        # Bold Green
+  export Color_Yellow='\033[0;33m'       # Yellow
+  export Color_Blue='\033[0;34m'         # Blue
+  export Color_Purple='\033[1;35m'       # Bold Purple
+  export Color_Cyan='\033[1;36m'         # Bold Cyan
+  export Color_White='\033[1;37m'        # Bold White
+else
+  # stdout is not a terminal, disable color
+  :
+fi
 
 info_echo() {
   >&2 printf "$Color_Yellow%s$Color_Off\n" "$@"
@@ -66,7 +73,7 @@ readlink_canonicalise() (  # we are using subshell to prevent messing up cd
 
 echo_if_verbose() {
   if [ -n "$SHSH_VERBOSE" ]; then
-    >&2 echo "$1"
+    >&2 printf "$Color_Cyan%s$Color_Off\n" "$@"
   fi
 }
 

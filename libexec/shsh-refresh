@@ -35,7 +35,7 @@ if [ -n "$upgrade_all" ]; then
   }
 
   for package in $(shsh list); do
-    echo "Re-linking $package..." >> "$lockfile"
+    info_echo "Re-linking $package..." >> "$lockfile"
   done
   line_nums=$(wc -l < "$lockfile")
   cat "$lockfile"
