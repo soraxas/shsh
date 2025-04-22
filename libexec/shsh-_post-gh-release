@@ -112,7 +112,7 @@ info_echo ">> Going to download release asset '$gh_release_asset'"
 
 # We don't want the nested variables to expand
 # shellcheck disable=SC2016
-_script='wget '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$gh_release_asset"'
+_script='download '"$(echo "$item" | jq -r '.browser_download_url' | head -1)"' && '$unarchive_cmd' "$gh_release_asset"'
 execute_hooks "downloading gh-release" "$target_folder" "$_script"
 
 

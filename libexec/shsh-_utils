@@ -144,6 +144,16 @@ gh_release_check_up_to_date() {
   return 0
 }
 
+download() {
+  if command_exists wget; then
+    wget "$@"
+  elif command_exists curl; then
+    curl -LOJ "$@"
+  else
+    error_echo "No download tool found"
+    exit 1
+  fi
+}
 clear_prev_lines() {
   if [ -n "$SHSH_USE_TPUT" ]; then
     # clear all lines at once (ed clear from current to end of screen)
@@ -564,7 +574,7 @@ if ! command_exists jq; then
       # bootstrap jq
       if prompt ">> jq is needed but not found. Bootstrap by downloading a binary release?"; then
         set -e
-        shsh install _bootstrap/jq --plain -h pre="wget https://github.com/stedolan/jq/releases/download/jq-1.6/$bin_name" -v BINS=''
+        shsh install _bootstrap/jq --plain -h pre="download https://github.com/stedolan/jq/releases/download/jq-1.6/$bin_name" -v BINS=''
 
         chmod +x "$SHSH_PACKAGES_PATH/_bootstrap/jq/$bin_name"
       else
