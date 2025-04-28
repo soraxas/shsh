@@ -124,7 +124,7 @@ item="$(echo "$available_assets" | jq -r '.[0]')"
 gh_release_asset="$(echo "$item" | jq -r '.name' | head -1)"
 
 case "$gh_release_asset" in
-  *.gz|*.xz)
+  *.gz|*.xz|*.tgz)
     unarchive_cmd="tar xvf"
     ;;
   *.zip)
