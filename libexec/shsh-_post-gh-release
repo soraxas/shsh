@@ -69,6 +69,7 @@ filter_by_preference() {
     # only replace when there are canidates left
     available_assets="$canidates"
   fi
+  # e.g. available_assets='[{"name":"file-linux-musl-x86_64.tgz"},{"name":"file-linux-x86_64.tar.gz"},{"name":"file-linux-gnu-x86_64.zip"}]'
   echo "$available_assets"
   echo_if_verbose ">> filtering with '$2'"
   echo_if_verbose ">>>> from '$(echo "$1" | jq -r '.[].name' | tr '\n' ' ')' to '$(echo "$available_assets" | jq -r '.[].name' | tr '\n' ' ')'"
@@ -84,12 +85,38 @@ if [ -z "$(echo "$available_assets" | jq 'select(length > 0)' )" ]; then
   exit 1
 fi
 
+
+# Function to apply multiple filters in order of preference
+apply_preferences() {
+  available_assets="$1"
+  shift # Remove the first argument (available_assets)
+
+  # Loop through each filter
+  while [ $# -gt 0 ]; do
+    pattern="$1"
+    available_assets=$(filter_by_preference "$available_assets" "map(select(.name|test(\""$pattern"\")))")
+    shift # Move to the next filter
+  done
+
+  echo "$available_assets"
+}
+
 ##############################
 # preferred condition
 # archives
-available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(.tgz)|(.tar.gz)|(.zip)|(.xz)$")))')"
 # prefer statically linked assets
-available_assets="$(filter_by_preference "$available_assets" 'map(select(.name|test("(linux-musl)|(linux)|(Linux)")))')"
+
+# Define your preferences in the order you want them to be applied
+preference_filters_patterns='
+  (.tgz)|(.tar.gz)|(.zip)|(.xz)$
+  (linux-musl)|(musl)
+  (linux)|(Linux)
+  x86_64
+  gnu
+'
+
+# Apply the preferences
+available_assets="$(apply_preferences "$available_assets" $preference_filters_patterns)"
 
 # get first item
 item="$(echo "$available_assets" | jq -r '.[0]')"
