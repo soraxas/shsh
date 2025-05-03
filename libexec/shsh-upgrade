@@ -92,15 +92,16 @@ package="$1"
 
 parse_install_folder "$package"
 package_exists "$_folder_full" || exit 1
+target_folder="${SHSH_PACKAGES_PATH}/$_folder_full"
 
 if [ -d "${SHSH_PACKAGES_PATH}/$_folder_full/".git ]; then
   # git package
   if [ -z "$force_upgrade" ] && git_check_up_to_date "${SHSH_PACKAGES_PATH}/$_folder_full"; then
     exit
   fi
-elif [ -e "$target_folder/.gh-release_info" ]; then
+elif [ -e "${target_folder:?}/.gh-release_info" ]; then
   # gh release
-  if gh_release_check_up_to_date "$_folder_full" "$target_folder"; then
+  if [ -z "$force_upgrade" ] && gh_release_check_up_to_date "$_folder_full" "$target_folder"; then
     exit
   fi
   gh_release="true"
@@ -118,7 +119,6 @@ shsh-_unlink-man "$_folder_full"
 shsh-_unlink-bins "$_folder_full"
 shsh-_unlink-completions "$_folder_full"
 
-target_folder="${SHSH_PACKAGES_PATH}/$_folder_full"
 
 cd "${SHSH_PACKAGES_PATH}/$_folder_full"
 # upgrade the package
@@ -132,7 +132,7 @@ else
   # plain package or gh release
   # remove the folder and rerun hook in a plain folder
   # shellcheck disable=SC2011
-  ls -A1 | xargs rm -rf
+  ls -A1 | grep -v '^.gh-release_info$' | xargs rm -rf
 fi
 
 if [ -n "$gh_release" ]; then
