@@ -95,6 +95,7 @@ test:
 
 shellcheck:
 	shellcheck libexec/*
+	shellcheck bootstrap/*
 
 clean:
 	rm -rf build/

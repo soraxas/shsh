@@ -35,7 +35,7 @@ esac
 
 if [ ! -f "$startup_script" ]; then
   touch "$startup_script"
-if
+fi
 
 
 ## now add the basher initialisation lines to the user's startup script

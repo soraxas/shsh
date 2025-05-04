@@ -132,7 +132,12 @@ else
   # plain package or gh release
   # remove the folder and rerun hook in a plain folder
   # shellcheck disable=SC2011
-  ls -A1 | grep -v '^.gh-release_info$' | xargs rm -rf
+  for f in ./*; do
+    case $f in
+      .gh-release_info) : ;; # skip
+      *) rm -rf "$f";;
+    esac
+done
 fi
 
 if [ -n "$gh_release" ]; then
