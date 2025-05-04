@@ -64,7 +64,17 @@ esac
 
 # self-linking
 (
-  cd "$SHSH_ROOT" && make self-linking
+  cd "$SHSH_ROOT"
+  if command -v make >/dev/null 2>&1; then
+    # use built-in make command
+    make self-linking
+  else
+    # mamually link
+    ln -srf "bin/shsh" "$SHSH_ROOT/cellar/bin/shsh"
+    ln -srf completions/shsh.bash $SHSH_ROOT/cellar/completions/bash/shsh.bash
+    ln -srf completions/shsh.fish $SHSH_ROOT/cellar/completions/fish/shsh.fish
+    ln -srf completions/shsh.zsh $SHSH_ROOT/cellar/completions/zsh/compctl/shsh.zsh
+  fi
 )
 
 # restart shell
