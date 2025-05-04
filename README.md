@@ -26,7 +26,7 @@ Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://
 
 Automatically bootstrap and install `shsh` (which would also modify your shell's init script)
 ```sh
-curl -s https://raw.githubusercontent.com/soraxas/shsh/master/bootstrap/install.sh | sh
+source <(curl -s https://raw.githubusercontent.com/soraxas/shsh/master/bootstrap/install.sh)
 ```
 
 ### Pre-made Recipes
