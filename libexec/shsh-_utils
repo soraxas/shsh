@@ -659,7 +659,7 @@ parse_hooks_and_setvar() {
 shshrc_get_all_existing_install_cmd() {
   set +e
   if [ -e "$SHSHRC" ]; then
-    existing="$(sed -n 's/^\s*shsh install \(.*\)$/\1/p' "$SHSHRC")"
+    existing="$(sed -n 's/^[[:space:]]*shsh install \(.*\)$/\1/p' "$SHSHRC")"
     echo "$existing"
   fi
 }
@@ -670,14 +670,14 @@ shshrc_get_existing_install_cmd() {
   # given $1 as the package name, return the existing line in SHSHRC that installs
   # that package
   if [ -e "$SHSHRC" ]; then
-    existing="$(grep -E "^\s*shsh install (.*\s+)?$1(\s.*)?$" "$SHSHRC")"
+    existing="$(grep -E "^[[:space:]]*shsh install (.*[[:space:]]+)?$1([[:space:]].*)?$" "$SHSHRC")"
     # extract suffix if any (e.g. '&& \' or '|| \')
-    _ending_pattern='\s+([&][&]|[|][|])\s*[\]\s*$'
+    _ending_pattern='[[:space:]]+([&][&]|[|][|])[[:space:]]*[\][[:space:]]*$'
     existing_suffix="$(echo "$existing" | grep -oE "$_ending_pattern")"
     # extract prefix if any (i.e. white spaces)
-    existing_prefix="$(echo "$existing" | grep -oE "^\s*")"
+    existing_prefix="$(echo "$existing" | grep -oE "^[[:space:]]*")"
     # remove these from the statement for comparison
-    existing="$(echo "$existing" | sed -E "s/$_ending_pattern//; s/^(\s*)//")"
+    existing="$(echo "$existing" | sed -E "s/$_ending_pattern//; s/^([[:space:]]*)//")"
   fi
   export existing
   export existing_prefix
