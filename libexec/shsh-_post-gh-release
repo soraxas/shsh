@@ -43,16 +43,90 @@ ignored_file() {
   done
 }
 
+detect_os() {
+  os=$(uname -s 2>/dev/null | tr '[:upper:]' '[:lower:]')
+  case "$os" in
+    linux) os="linux" ;;
+    darwin) os="macos" ;;
+    freebsd) os="freebsd" ;;
+    cygwin* | mingw* | msys*) os="windows" ;;
+    *) os="unknown" ;;
+  esac
+  echo "$os"
+}
+
+detect_arch() {
+  arch=$(uname -m 2>/dev/null)
+  case "$arch" in
+    x86_64 | amd64) arch="amd64" ;;
+    aarch64 | arm64) arch="arm64" ;;
+    armv7l | armv7) arch="armv7" ;;
+    i386 | i686) arch="386" ;;
+    *) arch="unknown" ;;
+  esac
+  echo "$arch"
+}
+
 #########################################
 # auto-determine the target asset name
 #########################################
 
+os_variant() {
+  os="$1"
+  case "$os" in
+    macos) echo "darwin" "mac" "macos" "apple" ;;
+    linux) echo "linux" "gnu" ;;
+    windows) echo "windows" "win" ;;
+    *) echo "unknown" ;;
+  esac
+}
+
+arch_variant() {
+  arch="$1"
+  case "$arch" in
+    x86_64 | amd64) echo "x86_64" "amd64" "64" ;;
+    aarch64 | arm64) echo "aarch64" "arm64" "64" ;;
+  esac
+}
+
 auto_determine_assets() {
   available_assets="$1"
+  os="$(detect_os)"
+  arch="$(detect_arch)"
+
+  echo_if_verbose ">> system info: $os $arch"
+
+  # First try exact matches for os-arch combinations
+  for os_variant in $(os_variant "$os"); do
+    for arch_variant in $(arch_variant "$arch"); do
+      item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$os_variant"'.*'"$arch_variant"'|'"$arch_variant"'.*'"$os_variant"'"))')"
+      if [ -n "$item" ]; then
+        echo "$item"
+        return
+      fi
+    done
+  done
+
+  # Try matching just the OS
+  item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$os"'"))')"
+  if [ -n "$item" ]; then
+    echo "$item"
+    return
+  fi
+
+  # Try matching just the architecture
+  item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$arch"'"))')"
+  if [ -n "$item" ]; then
+    echo "$item"
+    return
+  fi
+
+  # Fallback to common architecture names if no match found
   for pref in $gh_release_asset x86_64 x86-64 amd64 linux64 x64; do
     item="$(echo "$available_assets" | jq -r '.[] | select(.name|test("'"$pref"'"))')"
     if [ -n "$item" ]; then
       echo "$item"
+      return
     fi
   done
 }
@@ -100,20 +174,48 @@ apply_preferences() {
 
   echo "$available_assets"
 }
-
 ##############################
 # preferred condition
 # archives
 # prefer statically linked assets
 
 # Define your preferences in the order you want them to be applied
-preference_filters_patterns='
-  (.tgz)|(.tar.gz)|(.zip)|(.xz)$
-  (linux-musl)|(musl)
-  (linux)|(Linux)
-  x86_64
-  gnu
-'
+os="$(detect_os)"
+arch="$(detect_arch)"
+
+case "$os" in
+  macos)
+    preference_filters_patterns='
+      (.tgz)|(.tar.gz)|(.zip)|(.xz)$
+      (darwin)|(mac)|(macos)
+      '"$arch"'
+    '
+    ;;
+  linux)
+    preference_filters_patterns='
+      (.tgz)|(.tar.gz)|(.zip)|(.xz)$
+      (.tar.zst)$
+      (linux-musl)|(musl)
+      (linux)|(Linux)
+      '"$arch"'
+      gnu
+    '
+    ;;
+  windows)
+    preference_filters_patterns='
+      (.zip)|(.exe)$
+      (windows)|(win)
+      '"$arch"'
+    '
+    ;;
+  *)
+    preference_filters_patterns='
+      (.tgz)|(.tar.gz)|(.zip)|(.xz)$
+      '"$os"'
+      '"$arch"'
+    '
+    ;;
+esac
 
 # Apply the preferences
 # shellcheck disable=SC2086 # Intended splitting of pattern
@@ -127,6 +229,9 @@ gh_release_asset="$(echo "$item" | jq -r '.name' | head -1)"
 case "$gh_release_asset" in
   *.gz|*.xz|*.tgz)
     unarchive_cmd="tar xvf"
+    ;;
+  *.tar.zst)
+    unarchive_cmd="tar --zstd -xvf"
     ;;
   *.zip)
     unarchive_cmd="unzip"
