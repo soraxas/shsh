@@ -87,3 +87,8 @@ load test_helper
   SHSH_PREFIX=/usr/local run shsh echo SHSH_INSTALL_MAN
   assert_output "/usr/local/man"
 }
+
+@test "empty SHSHRC is preserved" {
+  SHSHRC= run shsh echo SHSHRC
+  assert_output ""
+}

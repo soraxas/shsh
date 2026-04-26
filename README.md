@@ -20,6 +20,17 @@ Shsh allows you to quickly install shell packages directly from github or other 
 
 Shsh is a POSIX-compatible script handler, as a former fork of [basher](https://github.com/basherpm/basher) but was made to works with even the most strict POSIX compliance shell like [dash](https://wiki.archlinux.org/index.php/Dash). The performance of shsh is enhanced by using `dash` and with our use of multi-threaded approach. The flexibility of shsh comes from **hooks** where you can run arbitrary scripts that persists across package updates.
 
+## As mise plugin
+
+You can use `shsh` as a mise plugin:
+```shsh
+mise plugin install shsh https://github.com/soraxas/shsh
+```
+and then you can use `shsh`'s install functionality as
+```sh
+mise use shsh:jirutka/esh
+```
+
 ## Quick Start
 
 ### Automatic Installation
