@@ -14,11 +14,14 @@ local function cache_path(tool)
     return dir .. "/" .. tool:gsub("[/:]", "-") .. ".versions"
 end
 
+-- Parses cached content into a version list. An empty string is a valid,
+-- legitimate cache entry (a repo with no tags at all) and must return an
+-- empty table here, not nil -- nil is reserved for "no cache entry exists".
 local function parse_cache(content)
-    if content == nil or content == "" then
-        return nil
-    end
     local versions = {}
+    if content == nil then
+        return versions
+    end
     for line in content:gmatch("[^\n]+") do
         table.insert(versions, line)
     end
